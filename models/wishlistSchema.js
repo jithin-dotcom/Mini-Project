@@ -27,14 +27,7 @@ const wishlistSchema = new Schema({
             type: String,
             required: true
         },
-        // status: {
-        //     type: String,
-        //     default: "Placed"
-        // },
-        // cancellationReason: {
-        //     type: String,
-        //     default: "none"
-        // },
+        
         name:{
             type:String,
             
@@ -71,21 +64,3 @@ module.exports = Wishlist;
 
 
 
-
- // userId : {
-    //     type : Schema.Types.ObjectId,
-    //     ref : "User",
-    //     required : true
-    // },
-    // products : [{
-    //     productsId : {
-    //         type : Schema.Type.ObjectId,
-    //         ref : "Product",
-    //         required : true
-    //     },
-    //     addedOn : {
-    //         type : Date,
-    //         default : Date.now
-    //     },
-
-    // }]

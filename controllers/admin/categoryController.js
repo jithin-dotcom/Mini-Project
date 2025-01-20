@@ -29,6 +29,8 @@ const categoryInfo = async(req,res)=>{
 }
 
 
+
+
 const addCategory = async(req,res)=>{
    
     const {name,description} = req.body;
@@ -52,6 +54,8 @@ const addCategory = async(req,res)=>{
        return res.status(500).json({error:"Internal Server Error"});
     }
 }
+
+
 
 const addCategoryOffer = async(req,res)=>{
     try{
@@ -84,6 +88,8 @@ const addCategoryOffer = async(req,res)=>{
        res.status(500).json({status:false, message:"Internal Server Error"});
     }
 };
+
+
 
 
 const removeCategoryOffer = async(req,res)=>{
@@ -155,6 +161,8 @@ const getEditCategory = async(req,res) => {
         res.redirect("/pageerror");
     }
 }
+
+
 
 //accessing id recived
 const editCategory = async(req,res)=>{

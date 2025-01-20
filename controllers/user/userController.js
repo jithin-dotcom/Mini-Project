@@ -83,47 +83,6 @@ const loadHomepage = async (req, res) => {
 
 
 
-// home page
-// const loadHomepage = async (req, res) => {
-//     try {
-
-//         // Extract user session and fetch listed category
-//         const user = req.session.user;
-//         const categories = await Category.find({isListed:true});
-
-//          // Fetch unblocked products with stock, belonging to listed categories
-//         let productData = await Product.find(
-//             {
-//                 isBlocked:false,
-//                 category:{$in:categories.map(category=>category._id)},
-//             }
-//         )
-       
-   
-//         productData.sort((a,b)=> new Date(b.createdOn)-new Date(a.createdOn));  //latest added product
-//         productData = productData.slice(0,4);  // limits first 4 products
-
-//         // If a user is logged in, fetch their details 
-//         if (user) {
-
-//             const userData = await User.findOne({_id:user._id});
-//             res.render("home", { user:userData,products:productData });
-        
-//         } else {
-//             res.render("home",{products:productData});
-//         }
-//     } catch (error) {
-//         console.error("Homepage error:", error);
-//         res.status(500).send("Server error");
-//     }
-// };
-
-
-
-
-
-
-
 
 
 // generate otp
@@ -167,50 +126,6 @@ async function sendVerificationEmail(email,otp){
     } 
 }
 
-
-
-
-// const signup = async (req, res) => {
-//     try {
-//         const { name, phone, email, password, cPassword } = req.body;
-
-//         if (password !== cPassword) {
-//             return res.status(400).json({ message: "Passwords don't match" });
-//         }
-
-//         const findUser = await User.findOne({ email });
-//         if (findUser) {
-//             return res.status(400).json({ message: "User with this email already exists" });
-//         }
-
-//         const otp = generateOtp();
-
-//         const emailSend = await sendVerificationEmail(email, otp);
-//         if (!emailSend) {
-//             return res.status(500).json({ message: "Failed to send verification email. Please try again." });
-          
-//         }
-
-//         // Save OTP to the database
-//         await OTP.findOneAndUpdate(
-//             { email },
-//             { otp, createdAt: new Date() },
-//             { upsert: true, new: true }
-//         );
-
-//         // Temporarily store user data in session for further steps after OTP verification
-//         req.session.userData = { name, phone, email, password };
-//         console.log("req body signup : ", req.body);
-
-//         // Respond with success status and redirect URL or message
-//         res.status(200).json({ message: "OTP sent successfully. Please verify your email.", redirectUrl: "/verify-otp" });
-//         // return res.redirect("/verify-otp");
-
-//     } catch (error) {
-//         console.error("Signup error", error);
-//         res.status(500).json({ message: "An unexpected error occurred. Please try again later." });
-//     }
-// };
 
 
 
@@ -258,42 +173,7 @@ const signup = async (req, res) => {
 };
 
 
-// signup verification
-// const signup = async(req,res) => {
-//     try{
-        
-//         const {name,phone,email,password,cPassword} = req.body;
-//         if(password != cPassword){
-//             return res.render("signup",{message:"Password dont match"});
-//         }
 
-//         const findUser = await User.findOne({email});
-//         if(findUser){
-//             return res.render("signup",{message:"User with this email already exist"});
-
-//         }
-//         const otp = generateOtp();
-        
-//         const emailSend = await sendVerificationEmail(email,otp);
-//         if(!emailSend){
-//             // return res.json("email.error");
-//             return res.render("signup", { message: "Failed to send verification email. Please try again." });
-
-//         }
-
-        
-
-//         req.session.userOtp = otp;
-//         req.session.userData = {name,phone,email,password};
-
-//         res.render("verify-otp");
-//         console.log("OTP Sent",otp);
-    
-//     }catch(error){
-//         console.error("signup error",error);
-//         res.redirect("/pageNotfound");
-//     }
-// }
 
 const securePassword = async(password)=>{
     try{
@@ -351,46 +231,6 @@ const verifyOtp = async (req, res) => {
     }
 };
 
-
-
-
-
-//verify otp
-// const verifyOtp = async(req,res)=>{
-//     try{
-//        const {otp} = req.body;
-//        console.log(otp);
-
-//         // Check if the OTP matches the one in the session
-//        if(otp===req.session.userOtp){
-//            const user = req.session.userData;
-//            const passwordHash = await securePassword(user.password);
-      
-//             // Data saved in database
-//            const saveUserData = new User({
-//               name:user.name,
-//               email:user.email,
-//               phone:user.phone,
-//               password:passwordHash,
-//            })
-//            await saveUserData.save();
-
-//            req.session.user = saveUserData.id;
-           
-//            //clean user data and otp after login
-//            req.session.userOtp = null;
-//            req.session.userData = null;
-
-
-//            res.json({success:true,redirectUrl:"/"});
-//         }else{
-//             res.status(400).json({success:false,message:"Invalid OTP, Please try again "});
-//         }
-//     }catch(error){
-//         console.error("Error Verifying OTP",error);
-//         res.status(500).json({success:false,message:"An error occured"});
-//     }
-// }
 
 
 
@@ -515,112 +355,6 @@ const logout = async(req,res)=>{
 
 
 
-//load shoping page new 
-
-// const loadShoppingPage = async (req, res) => {
-//     try {
-//         // Fetch user data from session
-//         const user = req.session.user;
-//         const userData = await User.findOne({ _id: user });
-
-//         // Fetch all categories that are listed (active)
-//         const categories = await Category.find({ isListed: true });
-//         const categoryIds = categories.map((category) => category._id.toString());
-
-//         // Fetch all brands that are not blocked
-//         const brands = await Brand.find({ isBlocked: false });
-
-//         // Pagination logic
-//         const page = parseInt(req.query.page) || 1;
-//         const limit = 8;
-//         const skip = (page - 1) * limit;
-
-//         // Initialize filter object
-//         let filter = {
-//             isBlocked: false,
-//             category: { $in: categoryIds }
-//         };
-
-//         // Apply category filter if provided
-//         if (req.query.category) {
-//             filter.category = req.query.category;
-//         }
-
-//         // Apply brand filter if provided
-//         if (req.query.brand) {
-//             filter.brand = req.query.brand;
-//         }
-
-//         // Apply price filter if provided
-//         if (req.query.minPrice || req.query.maxPrice) {
-//             filter.salePrice = {};
-//             if (req.query.minPrice) {
-//                 filter.salePrice.$gte = parseFloat(req.query.minPrice);
-//             }
-//             if (req.query.maxPrice) {
-//                 filter.salePrice.$lte = parseFloat(req.query.maxPrice);
-//             }
-//         }
-
-//         // Default sorting order
-//         let sortOption = { createdAt: -1 }; // Default: newest first
-
-//         // Apply sorting based on query parameter
-//         if (req.query.sort) {
-//             if (req.query.sort === 'lowToHigh') {
-//                 sortOption = { salePrice: 1 }; // Sort by price ascending
-//             } else if (req.query.sort === 'highToLow') {
-//                 sortOption = { salePrice: -1 }; // Sort by price descending
-//             } else if (req.query.sort === 'atoz') {
-//                 sortOption = { productName: 1 }; // Sort by product name A to Z
-//             } else if (req.query.sort === 'ztoa') {
-//                 sortOption = { productName: -1 }; // Sort by product name Z to A
-//             }
-//         }
-
-//         // Fetch products with filters and sorting applied
-//         const products = await Product.find(filter)
-//             .sort(sortOption)
-//             .skip(skip)
-//             .limit(limit)
-//             .lean();
-
-//         // Log the totalSize for each product
-//         products.forEach(product => {
-//             console.log(`Product: ${product.productName}, Total Size Quantity: ${product.totalSize}`);
-//         });
-
-//         // Count the total number of products that match the criteria
-//         const totalProducts = await Product.countDocuments(filter);
-//         const totalPages = Math.ceil(totalProducts / limit);
-
-//         // Prepare categories with only their _id and name for easier rendering in the view
-//         const categoriesWithIds = categories.map(category => ({ _id: category._id, name: category.name }));
-
-//         // Render the shop page and pass the necessary data
-//         res.render("shop", {
-//             user: userData,
-//             products,
-//             category: categoriesWithIds,
-//             brand: brands,
-//             totalProducts,
-//             currentPage: page,
-//             totalPages,
-//             sort: req.query.sort || ''  // Pass sort parameter to the view
-//         });
-
-//     } catch (error) {
-//         console.error('Error loading shopping page:', error);
-//         res.redirect("/pageNotFound");
-//     }
-// };
-
-
-
-
-
-
-
 
 const loadShoppingPage = async (req, res) => {
     try {
@@ -731,15 +465,6 @@ const loadShoppingPage = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
 const searchProducts = async (req, res) => {
     try {
         const user = req.session.user;
@@ -794,69 +519,6 @@ const searchProducts = async (req, res) => {
 
 
 
-
-
-
-
-//search product new 
-
-// const searchProducts = async(req,res)=>{
-//     try {
-//         // console.log("Search Query:", req.body.query);
-//         // console.log("Request Body:", req.body);
-
-//         const user = req.session.user;
-//         const userData = await User.findOne({_id:user});
-//         let search = req.body.query;
-        
-
-
-//         const brands = await Brand.find({}).lean();
-//         const categories = await Category.find({isListed:true}).lean();
-//         const categoryIds = categories.map(category=>category._id.toString());
-//         let searchResult = [];
-//         if(req.session.filteredProducts && req.session.filteredProducts.length > 0){
-//             searchResult = req.session.filteredProducts.filter(product=>
-//                 product.productName.toLowerCase().includes(search.toLowerCase())
-
-//             )
-//         }else{
-//             searchResult = await Product.find({
-//                 productName : {$regex:".*"+search+".*",$options:"i"},
-//                 isBlocked : false,
-//                 category : {$in:categoryIds}
-//             })
-//         }
-
-//         searchResult.sort((a,b)=> new Date(b.createdOn) - new Date(a.createdOn));
-//         let itemsPerPage = 6;
-//         let currentPage = parseInt(req.query.page) || 1;
-//         let startIndex = (currentPage-1) * itemsPerPage;
-//         let endIndex = startIndex + itemsPerPage;
-//         let totalPages = Math.ceil(searchResult.length/itemsPerPage);
-//         const currentProduct = searchResult.slice(startIndex,endIndex);
-//         res.render("shop",{
-
-//             user : userData,
-//             products : currentProduct,
-//             category : categories,
-//             brand : brands,
-//             totalPages,
-//             currentPage,
-//             count : searchResult.length,
-//         })
-
-//     } catch (error) {
-        
-//        console.log("Error : ",error);
-//        res.redirect("/pageNotFound");
-
-//     }
-// }
-
-
-
-
 module.exports = {
     loadHomepage,
     pageNotFound,
@@ -868,8 +530,6 @@ module.exports = {
     login,
     logout,
     loadShoppingPage,
-    // filterProducts,
-    // filterByPrice,
     searchProducts,
-    // checkIfBlocked,
+    
 };

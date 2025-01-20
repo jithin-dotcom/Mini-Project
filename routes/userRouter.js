@@ -29,10 +29,6 @@ router.get("/auth/google/callback",passport.authenticate("google",{failureRedire
 });
 
 
-// Example of applying the middleware to protected routes
-// router.post('/', userController.checkIfBlocked, (req, res) => {
-//     res.send('This is a protected route.');
-// });
 
 
 //login management
@@ -44,8 +40,6 @@ router.get("/logout",userController.logout);
 //home page and shopping
 router.get("/",userController.loadHomepage);
 router.get("/shop",userAuth,userController.loadShoppingPage);
-// router.get("/filter",userAuth,userController.filterProducts);
-// router.get("/filterPrice",userAuth,userController.filterByPrice);
 router.post("/search",userAuth,userController.searchProducts);
 
 
@@ -67,6 +61,8 @@ router.get("/change-password",userAuth,profileController.changePassword);
 router.post("/change-password",userAuth,profileController.changePasswordValid);
 router.post("/verify-changepassword-otp",userAuth,profileController.verifyChangePassOtp);
 
+
+
 //address management
 router.get("/addAddress",userAuth,profileController.addAddress);
 router.post("/addAddress",userAuth,profileController.postAddAddress);
@@ -84,13 +80,10 @@ router.get("/productDetails",userAuth,productController.productDetails);
 //cart management
 router.get("/cart",userAuth,cartController.getCart);
 router.post("/addToCart",userAuth,cartController.addToCart);
-router.delete("/removeFromCart/:productId", userAuth, cartController.removeProduct);
-router.post('/updateCartQuantity/:productId', cartController.updateProductQuantity);
-// router.post('/updateCart/:productId', userAuth,cartController.updateQuantity);
+router.delete("/removeFromCart/:productId", userAuth,cartController.removeProduct);
+router.post('/updateCartQuantity/:productId',userAuth,cartController.updateProductQuantity);
 
 
-// router.get("/removeFromCart",userAuth,cartController.removeProduct);
-// app.delete('/removeProduct/:productId', removeProduct);
 
 //checkout management
 router.get("/checkout",userAuth,checkoutController.getCheckout);
@@ -98,16 +91,9 @@ router.post("/addAddressForOrder",userAuth,checkoutController.postAddAddress);
 
 
 //order management
-router.post("/placeOrder",orderController.placeOrder);
-// Route to create Razorpay order
-router.post('/createRazorpayOrder',orderController.createRazorpayOrder);
-// Route to verify Razorpay payment
-router.post('/verifyRazorpayPayment',orderController.verifyRazorpayPayment);
-
-
-
-
-// router.post("/saveOrder",orderController.rzpOrder);
+router.post("/placeOrder",userAuth,orderController.placeOrder);
+router.post('/createRazorpayOrder',userAuth,orderController.createRazorpayOrder);
+router.post('/verifyRazorpayPayment',userAuth,orderController.verifyRazorpayPayment);
 router.get("/orderConfirmation",userAuth,orderController.orderDetails);
 router.get ("/viewOrder/:id",userAuth,profileController.viewOrders);
 router.post("/cancelOrder/:id",userAuth,profileController.cancelOrder);
@@ -129,9 +115,7 @@ router.delete("/deleteCoupon",userAuth,couponController.deleteCoupon)
 
 
 //wallet management
-// Route to add money to wallet
 router.post('/add',userAuth,walletController.addMoney);
-// Route to get wallet transaction history
 router.get('/history',userAuth,walletController.getWalletHistory);
 
 

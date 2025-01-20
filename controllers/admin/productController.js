@@ -28,71 +28,6 @@ const getProductAddPage = async(req,res)=>{
 
 
 
-// const addProducts = async (req, res) => {
-//     try {
-//         const products = req.body;
-
-//         // Check if product with the same name exists
-//         const productExists = await Product.findOne({
-//             productName: products.productName,
-//         });
-
-//         if (!productExists) {
-//             const images = [];
-//             if (req.files && req.files.length > 0) {
-//                 for (let i = 0; i < req.files.length; i++) {
-//                     const originalImagePath = req.files[i].path;
-
-//                     // Crop image using sharp and save it in 'product-images'
-//                     const resizedImagePath = path.join(
-//                         'public',
-//                         'upload',
-//                         'product-images',
-//                         req.files[i].filename
-//                     );
-//                     await sharp(originalImagePath)
-//                         .resize({ width: 440, height: 440 })
-//                         .toFile(resizedImagePath);
-//                     images.push(req.files[i].filename);
-//                 }
-//             }
-
-//             // Find the category by name and get its _id
-//             const category = await Category.findOne({ name: products.category });
-
-//             if (!category) {
-//                 return res.status(400).json("Invalid category name");
-//             }
-//             console.log("product-size : ", products.sizeOptions);
-//             // Create new product with schema-aligned properties
-//             const newProduct = new Product({
-//                 productName: products.productName,
-//                 description: products.description,
-//                 brand: products.brand,
-//                 category: category._id,
-//                 regularPrice: products.regularPrice,
-//                 salePrice: products.salePrice,
-//                 productOffer: products.productOffer || 0, // Default to 0 if not provided
-//                 sizeOptions: products.sizeOptions, // Pass size option IDs
-//                 color: products.color,
-//                 productImage: images,
-//                 isBlocked: false,
-//                 status: products.status || "Available", // Default to "Available"
-//             });
-
-//             await newProduct.save();
-//             return res.redirect("/admin/addProducts");
-//         } else {
-//             return res.status(400).json("Product already exists, please try with another name");
-//         }
-//     } catch (error) {
-//         console.error("Error saving product", error);
-//         return res.redirect("/admin/pageerror");
-//     }
-// };
-
-
-
 
 const addProducts = async(req,res)=>{
     try {
@@ -131,12 +66,6 @@ const addProducts = async(req,res)=>{
             sizeMap.set(size, Number(products.size[size])); // Ensure the size values are numbers
         }
 
-        //  // Convert the size object to a plain JavaScript object
-        //  const sizeObj = {};
-        //  for (let size in products.size) {
-        //      sizeObj[size] = Number(products.size[size]); // Ensure size values are numbers
-        //  }
-       
 
 
         const newProduct = new Product({
@@ -147,11 +76,8 @@ const addProducts = async(req,res)=>{
             regularPrice : products.regularPrice,
             salePrice : products.salePrice,
             createdOn : new Date(),
-            quantity : products.quantity,
-            // size: sizeObj, // Pass the plain JavaScript object for sizes
-            // size : products.size,
+            quantity : products.quantity,    
             size: sizeMap, // Pass the Map
-            // size: product.size, // Pass the size object directly
             color : products.color,
             productImage : images,
             status : 'Available',
@@ -170,6 +96,8 @@ const addProducts = async(req,res)=>{
         
     }
 }
+
+
 
 
 const getAllProducts = async(req,res)=>{
@@ -219,6 +147,8 @@ const getAllProducts = async(req,res)=>{
 }
 
 
+
+
 const addProductOffer = async(req,res)=>{
     try {
         
@@ -249,9 +179,6 @@ const addProductOffer = async(req,res)=>{
         findProduct.productOffer = parseInt(percentage, 10);
         await findProduct.save();
 
-        // findProduct.salePrice = findProduct.salePrice-Math.floor(findProduct.regularPrice*(percentage/100));
-        // findProduct.productOffer = parseInt(percentage);
-        // await findProduct.save();
         findCategory.categoryOffer = 0;
         await findCategory.save();
         res.json({status:true,message:"Product offer successfully added"});
@@ -264,6 +191,9 @@ const addProductOffer = async(req,res)=>{
 
     }
 } 
+
+
+
 
 const removeProductOffer = async(req,res)=>{
     try {
@@ -282,6 +212,8 @@ const removeProductOffer = async(req,res)=>{
 }
 
 
+
+
 const blockProduct = async(req,res)=>{
     try {
         
@@ -295,6 +227,8 @@ const blockProduct = async(req,res)=>{
 }
 
 
+
+
 const unblockProduct = async(req,res)=>{
     try {
         
@@ -306,6 +240,8 @@ const unblockProduct = async(req,res)=>{
         res.redirect("/pageerror");
     }
 }
+
+
 
 
 const getEditProduct = async(req,res)=>{
@@ -384,6 +320,8 @@ const editProduct = async(req,res)=>{
         res.redirect("/pageerror");
     }
 }
+
+
 
 
 const deleteSingleImage = async(req,res)=>{

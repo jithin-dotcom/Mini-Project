@@ -180,32 +180,6 @@ const postNewPassword = async(req,res)=>{
 
 
 
-// const userProfile = async(req,res)=>{
-//     try {
-        
-//         const userId = req.session.user;
-//         const userData = await User.findById(userId);
-//         const addressData = await Address.findOne({userId:userId});
-//         const orderData = await Order.find({userId:userId});
-//         const wallet = await Wallet.findOne({ userId: userId });
-//         res.render('profile',{
-//             user:userData,
-//             userAddress:addressData,
-//             orders:orderData,
-//             wallet:wallet, 
-//         });
-
-//     } catch (error) {
-        
-//         console.error("Error to retrieve profile data");
-//         res.redirect("/pageNotFound");
-
-//     }
-// }
-
-
-
-
 
 
 
@@ -265,64 +239,6 @@ const userProfile = async (req, res) => {
         res.redirect("/pageNotFound");
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//user profile new latest
-
-// const userProfile = async (req, res) => {
-//     try {
-//       const userId = req.session.user;
-//       const userData = await User.findById(userId);
-//       const addressData = await Address.findOne({ userId: userId });
-  
-//       // Pagination settings
-//       const limit = 6; // Set your desired number of items per page
-//       const currentPage = parseInt(req.query.page) || 1; // Get the current page, default to 1
-//       const skip = (currentPage - 1) * limit; // Skip the right number of orders based on the page
-//       const orderData = await Order.find({ userId: userId }).sort({createdOn:-1}).skip(skip).limit(limit); // Get orders for the current page
-
-//       const totalOrders = await Order.countDocuments({ userId: userId }); // Get total number of orders
-//       const totalPages = Math.ceil(totalOrders / limit); // Calculate total pages based on orders and limit
-  
-//       const wallet = await Wallet.findOne({ userId: userId });
-  
-//       res.render('profile', {
-//         user: userData,
-//         userAddress: addressData,
-//         orders: orderData,
-//         wallet: wallet,
-//         currentPage: currentPage,
-//         totalPages: totalPages,
-//         limit: limit, // Pass the limit to the view for pagination links
-//       });
-//     } catch (error) {
-//       console.error("Error to retrieve profile data");
-//       res.redirect("/pageNotFound");
-//     }
-//   };
-  
-
-
-
-
-
-
 
 
 
@@ -661,57 +577,6 @@ const viewOrders = async(req,res)=>{
 
 
 
-
-// const viewOrders = async (req, res) => {
-//     try {
-//         const userId = req.session.user._id;
-
-//         // Pagination variables: get page and limit from query params, set default values
-//         const page = parseInt(req.query.page) || 1;  // Default to page 1 if not provided
-//         const limit = parseInt(req.query.limit) || 10;  // Default to 10 orders per page if not provided
-//         const skip = (page - 1) * limit;  // Calculate how many records to skip
-
-//         // Find the orders for the user, with pagination
-//         const orders = await Order.find({ userId })
-//             .skip(skip)
-//             .limit(limit)
-//             .sort({ createdAt: -1 });  // Sorting orders by creation date (newest first)
-
-//         // Count the total number of orders to calculate the total number of pages
-//         const totalOrders = await Order.countDocuments({ userId });
-//         const totalPages = Math.ceil(totalOrders / limit);
-
-//         // Find the user's address document
-//         const addressDoc = await Address.findOne({ userId }).exec();
-//         if (!addressDoc) {
-//             return res.status(404).render('error', { message: 'Address document not found' });
-//         }
-
-//         // Render the view with orders and pagination data
-//         res.render('viewOrders', { 
-//             orders, 
-//             addressDoc, 
-//             currentPage: page, 
-//             totalPages, 
-//             totalOrders,
-//             limit // Pass limit to handle pagination 
-//         });
-
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).render('error', { message: 'Internal Server Error' });
-//     }
-// };
-
-
-
-
-
-
-
-// cancel order with wallet
-
-
 const cancelOrder = async (req, res) => {
     const orderId = req.params.id;
 
@@ -867,10 +732,6 @@ const returnOrder = async (req, res) => {
         res.status(500).send("Error returning order.");
     }
 };
-
-
-
-
 
 
 

@@ -364,38 +364,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    //used for filtering 
-
-//     document.getElementById('applyFilter').addEventListener('click',async()=>{
-//     const quickFilter = document.getElementById('quickFilter').value
-//     const startDate = document.getElementById('startDate').value
-//     const endDate = document.getElementById('endDate').value
-//     // console.log("quickfilter : ",quickFilter);
-//     // console.log("startDate : ",startDate);
-//     // console.log("endDate : ",endDate);
-
-//     const response = await fetch('/admin/dashboard',{
-//         method:"POST",
-//         headers:{'Content-Type':'application/json'},
-//         body:JSON.stringify({quickFilter,startDate,endDate})
-//     })
-//     const data = await response.json();
-//     const ordersTableBody = document.getElementById('ordersTableBody');
-//     ordersTableBody.innerHTML = '';
-//     data.orders.forEach(order => {
-//         const row = `<tr>
-//             <td>${order._id}</td>
-//             <td>${new Date(order.createdOn).toLocaleDateString('en-US')}</td>
-//             <td>₹${order.totalPrice}</td>
-//             <td>₹${order.discount}</td>
-            
-//             <td>₹${order.finalAmount ? order.finalAmount : order.totalPrice}</td>
-//             <td><span class="status ${order.status}">${order.status}</span></td>
-//         </tr>`;
-//         ordersTableBody.insertAdjacentHTML('beforeend', row);
-//     });
-// })
-//<td>${order.coupon || '-'}</td>
 //generate pdf
 
 document.getElementById('downloadPdfBtn').addEventListener('click', async () => {

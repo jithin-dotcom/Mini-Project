@@ -20,10 +20,7 @@ const loadWishlist = async (req, res) => {
         .exec(); // Make sure to call exec()
 
 
-        // .populate({
-        //     path: 'items.size', // You can optionally populate size if it's a reference
-        //     select: 'size' // Select the size field if it's a separate model
-        // });
+        
         console.log(JSON.stringify(wishlist, null, 2));
 
 
@@ -51,27 +48,6 @@ const loadWishlist = async (req, res) => {
 
 
 
-
-
-
-// const loadWishlist = async (req,res) => {
-//     try {
-        
-//         const userId = req.session.user;
-//         const user = await User.findOne(userId);
-//         const products = await Product.find({_id:{$in:user.wishlist}}).populate('category');
-//         res.render("wishlist" , {
-//             user,
-//             wishlist:products,
-//         });
-
-//     } catch (error) {
-        
-//          console.error(error);
-//          res.redirect("/pageNotFound");
-
-//     }
-// }
 
 
 const addToWishlist = async (req, res) => {
@@ -138,8 +114,6 @@ const addToWishlist = async (req, res) => {
                     quantity: Number(quantity),  // Ensure quantity is a number
                     price,
                     size,
-                    // status: "Placed",
-                    // cancellationReason: "none"
                 });
             }
             await wishlist.save(); // Save the updated cart
@@ -180,11 +154,6 @@ const removeProduct = async (req, res) => {
         // Find the user's wishlist
         let wishlist = await Wishlist.findOne({ userId });
 
-        // let wishlist = await Wishlist.findOne(
-        //     { userId: userId },  // Find the wishlist by userId
-        //     { "items": { $elemMatch: { productId: productId, size: size } } } // Match item in the array based on productId and size
-        // );
-
 
         if (!wishlist) {
             return res.status(404).json({ status: false, message: 'Wishlist not found' });
@@ -208,12 +177,12 @@ const removeProduct = async (req, res) => {
 const addToCart = async (req, res) => {
     try {
         const userId = req.session.user;
-        const { productId, quantity, price, size } = req.body; // Extract details from request body
+        const { productId, quantity, price, size } = req.body; 
 
 
-        console.log("Received quantity:", quantity); // Log the quantity value
-        console.log("Received productId:", productId); // Log the productId
-        console.log("Received size:", size); // Log the size
+        console.log("Received quantity:", quantity); 
+        console.log("Received productId:", productId); 
+        console.log("Received size:", size); 
 
         
         // Convert quantity to a number (just in case it's passed as a string)
@@ -310,7 +279,6 @@ const addToCart = async (req, res) => {
             message: 'An error occurred while adding the product to the cart.'
         });
 
-        // res.redirect("/pageNotFound");
     }
 };
 

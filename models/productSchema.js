@@ -32,10 +32,7 @@ const productSchema = new Schema({
         type : Number,
         default : 0,
      },
-    //  quantity : {
-    //     type : Number,
-    //     default : true
-    //  },
+    
 
     size: {
         type: Map,
@@ -43,18 +40,7 @@ const productSchema = new Schema({
         required: true,
     },
 
-    // sizeOptions:[{
-    //     type : Schema.Types.ObjectId,
-    //     ref : "Size",
-    //     required : true
-    // }],
-
-
-    // size: {
-    //     type: Object,  // Changed from Map to Object
-    //     required: true,
-    //     default: {} // Default as an empty object
-    // },
+ 
      color : {
         type : String,
         required : true

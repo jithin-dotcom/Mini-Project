@@ -34,21 +34,14 @@ const productDetails = async(req,res)=>{
 
         // console.log(product.productImage);
 
-        // const sizeMap = new Map();
-        // for (let size in product.size) {
-        //     sizeMap.set(size, Number(product.size[size])); // Ensure the size values are numbers
-        // }
-
 
         // Render the product details page
         res.render("productDetails",{
             user:userData,
             product:product,
-            // quantity:product.size.get('M'),
             totalOffer:totalOffer,
             category:findCategory,
             totalQuantity:totalSizeQuantity,
-            // size: sizeMap, // Pass the Map
         });
     } catch (error) {
         console.error('Error for fetching product details',error);

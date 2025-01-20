@@ -42,7 +42,7 @@ router.get("/unlistCategory",adminAuth,categoryController.getUnlistCategory);
 router.get("/editCategory",adminAuth,categoryController.getEditCategory);
 router.post("/editCategory/:id",adminAuth,categoryController.editCategory);
 
-// router.get("/",adminController.loadDashboard);
+
 
 //brand management
 router.get("/brands",adminAuth,brandController.getBrandPage);
@@ -86,7 +86,7 @@ router.get("/deleteCoupon",adminAuth,couponController.deleteCoupon);
 
 
 
-// //salesreport management
+ //salesreport management
 
 router.get("/loadDashboard",adminAuth,salesController.loadDashboard);
 router.post("/dashboard",adminAuth,salesController.dashboard);

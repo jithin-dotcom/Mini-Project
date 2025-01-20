@@ -25,103 +25,6 @@ const rzp = new Razorpay({
 
 
 
-
-
-
-
-// const placeOrder = async (req, res) => {
-//     try {
-//         const { addressId, cartItems, totalPrice, paymentMethod } = req.body;
-//         const userId = req.session.user._id;
-
-//         // console.log("req.body :" , req.body);
-
-//         // Validate and fetch address
-//         if (!mongoose.Types.ObjectId.isValid(addressId)) {
-//             return res.json({ success: false, message: "Invalid address ID format." });
-//         }
-
-//         const addressDoc = await Address.findOne({ "address._id": new mongoose.Types.ObjectId(addressId) });
-//         if (!addressDoc) {
-//             return res.json({ success: false, message: "Address not found." });
-//         }
-
-//         const selectedAddress = addressDoc.address.find((addr) => addr._id.toString() === addressId);
-//         if (!selectedAddress) {
-//             return res.json({ success: false, message: "Address not found." });
-//         }
-
-//         let totalDiscount = 0;
-//         let finalAmount = totalPrice;
-
-//         // Parse and map cart items
-//         let parsedCartItems = Array.isArray(cartItems) ? cartItems : JSON.parse(cartItems);
-//         const mappedCartItems = await Promise.all(parsedCartItems.map(async item => {
-//             const product = await Product.findById(item.productId);
-            
-//             // Get the offer discount for the product
-//             const productOffer = product.productOffer || 0; // Assume product.offer is a percentage
-
-//             // Calculate the discount for the current product
-//             const productDiscount = (productOffer / 100) * item.price * item.quantity;
-//             totalDiscount += productDiscount; // Add product discount to total discount
-
-//             // Adjust the final amount by subtracting the discount
-//             finalAmount = totalPrice - totalDiscount;
-
-//             return {
-//                 product: product._id,
-//                 quantity: item.quantity,
-//                 price: item.price,
-//                 size: item.size,
-//                 name: product.productName,
-//                 image: product.productImage[0],
-//             };
-//         }));
-
-//         // Create new order
-//         const order = new Order({
-//             orderedItems: mappedCartItems,
-//             totalPrice,
-//             address: new mongoose.Types.ObjectId(addressId),
-//             status: "Pending",
-//             paymentMethod,
-//             userId,
-//             finalAmount,
-//             discount: totalDiscount, // Add the calculated discount field
-//         });
-
-//         // console.log("order : ", order);      
-//         const savedOrder = await order.save();
-
-//         // Reduce stock and remove cart items
-//         for (const item of mappedCartItems) {
-//             const product = await Product.findById(item.product);
-//             if (product) {
-//                 const currentStock = product.size.get(item.size);
-//                 if (currentStock !== undefined && currentStock >= item.quantity) {
-//                     product.size.set(item.size, currentStock - item.quantity);
-//                     await product.save();
-//                 } else {
-//                     return res.json({ success: false, message: `Not enough stock for product ${product.productName}.` });
-//                 }
-//             }
-//         }
-
-//         await Cart.deleteMany({ userId });
-//         req.session.orderId = order._id;
-//         res.json({ success: true, message: "Order placed successfully!", order: savedOrder });
-//     } catch (error) {
-//         console.error("Error placing order:", error);
-//         res.json({ success: false, message: "Failed to place order. Please try again." });
-//     }
-// };
-
-
-
-
-
-
 const placeOrder = async (req, res) => {
     try {
         const { addressId, cartItems, totalPrice, paymentMethod } = req.body;
@@ -242,17 +145,6 @@ const placeOrder = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 const createRazorpayOrder = async (req, res) => {
     try {
         const { amount, addressId, paymentMethod } = req.body;
@@ -301,6 +193,8 @@ const verifyRazorpayPayment = async (req, res) => {
 
 
 
+
+
 const orderDetails = async (req, res) => {
   
     try {
@@ -311,7 +205,7 @@ const orderDetails = async (req, res) => {
         
        // Find the user's address document
         const addressDoc = await Address.findOne({ userId }).exec();
-        //  const addressDoc = await Address.findOne({ addressId }).exec();
+        
 
         if (!addressDoc) {
             return res.status(404).send("Address not found");
@@ -344,25 +238,11 @@ const orderDetails = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 module.exports = {
     placeOrder,
     orderDetails,
     createRazorpayOrder,
-    verifyRazorpayPayment,
-  
-   
+    verifyRazorpayPayment, 
     
 }
 

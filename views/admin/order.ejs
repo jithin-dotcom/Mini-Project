@@ -117,26 +117,7 @@
             <td>
               <a href="/admin/seeOrder/<%= order.id %>" class=""> <button type="submit" class="view-btn">View</button></a>
             </td>
-            <!-- <button type="submit" class="cancel-btn" >View Orders</button> -->
-            <!-- <td class="actions">
-              <form action="/admin/orders/details/<%= order.id %>" method="GET" style="display: inline;">
-                <button type="submit" class="cancel-btn" >View Orders</button>
-              </form>
-            </td> -->
-            <!-- <td class="actions">
-                <form action="/admin/orders/<%= order.id %>/delete" method="POST" style="display: inline;">
-                  <button type="submit" class="delete-btn" <%= order.status !== 'Cancelled' ? 'disabled' : '' %>>Delete</button>
-                </form>
-              </td> -->
-
-              <!-- <td class="actions"> -->
-                <!-- View Button -->
-                <!-- <form action="/admin/orders/<%= order.id %>/viewOrder" method="" style="display: inline;">
-                    <button type="submit" class="view-btn">View</button>
-                </form>
-                -->
-              <!-- </td> -->
-              
+                         
 
           </tr>
           <% }) %>
@@ -158,23 +139,6 @@
         <% } %>
       </div>
       
-
-
-
-
-      <!-- <div class="pagination">
-        <% if (currentPage > 1) { %>
-          <a href="/admin/orders?page=<%= currentPage - 1 %>">&laquo; Previous</a>
-        <% } %>
-      
-        <% for (let i = 1; i <= totalPages; i++) { %>
-          <a href="/admin/orders?page=<%= i %>" class="<%= currentPage === i ? 'active' : '' %>"><%= i %></a>
-        <% } %>
-      
-        <% if (currentPage < totalPages) { %>
-          <a href="/admin/orders?page=<%= currentPage + 1 %>">Next &raquo;</a>
-        <% } %>
-      </div> -->
       
     </div>
     
