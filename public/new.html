@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantity Input</title>
+    <style>
+        .flex-w {
+            display: flex;
+            align-items: center;
+        }
+        .btn-num-product-down,
+        .btn-num-product-up {
+            cursor: pointer;
+            padding: 10px;
+            background: #ccc;
+            user-select: none;
+        }
+        .num-product {
+            text-align: center;
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="size-204 flex-w flex-m respon6-next">
+        <div class="wrap-num-product flex-w m-r-20 m-tb-10">
+            <div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
+                <i class="fs-16 zmdi zmdi-minus">-</i>
+            </div>
+
+            <input class="mtext-104 cl3 txt-center num-product" 
+                   type="number" 
+                   name="num-product" 
+                   value="1"  
+                   min="1" 
+                   max="10">
+
+            <div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
+                <i class="fs-16 zmdi zmdi-plus">+</i>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.btn-num-product-down').forEach(button => {
+            button.addEventListener('click', () => {
+                const input = button.parentElement.querySelector('.num-product');
+                let value = parseInt(input.value);
+                const min = parseInt(input.min);
+                if (value > min) {
+                    input.value = value - 1;
+                }
+            });
+        });
+
+        document.querySelectorAll('.btn-num-product-up').forEach(button => {
+            button.addEventListener('click', () => {
+                const input = button.parentElement.querySelector('.num-product');
+                let value = parseInt(input.value);
+                const max = parseInt(input.max);
+                if (value < max) {
+                    input.value = value + 1;
+                }
+            });
+        });
+
+        document.querySelectorAll('.num-product').forEach(input => {
+            input.addEventListener('input', () => {
+                const max = parseInt(input.max);
+                const min = parseInt(input.min);
+                let value = parseInt(input.value);
+
+                if (value > max) {
+                    input.value = max;
+                } else if (value < min) {
+                    input.value = min;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

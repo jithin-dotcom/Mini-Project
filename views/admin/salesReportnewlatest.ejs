@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Generate Sales Report</h1>
+        <form id="salesReportForm" method="POST">
+            <div class="form-group">
+                <label for="startDate">Start Date</label>
+                <input type="date" class="form-control" id="startDate" name="startDate" required>
+            </div>
+            <div class="form-group">
+                <label for="endDate">End Date</label>
+                <input type="date" class="form-control" id="endDate" name="endDate" required>
+            </div>
+            <div class="form-group">
+                <label for="reportType">Report Type</label>
+                <select class="form-control" id="reportType" name="reportType" required>
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Generate Report</button>
+        </form>
+
+        <div id="reportPreview" class="mt-5 d-none">
+            <h2 class="text-center">Sales Report</h2>
+            <div id="reportContent"></div>
+            <button id="downloadPdf" class="btn btn-success mt-3" onclick="downloadReport('pdf')">Download as PDF</button>
+            <button id="downloadExcel" class="btn btn-success mt-3" onclick="downloadReport('excel')">Download as Excel</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('salesReportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = new FormData(form);
+            const params = new URLSearchParams(data).toString();
+
+            fetch('/admin/generateSalesReport', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(Object.fromEntries(data))
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayReport(data.report);
+                } else {
+                    alert('Failed to generate report.');
+                }
+            })
+            .catch(error => alert(error.message));
+        });
+
+        function displayReport(report) {
+            const reportContent = document.getElementById('reportContent');
+            reportContent.innerHTML = `
+                <p>Total Orders: ${report.totalOrders}</p>
+                <p>Total Sales: ${report.totalSales}</p>
+                <p>Total Discount: ${report.totalDiscount}</p>
+            `;
+            document.getElementById('reportPreview').classList.remove('d-none');
+        }
+
+       
+
+
+    function downloadReport(type) {
+    const form = document.getElementById('salesReportForm');
+    const data = new FormData(form);
+    data.set('reportType', type);
+
+    // Convert FormData to JSON
+    const jsonData = JSON.stringify(Object.fromEntries(data));
+
+    fetch('/admin/generateSalesReport', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: jsonData,
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = type === 'pdf' ? 'Sales_Report.pdf' : 'Sales_Report.xlsx';
+        link.click();
+    })
+    .catch(error => alert(error.message));
+}
+
+
+
+
+
+
+
+
+
+    </script>
+</body>
+</html>

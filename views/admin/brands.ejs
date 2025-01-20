@@ -1,0 +1,207 @@
+<%- include("../../views/partials/admin/header") %>
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.css">
+  <style>
+    .pagination-container {
+      text-align: center;
+    }
+    .pagination {
+      display: inline-block;
+    }
+
+    .pagination a,
+    .pagination .current-page {
+      display: inline-block;
+      padding: 5px 10px;
+      margin: 0 2px;
+      border: 1px solid #ddd;
+      text-decoration: none;
+      color: #333;
+    }
+
+    .pagination a:hover {
+      background-color: #f5f5f5;
+    }
+    .error-message {
+      color: red;
+    }
+
+    .image-cropper {
+      display: none;
+      width: 300px;
+      height: 300px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<section class="content-main">
+  <div class="content-header">
+    <div>
+      <h2 class="content-title card-title">Brands</h2>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-3">
+          <form method="post" action="/admin/addBrand" enctype="multipart/form-data" onsubmit="return validateAndSubmit()">
+            <div class="mb-4">
+              <label for="product_name" class="form-label">Brand Name</label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Type here"
+                class="form-control"
+              />
+            </div>
+            <label for="product_name" class="form-label">Brand Image</label>
+            <div class="input-upload">
+              <img id="imgPreview" src="" alt=""/>
+              <input class="form-control border" name="image" type="file" id="inputImage" accept="image/*" onchange="handleImageChange(event)"/>
+            </div>
+            <div class="image-cropper">
+              <img id="croppingImage" src="" alt=""/>
+              <button type="button" id="cropButton" class="btn btn-primary">Crop</button>
+            </div>
+            <div class="d-grid">
+              <button class="btn btn-primary mt-20" type="submit">
+                Add Brand
+              </button>
+            </div>
+          </form>
+        </div>
+        <div class="col-md-7 ml-105">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Brand</th>
+                  <th>Logo</th>
+                  <th>Status</th>
+                  <th>Block/Unblock/Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                <%data.reverse().forEach((brand,index)=>{%>
+                <tr>
+                  <td class="text-start"><%=brand.brandName%></td>
+                  <td class="text-start">
+                    <div
+                      class="d-flex align-items-center justify-content-center"
+                      style="
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 50%;
+                        overflow: hidden;
+                      "
+                    >
+                      <img
+                        src="/uploads/re-image/<%=brand.brandImage[0]%>"
+                        alt="<%=brand.brandName%>"
+                        class="img-fluid rounded-circle"
+                        style="width: 100%; height: auto"
+                      />
+                    </div>
+                  </td>
+                  <td class="text-start">
+                    <%if(brand.isBlocked===true){%>
+                    <span
+                      class="badge rounded-pill alert-danger"
+                      style="width: 60px"
+                      >Blocked</span
+                    >
+                     <%}else{%>
+                    <span
+                      class="badge rounded-pill alert-success"
+                      style="width: 60px"
+                      >Active</span
+                    >
+                    <%}%>
+                  </td>
+                  <td class="text-start">
+                    <%if(brand.isBlocked===false){%>
+                    <button class="btn btn-danger" style="width: 90px">
+                      <a href="/admin/blockBrand?id=<%=brand._id%>" class="text-white">Block</a>
+                    </button>
+                      <%}else{%>                           
+                    <button class="btn btn-success" style="width: 90px">
+                      <a href="/admin/unBlockBrand?id=<%=brand._id%>" class="text-white">Unblock</a>
+                    </button>
+                      <%}%>
+                    <button
+                      class="btn btn-danger"
+                      style="width: 90px"
+                      onclick="return confirmDelete()"
+                    >
+                      <a href="/admin/deleteBrand?id=<%=brand._id%>" class="text-white">Delete</a>
+                    </button>
+                  </td>
+                </tr>
+                <%})%>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pagination-container">
+</div>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.js"></script>
+<script>
+function confirmDelete(){
+    return confirm("Are you sure you want to delete this brand?");
+}
+
+let cropper;
+function handleImageChange(event) {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+        const file = files[0];
+        const imageUrl = URL.createObjectURL(file);
+
+        const image = document.getElementById('croppingImage');
+        image.src = imageUrl;
+
+        const imageCropper = document.querySelector('.image-cropper');
+        imageCropper.style.display = 'block';
+
+        cropper = new Cropper(image, {
+            aspectRatio: 1,
+            viewMode: 1,
+            guides: true,
+            background: false,
+            autoCropArea: 1,
+            zoomable: true,
+        });
+    }
+}
+
+document.getElementById('cropButton').addEventListener('click', function () {
+    const canvas = cropper.getCroppedCanvas();
+    document.getElementById('imgPreview').src = canvas.toDataURL('image/jpeg');
+    canvas.toBlob(function (blob) {
+        const fileInput = document.getElementById('inputImage');
+        const file = new File([blob], fileInput.files[0].name, { type: 'image/jpeg' });
+
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+    });
+    document.querySelector('.image-cropper').style.display = 'none';
+    cropper.destroy();
+});
+
+function validateAndSubmit() {
+    if (validateForm()) {
+        document.forms[0].submit();
+    }
+}
+
+function validateForm() {
+    // Add your validation logic here
+    return true;
+}
+</script>
+<%- include("../../views/partials/admin/footer") %>

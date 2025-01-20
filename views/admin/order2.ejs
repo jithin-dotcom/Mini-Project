@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %></title>
+  <style>
+    /* Add the CSS styles provided earlier here */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #74ebd5, #9face6);
+      color: #333;
+    }
+    .container { width: 90%; margin: 20px auto; max-width: 1200px; }
+    .header { background-color: #ff6f61; color: #fff; padding: 15px 20px; border-radius: 10px; text-align: center; font-size: 24px; font-weight: bold; }
+    .filters { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+    .filters select, .filters input { padding: 10px; border: none; border-radius: 5px; outline: none; width: 200px; max-width: 100%; }
+    .filters button { background-color: #ff6f61; color: #fff; border: none; border-radius: 5px; padding: 10px 20px; cursor: pointer; transition: background-color 0.3s ease; }
+    .filters button:hover { background-color: #ff856d; }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background-color: #fff; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+    table th, table td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
+    table th { background-color: #ff6f61; color: #fff; position: sticky; top: 0; }
+    table tr:hover { background-color: #f9f9f9; }
+    table td .actions { display: flex; gap: 10px; }
+    table td .actions button { padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; }
+    .view-btn { background-color: #6ab04c; color: #fff; }
+    .edit-btn { background-color: #f7b731; color: #fff; }
+    .cancel-btn { background-color: #eb4d4b; color: #fff; }
+    @media (max-width: 768px) { .filters { flex-direction: column; } .filters select, .filters input { width: 100%; } table th, table td { font-size: 14px; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><%= pageTitle %></div>
+    <div class="filters">
+      <input type="text" placeholder="Search by Order ID or Customer">
+      <select>
+        <option value="all">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="completed">Completed</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+      <select>
+        <option value="date">Sort by Date</option>
+        <option value="amount">Sort by Amount</option>
+      </select>
+      <button>Filter</button>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer Name</th>
+            <th>Date</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% orders.forEach(order => { %>
+          <tr>
+            <td><%= order.id %></td>
+            <td><%= order.customer %></td>
+            <td><%= order.date %></td>
+            <td><%= order.total %></td>
+            <td><%= order.status %></td>
+            <td class="actions">
+              <button class="view-btn">View</button>
+              <button class="edit-btn">Edit</button>
+              <button class="cancel-btn">Cancel</button>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h3 class="mb-4">Order Details</h3>
+
+    <!-- Order Details Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Order ID: <%= order.orderId %></h5>
+            <h6 class="card-subtitle mb-2 text-muted">Status: <%= order.status %></h6>
+            <h6 class="card-subtitle mb-2 text-muted">Payment Method: <%= order.paymentMethod %></h6>
+            <hr>
+
+            <!-- Shipping Address -->
+            <h5>Shipping Address</h5>
+            <p>
+                <strong>Name:</strong> <%= address.name %><br>
+                <strong>Address:</strong> <%= address.addressType %>, <%= address.city %>, <%= address.state %> - <%= address.pincode %><br>
+                <strong>Phone:</strong> <%= address.phone %><br>
+                <% if (address.altPhone) { %>
+                    <strong>Alt Phone:</strong> <%= address.altPhone %><br>
+                <% } %>
+                <strong>Landmark:</strong> <%= address.landMark %>
+            </p>
+            <hr>
+
+            <!-- Order Summary -->
+            <h5>Order Summary</h5>
+            <ul class="list-group">
+                <% order.orderedItems.forEach(item => { %>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span><%= item.name %> (x<%= item.quantity %>)</span>
+                        <strong>₹<%= item.price * item.quantity %></strong>
+                    </li>
+                <% }); %>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span><strong>Discount</strong></span>
+                    <strong>₹<%= order.discount %></strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span><strong>Total</strong></span>
+                    <strong>₹<%= order.finalAmount %></strong>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="/admin/orderList" class="btn btn-secondary">Back to Orders</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

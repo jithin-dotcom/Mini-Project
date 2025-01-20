@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Sign-Up Page</title>
+    <style>
+        /* Your existing CSS */
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f7f7f7;
+        }
+
+        .signup-container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .signup-container h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .google-btn {
+            background: #db4437;
+            margin-top: 10px;
+        }
+
+        .google-btn:hover {
+            background: #a93127;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .login-link a {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        .error-message{
+            color: red;
+            font-size: 0.75rem;
+            display: none;
+        }
+        .error-message-2{
+            color: red;
+            font-size: 0.75rem;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <h1>Sign Up</h1>
+        <form id="signform">
+            <div class="form-group">
+                <label for="full-name">Full Name</label>
+                <input type="text" id="full-name" name="name" placeholder="Enter Name">
+                <div id="error1" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="Enter Email">
+                <div id="error2" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" placeholder="Enter Phone Number">
+                <div id="error3" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Password">
+                <div id="error4" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" name="cPassword" placeholder="Confirm Password">
+                <div id="error5" class="error-message"></div>
+            </div>
+            <div class="error-message-2" id="server-error" style="display:none;"></div>
+            <button type="submit" class="btn">Sign Up</button>
+            <button type="button" class="btn google-btn" onclick="window.location.href='/auth/google'">
+                Sign in with Google
+            </button>
+            <div class="login-link">
+                <p>Already have an account? <a href="/login">Log In</a></p>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const signform = document.getElementById('signform');
+        const error1 = document.getElementById('error1');
+        const error2 = document.getElementById('error2');
+        const error3 = document.getElementById('error3');
+        const error4 = document.getElementById('error4');
+        const error5 = document.getElementById('error5');
+        const serverError = document.getElementById('server-error');
+
+        // Your existing validation functions
+
+        signform.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            nameValidateChecking();
+            emailValidateChecking();
+            phoneValidateChecking();
+            passValidateChecking();
+
+            if (error1.innerHTML || error2.innerHTML || error3.innerHTML || error4.innerHTML || error5.innerHTML) {
+                return;
+            }
+
+            const formData = new FormData(signform);
+            const formObject = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await axios.post('/signup', formObject);
+                if (response.data.success) {
+                    window.location.href = response.data.redirectUrl || '/verify-otp';
+                } else {
+                    serverError.style.display = 'block';
+                    serverError.innerHTML = response.data.message || 'An error occurred. Please try again.';
+                }
+            } catch (error) {
+                serverError.style.display = 'block';
+                serverError.innerHTML = 'Server error. Please try again later.';
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
