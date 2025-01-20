@@ -18,14 +18,10 @@ const getCart = async (req, res) => {
             path: 'items.productId',  // Populate the product details                    
             select: 'productName salePrice description productImage size' // Select the fields you want
         })
-        .exec(); // Make sure to call exec()
+        .exec(); 
 
 
-        // .populate({
-        //     path: 'items.size', // You can optionally populate size if it's a reference
-        //     select: 'size' // Select the size field if it's a separate model
-        // });
-        console.log(JSON.stringify(cart, null, 2));
+        // console.log(JSON.stringify(cart, null, 2));
 
 
         if (!cart) {
@@ -156,7 +152,7 @@ const addToCart = async (req, res) => {
 
         await cart.save(); // Save the updated cart
 
-        // Optionally, link the cart to the user
+        
         const user = await User.findById(userId);
         if (!user.cart.includes(cart._id)) {
             user.cart.push(cart._id);
@@ -182,10 +178,10 @@ const addToCart = async (req, res) => {
 
 const removeProduct = async (req, res) => {
     try {
-        const userId = req.session.user;  // Get the user ID from the session
-        const productId = req.params.productId;  // Get the productId from the URL parameter
-        const size = req.body.size;  // Get the size from the request body
-        console.log("size",size);
+        const userId = req.session.user;  
+        const productId = req.params.productId;  
+        const size = req.body.size;  
+        // console.log("size",size);
 
         // Find the user's cart
         let cart = await Cart.findOne({ userId });

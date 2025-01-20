@@ -22,9 +22,6 @@ const getCheckout = async (req, res) => {
         const total = cart.items.reduce((acc, item) => acc + item.quantity * item.price, 0);
 
 
-
-       
-
         // Store total price in the session 
         req.session.totalPrice = total;
 
@@ -33,8 +30,8 @@ const getCheckout = async (req, res) => {
             user: userData,
             addresses: address,
             cart: cart.items,
-            totalPrice: cart.totalPrice,           // Pass the calculated total
-            session: req.session    // Pass the entire session 
+            totalPrice: cart.totalPrice,           
+            session: req.session   
         });
 
     } catch (err) {

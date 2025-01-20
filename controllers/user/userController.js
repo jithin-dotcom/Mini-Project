@@ -356,6 +356,7 @@ const logout = async(req,res)=>{
 
 
 
+
 const loadShoppingPage = async (req, res) => {
     try {
         // Fetch user data from session

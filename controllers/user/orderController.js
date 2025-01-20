@@ -159,10 +159,6 @@ const createRazorpayOrder = async (req, res) => {
             }
         });
 
-
-       
-
-
         res.json({ orderId: rzpOrder.id, razorpayKey: process.env.RAZORPAY_ID_KEY });
     } catch (error) {
         console.error("Error creating Razorpay order:", error);
@@ -178,7 +174,7 @@ const verifyRazorpayPayment = async (req, res) => {
             .update(razorpay_order_id + "|" + razorpay_payment_id)
             .digest('hex');
          
-        console.log("generated signature : ",generatedSignature);
+        // console.log("generated signature : ",generatedSignature);
             
         if (razorpay_signature === razorpay_signature) {
             res.json({ success: true, message: "Payment verified successfully." });
@@ -213,7 +209,7 @@ const orderDetails = async (req, res) => {
 
         // Find the specific address object in the address array
         const address = addressDoc.address.find(addr => addr._id.equals(order.address));
-        console.log("address : ",address); 
+        // console.log("address : ",address); 
 
         if (!address) {
             return res.status(404).send("Order address not found");
