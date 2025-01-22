@@ -31,6 +31,9 @@ const wishlistSchema = new Schema({
         name:{
             type:String,
             
+        },
+        maxStock:{
+            type:Number,
         }
     }]
 }, {

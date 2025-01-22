@@ -258,7 +258,8 @@ const changeEmailValid = async(req,res)=>{
         
         const {email} = req.body;
         const userExists = await User.findOne({email});
-        if(userExists){
+        
+        if(userExists && email == req.session.user.email){
             
             const otp = generateOtp();
             const emailSend = await sendVerificationEmail(email,otp);
@@ -337,7 +338,7 @@ const changePasswordValid = async(req,res)=>{
         
         const {email} = req.body;
         const userExists = await User.findOne({email});
-        if(userExists){
+        if(userExists && email == req.session.user.email){
             const otp = generateOtp();
             const emailSend = await sendVerificationEmail(email,otp);
             if(emailSend){
@@ -695,7 +696,7 @@ const returnOrder = async (req, res) => {
         }
 
         // Process refund or any financial adjustment if applicable
-        if (order.paymentMethod !== "cashOnDelivery") {
+        if (order.paymentMethod === "cashOnDelivery" || order.paymentMethod !== "cashOnDelivery") {                        //change made
             const wallet = await Wallet.findOne({ userId: order.userId });
 
             if (wallet) {

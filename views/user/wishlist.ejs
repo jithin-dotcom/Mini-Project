@@ -52,11 +52,16 @@
                                                    </a>
                                                </h5>
                                                <p class="font-xs">
+                                                <p class="font-xs"  style="color: #088178;">
+                                                    <strong>Max Stock: <%= item.maxStock %> </strong>
+                                                </p>
+                                                <p class="font-xs" style="color: #088178;">
+                                                    <strong>Size: <%= item.size %> </strong>
+                                                </p>
+                                     
                                                 
-                                
-                                                
-                                                <br>
-                                                <strong> <%= item.size %> </strong>
+                                                <!-- <br>
+                                                <strong> <%= item.size %> </strong> -->
                                                   
                                                </p>
                                            </td>
@@ -100,6 +105,58 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+    function confirmRemove(productId, size) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Do you really want to remove this product from your wishlist?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, remove it!',
+        cancelButtonText: 'No, keep it'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Send an AJAX request to the server to remove the product from the wishlist
+            fetch(`/removeFromWishlist/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ size: size })  // Ensure you send the size
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status) {
+                    // If the product was successfully removed, show success alert
+                    Swal.fire(
+                        'Removed!',
+                        'Product has been removed from your wishlist.',
+                        'success'
+                    ).then(() => {
+                        location.reload(); // Reload the page to reflect the changes
+                    });
+                } else {
+                    Swal.fire(
+                        'Failed!',
+                        'Failed to remove product. Please try again.',
+                        'error'
+                    );
+                }
+            })
+            .catch(error => {
+                console.error('Error removing product:', error);
+                Swal.fire(
+                    'Error!',
+                    'An error occurred. Please try again.',
+                    'error'
+                );
+            });
+        }
+    });
+}
+
+</script>
+
+<!-- <script>
     function confirmRemove(productId,size) {
         // Confirm with the user before removing the product
         if (confirm('Are you sure you want to remove this product from your wishlist ?')) {
@@ -127,7 +184,7 @@
             });
         }
     }
-</script>
+</script> -->
 
 
 <script>

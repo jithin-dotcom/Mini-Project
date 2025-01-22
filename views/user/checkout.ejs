@@ -2,6 +2,11 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<!-- SweetAlert CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<!-- SweetAlert JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <main class="main" style="margin-top: 150px;">
 
@@ -171,8 +176,15 @@
                         <button type="button" class="btn btn-danger mt-2" onclick="deleteCoupon()">Delete Coupon</button>
                     </div>
                     
-
-
+                       
+                     <!-- Wallet Balance Section -->
+<div class="mb-3" id="walletBalanceContainer" style="display: none;">
+    <label class="form-label">Wallet Balance</label>
+    <div class="alert alert-info" id="walletBalance">
+        <!-- Hardcoded or dynamically populated balance -->
+        Your Wallet Balance: ₹<%=wallet.balance%>
+    </div>
+</div>
 
 
                     
@@ -224,6 +236,116 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 
+
+<script>
+    function applyCoupon() {
+    const couponCode = document.getElementById('couponCode').value;
+    if (!couponCode) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Oops...',
+            text: 'Please enter a coupon code.'
+        });
+        return;
+    }
+
+    fetch('/applyCoupon', {
+        method: 'POST',
+        body: JSON.stringify({ couponCode }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const totalElement = document.getElementById("totalAmount");
+        const discountElement = document.getElementById("couponDiscount");
+
+        if (data.success) {
+            totalElement.textContent = `₹${data.newTotal}`;
+            discountElement.textContent = `₹${data.couponDiscount}`;
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Coupon applied successfully!'
+            });
+        } else {
+            discountElement.textContent = `₹0`;
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: data.message === 'Coupon cannot be applied. Minimum price not met.'
+                    ? 'The coupon cannot be applied because the minimum price is not met.'
+                    : 'Invalid or expired coupon.'
+            });
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function deleteCoupon() {
+    const couponCode = document.getElementById('couponCode').value;
+    if (!couponCode) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Oops...',
+            text: 'Please enter a coupon code to delete.'
+        });
+        return;
+    }
+
+    fetch('/deleteCoupon', {
+        method: 'DELETE',
+        body: JSON.stringify({ couponCode }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const totalElement = document.getElementById("totalAmount");
+        const discountElement = document.getElementById("couponDiscount");
+
+        if (data.success) {
+            totalElement.textContent = `₹${data.newTotal}`;
+            discountElement.textContent = `₹0`; 
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Coupon deleted successfully!'
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Failed to delete coupon.'
+            });
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+// Listen for changes in the payment method selection
+document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
+    input.addEventListener('change', function () {
+        if (this.id === 'wallet') {
+            // Show wallet balance if 'Wallet' is selected
+            document.getElementById('walletBalanceContainer').style.display = 'block';
+        } else {
+            // Hide wallet balance for other payment methods
+            document.getElementById('walletBalanceContainer').style.display = 'none';
+        }
+    });
+});
+
+
+</script>
+
+
+<!--aplied and delete coupon without swal -->>
+
+<!-- 
 <script>
     function applyCoupon() {
         const couponCode = document.getElementById('couponCode').value;
@@ -293,7 +415,7 @@
         })
         .catch(error => console.error('Error:', error));
     }
-</script>
+</script> -->
 
 
 
@@ -303,10 +425,14 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-      function placeOrder() {
+    function placeOrder() {
     const selectedPaymentOption = document.querySelector('input[name="paymentMethod"]:checked');
     if (!selectedPaymentOption) {
-        alert('Please select a payment option.');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Payment Option Required',
+            text: 'Please select a payment option.'
+        });
         return;
     }
 
@@ -342,30 +468,31 @@
         .catch(error => console.error('Error:', error));
     } else {
         const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
-            if (!selectedAddress) {
-                alert('Please select an address.');
-                return;
-            }
-            // Access the total amount element
-            const totalElement = document.getElementById("totalAmount");
+        if (!selectedAddress) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Address Required',
+                text: 'Please select an address.'
+            });
+            return;
+        }
 
-            // Extract the total value (remove the ₹ symbol if necessary)
-            let totalValue = totalElement.textContent.replace("₹", "").trim();
-    
-            // Get the cart items from the session
-            const cartItems = '<%- JSON.stringify(cart) %>'; // Inject cart items from the server into JS
-            
-              // Parse the cartItems string to ensure it's a valid array of objects
-             let parsedCartItems;
-             try {
-               parsedCartItems = JSON.parse(cartItems);  // Parse the stringified JSON
-             } catch (error) {
-              alert('Error parsing cart items.');
-             return;
-             }
+        const totalElement = document.getElementById("totalAmount");
+        let totalValue = totalElement.textContent.replace("₹", "").trim();
+        const cartItems = '<%- JSON.stringify(cart) %>';
+        
+        let parsedCartItems;
+        try {
+            parsedCartItems = JSON.parse(cartItems);
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Cart Error',
+                text: 'Error parsing cart items.'
+            });
+            return;
+        }
 
-
-              // Simplify cart items to include only necessary properties
         const simplifiedCartItems = parsedCartItems.map(item => ({
             productId: item.productId._id,
             productName: item.productId.productName,
@@ -374,45 +501,284 @@
             size: item.size,
         }));
 
+        totalValue = parseFloat(totalValue);
 
-        const selectedPaymentOption = document.querySelector('input[name="paymentMethod"]:checked');
-        if (!selectedPaymentOption) {
-            alert('Please select a payment option.');
-            return;
-        }
+        const orderData = {
+            addressId: selectedAddress.value,
+            cartItems: simplifiedCartItems,
+            totalPrice: totalValue,
+            paymentMethod: selectedPaymentOption.value
+        };
 
-            totalValue = parseFloat(totalValue);
-            
-            // Prepare the data to be sent to the server
-            const orderData = {
-                addressId: selectedAddress.value, // Selected address ID
-                cartItems: simplifiedCartItems,             // Product details from cart
-                totalPrice: totalValue,            // Total price of the order
-                paymentMethod: selectedPaymentOption.value // Selected payment option
-            };
-            // req.session.address = addressId;
-            // Send the order data to the backend
-            fetch('/placeOrder', {
-                method: 'POST',
-                body: JSON.stringify(orderData),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Order placed successfully!');
-                    window.location.href = '/shop';  // Redirect to order confirmation
-                } else {
-                    // alert('Failed to place order. Please try again.');
-                    alert(data.message);
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        
+        fetch('/placeOrder', {
+            method: 'POST',
+            body: JSON.stringify(orderData),
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Order Placed',
+                    text: 'Order placed successfully!'
+                }).then(() => {
+                    window.location.href = '/shop';
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Order Failed',
+                    text: data.message || 'Failed to place order. Please try again.'
+                });
+            }
+        })
+        .catch(error => console.error('Error:', error));
     }
 }
+
+function verifyPayment(response) {
+    const paymentDetails = {
+        razorpay_payment_id: response.razorpay_payment_Id,
+        razorpay_order_id: response.razorpay_order_Id,
+        razorpay_signature: response.razorpay_signature,
+        cartItems: '<%- JSON.stringify(cart) %>',
+        totalPrice: document.getElementById("totalAmount").textContent.replace("₹", "").trim(),
+        addressId: selectedAddress.value
+    };
+
+    fetch('/verifyRazorpayPayment', {
+        method: 'POST',
+        body: JSON.stringify(paymentDetails),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Payment Verified',
+                text: 'Payment verified and order placed!'
+            }).then(() => {
+                const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
+                if (!selectedAddress) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Address Required',
+                        text: 'Please select an address.'
+                    });
+                    return;
+                }
+
+                const totalElement = document.getElementById("totalAmount");
+                let totalValue = totalElement.textContent.replace("₹", "").trim();
+                const cartItems = '<%- JSON.stringify(cart) %>';
+                
+                let parsedCartItems;
+                try {
+                    parsedCartItems = JSON.parse(cartItems);
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Cart Error',
+                        text: 'Error parsing cart items.'
+                    });
+                    return;
+                }
+
+                const simplifiedCartItems = parsedCartItems.map(item => ({
+                    productId: item.productId._id,
+                    productName: item.productId.productName,
+                    quantity: item.quantity,
+                    price: item.price,
+                    size: item.size,
+                }));
+
+
+                const selectedPaymentOption = document.querySelector('input[name="paymentMethod"]:checked');
+                if (!selectedPaymentOption) {
+                alert('Please select a payment option.');
+                return;
+                }
+
+
+                totalValue = parseFloat(totalValue);
+
+                const orderData = {
+                    addressId: selectedAddress.value,
+                    cartItems: simplifiedCartItems,
+                    totalPrice: totalValue,
+                    paymentMethod: selectedPaymentOption.value
+                };
+
+                fetch('/placeOrder', {
+                    method: 'POST',
+                    body: JSON.stringify(orderData),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Order Placed',
+                            text: 'Order placed successfully!'
+                        }).then(() => {
+                            window.location.href = '/shop';
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Order Failed',
+                            text: 'Failed to place order. Please try again.'
+                        });
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Payment Failed',
+                text: 'Payment verification failed. Please try again.'
+            });
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+</script>
+
+<script>
+
+//place order without sweet alert
+
+//       function placeOrder() {
+//     const selectedPaymentOption = document.querySelector('input[name="paymentMethod"]:checked');
+//     if (!selectedPaymentOption) {
+//         alert('Please select a payment option.');
+//         return;
+//     }
+
+//     if (selectedPaymentOption.value === 'razorpay') {
+//         const totalValue = document.getElementById("totalAmount").textContent.replace("₹", "").trim();
+
+//         fetch('/createRazorpayOrder', {
+//             method: 'POST',
+//             body: JSON.stringify({ amount: totalValue, addressId: selectedAddress.value, paymentMethod: 'razorpay' }),
+//             headers: { 'Content-Type': 'application/json' }
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             const options = {
+//                 key: data.razorpayKey,
+//                 amount: totalValue * 100,
+//                 currency: "INR",
+//                 name: "Your Company",
+//                 description: "Test Transaction",
+//                 order_id: data.orderId,
+//                 handler: function (response) {
+//                     verifyPayment(response);
+//                 },
+//                 prefill: {
+//                     name: "Sandeep",
+//                     email: "sandeep@gmail.com",
+//                     contact: "9847242891"
+//                 }
+//             };
+//             const rzp1 = new Razorpay(options);
+//             rzp1.open();
+//         })
+//         .catch(error => console.error('Error:', error));
+//     } else {
+//         const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
+//             if (!selectedAddress) {
+//                 alert('Please select an address.');
+//                 return;
+//             }
+//             // Access the total amount element
+//             const totalElement = document.getElementById("totalAmount");
+
+//             // Extract the total value (remove the ₹ symbol if necessary)
+//             let totalValue = totalElement.textContent.replace("₹", "").trim();
+    
+//             // Get the cart items from the session
+//             const cartItems = '<%- JSON.stringify(cart) %>'; // Inject cart items from the server into JS
+            
+//               // Parse the cartItems string to ensure it's a valid array of objects
+//              let parsedCartItems;
+//              try {
+//                parsedCartItems = JSON.parse(cartItems);  // Parse the stringified JSON
+//              } catch (error) {
+//               alert('Error parsing cart items.');
+//              return;
+//              }
+
+
+//               // Simplify cart items to include only necessary properties
+//         const simplifiedCartItems = parsedCartItems.map(item => ({
+//             productId: item.productId._id,
+//             productName: item.productId.productName,
+//             quantity: item.quantity,
+//             price: item.price,
+//             size: item.size,
+//         }));
+
+
+//         const selectedPaymentOption = document.querySelector('input[name="paymentMethod"]:checked');
+//         if (!selectedPaymentOption) {
+//             alert('Please select a payment option.');
+//             return;
+//         }
+
+//             totalValue = parseFloat(totalValue);
+            
+//             // Prepare the data to be sent to the server
+//             const orderData = {
+//                 addressId: selectedAddress.value, // Selected address ID
+//                 cartItems: simplifiedCartItems,             // Product details from cart
+//                 totalPrice: totalValue,            // Total price of the order
+//                 paymentMethod: selectedPaymentOption.value // Selected payment option
+//             };
+//             // req.session.address = addressId;
+//             // Send the order data to the backend
+//             fetch('/placeOrder', {
+//                 method: 'POST',
+//                 body: JSON.stringify(orderData),
+//                 headers: {
+//                     'Content-Type': 'application/json'
+//                 }
+//             })
+//             .then(response => response.json())
+//             .then(data => {
+//                 if (data.success) {
+//                     alert('Order placed successfully!');
+//                     window.location.href = '/shop';  // Redirect to order confirmation
+//                 } else {
+//                     // alert('Failed to place order. Please try again.');
+//                     alert(data.message);
+//                 }
+//             })
+//             .catch(error => console.error('Error:', error));
+        
+//     }
+// }
+
+
+
+
+
+
+
+
+
+
+
 
 // function verifyPayment(response) {
 //     fetch('/verifyRazorpayPayment', {
@@ -467,104 +833,108 @@
 
 
 
-function verifyPayment(response) {
-    const paymentDetails = {
-        razorpay_payment_id: response.razorpay_payment_Id,
-        razorpay_order_id: response.razorpay_order_Id,
-        razorpay_signature: response.razorpay_signature,
-        cartItems: '<%- JSON.stringify(cart) %>',  // Make sure cart items are available on the page
-        totalPrice: document.getElementById("totalAmount").textContent.replace("₹", "").trim(),
-        addressId: selectedAddress.value  // Assuming you have the selected address
-    };
+//verify payment without sweet alert
 
-    fetch('/verifyRazorpayPayment', {
-        method: 'POST',
-        body: JSON.stringify(paymentDetails),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Payment verified and order placed!');
-            const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
-            if (!selectedAddress) {
-                alert('Please select an address.');
-                return;
-            }
-            // Access the total amount element
-            const totalElement = document.getElementById("totalAmount");
+// function verifyPayment(response) {
+//     const paymentDetails = {
+//         razorpay_payment_id: response.razorpay_payment_Id,
+//         razorpay_order_id: response.razorpay_order_Id,
+//         razorpay_signature: response.razorpay_signature,
+//         cartItems: '<%- JSON.stringify(cart) %>',  // Make sure cart items are available on the page
+//         totalPrice: document.getElementById("totalAmount").textContent.replace("₹", "").trim(),
+//         addressId: selectedAddress.value  // Assuming you have the selected address
+//     };
 
-            // Extract the total value (remove the ₹ symbol if necessary)
-            let totalValue = totalElement.textContent.replace("₹", "").trim();
+//     fetch('/verifyRazorpayPayment', {
+//         method: 'POST',
+//         body: JSON.stringify(paymentDetails),
+//         headers: {
+//             'Content-Type': 'application/json'
+//         }
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.success) {
+//             alert('Payment verified and order placed!');
+//             const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
+//             if (!selectedAddress) {
+//                 alert('Please select an address.');
+//                 return;
+//             }
+//             // Access the total amount element
+//             const totalElement = document.getElementById("totalAmount");
+
+//             // Extract the total value (remove the ₹ symbol if necessary)
+//             let totalValue = totalElement.textContent.replace("₹", "").trim();
     
-            // Get the cart items from the session
-            const cartItems = '<%- JSON.stringify(cart) %>'; // Inject cart items from the server into JS
+//             // Get the cart items from the session
+//             const cartItems = '<%- JSON.stringify(cart) %>'; // Inject cart items from the server into JS
             
-              // Parse the cartItems string to ensure it's a valid array of objects
-             let parsedCartItems;
-             try {
-               parsedCartItems = JSON.parse(cartItems);  // Parse the stringified JSON
-             } catch (error) {
-              alert('Error parsing cart items.');
-             return;
-             }
+//               // Parse the cartItems string to ensure it's a valid array of objects
+//              let parsedCartItems;
+//              try {
+//                parsedCartItems = JSON.parse(cartItems);  // Parse the stringified JSON
+//              } catch (error) {
+//               alert('Error parsing cart items.');
+//              return;
+//              }
 
 
-              // Simplify cart items to include only necessary properties
-        const simplifiedCartItems = parsedCartItems.map(item => ({
-            productId: item.productId._id,
-            productName: item.productId.productName,
-            quantity: item.quantity,
-            price: item.price,
-            size: item.size,
-        }));
+//               // Simplify cart items to include only necessary properties
+//         const simplifiedCartItems = parsedCartItems.map(item => ({
+//             productId: item.productId._id,
+//             productName: item.productId.productName,
+//             quantity: item.quantity,
+//             price: item.price,
+//             size: item.size,
+//         }));
 
 
-        const selectedPaymentOption = document.querySelector('input[name="paymentMethod"]:checked');
-        if (!selectedPaymentOption) {
-            alert('Please select a payment option.');
-            return;
-        }
+//         const selectedPaymentOption = document.querySelector('input[name="paymentMethod"]:checked');
+//         if (!selectedPaymentOption) {
+//             alert('Please select a payment option.');
+//             return;
+//         }
 
-            totalValue = parseFloat(totalValue);
+//             totalValue = parseFloat(totalValue);
             
-            // Prepare the data to be sent to the server
-            const orderData = {
-                addressId: selectedAddress.value, // Selected address ID
-                cartItems: simplifiedCartItems,             // Product details from cart
-                totalPrice: totalValue,            // Total price of the order
-                paymentMethod: selectedPaymentOption.value // Selected payment option
-            };
+//             // Prepare the data to be sent to the server
+//             const orderData = {
+//                 addressId: selectedAddress.value, // Selected address ID
+//                 cartItems: simplifiedCartItems,             // Product details from cart
+//                 totalPrice: totalValue,            // Total price of the order
+//                 paymentMethod: selectedPaymentOption.value // Selected payment option
+//             };
     
-            // Send the order data to the backend
-            fetch('/placeOrder', {
-                method: 'POST',
-                body: JSON.stringify(orderData),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // alert('Order placed successfully!');
-                    window.location.href = '/shop';  // Redirect to order confirmation
-                } else {
-                    alert('Failed to place order. Please try again.');
+//             // Send the order data to the backend
+//             fetch('/placeOrder', {
+//                 method: 'POST',
+//                 body: JSON.stringify(orderData),
+//                 headers: {
+//                     'Content-Type': 'application/json'
+//                 }
+//             })
+//             .then(response => response.json())
+//             .then(data => {
+//                 if (data.success) {
+//                     // alert('Order placed successfully!');
+//                     window.location.href = '/shop';  // Redirect to order confirmation
+//                 } else {
+//                     alert('Failed to place order. Please try again.');
                     
-                }
-            })
-            .catch(error => console.error('Error:', error));
+//                 }
+//             })
+//             .catch(error => console.error('Error:', error));
         
-            // window.location.href = '/shop';  // Redirect to confirmation page
-        } else {
-            alert('Payment verification failed. Please try again.');
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
+//             // window.location.href = '/shop';  // Redirect to confirmation page
+//         } else {
+//             alert('Payment verification failed. Please try again.');
+//         }
+//     })
+//     .catch(error => console.error('Error:', error));
+// }
+
+
 
 
 

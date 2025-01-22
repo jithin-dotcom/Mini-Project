@@ -3,6 +3,7 @@ const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Cart = require("../../models/cartSchema");
 const Address = require("../../models/addressSchema");
+const Wallet = require("../../models/walletSchema");
 
 
 
@@ -17,6 +18,7 @@ const getCheckout = async (req, res) => {
         const userData = await User.findOne({ _id: user });
         const address = await Address.find({ userId: user });
         const cart = await Cart.findOne({ userId: user }).populate('items.productId');
+        const wallet = await Wallet.findOne({userId: user});
 
         // Calculate the total price
         const total = cart.items.reduce((acc, item) => acc + item.quantity * item.price, 0);
@@ -31,7 +33,8 @@ const getCheckout = async (req, res) => {
             addresses: address,
             cart: cart.items,
             totalPrice: cart.totalPrice,           
-            session: req.session   
+            session: req.session,
+            wallet,   
         });
 
     } catch (err) {

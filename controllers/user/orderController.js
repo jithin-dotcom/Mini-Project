@@ -176,7 +176,7 @@ const verifyRazorpayPayment = async (req, res) => {
          
         // console.log("generated signature : ",generatedSignature);
             
-        if (razorpay_signature === razorpay_signature) {
+        if ( razorpay_signature === razorpay_signature) {
             res.json({ success: true, message: "Payment verified successfully." });
         } else {
             res.json({ success: false, message: "Payment verification failed." });

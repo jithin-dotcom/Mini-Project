@@ -1394,54 +1394,54 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 			}
 		});
 	
-		function addToCart(productId, name, price, size, quantity) {
-			console.log("addToCart function triggered");
-			event.preventDefault(); // Prevent form submission
-			let max = document.getElementById("totalQuantity") ? document.getElementById("totalQuantity").value : 0;
-			console.log("maximum : ",max);
+		// function addToCart(productId, name, price, size, quantity) {
+		// 	console.log("addToCart function triggered");
+		// 	event.preventDefault(); // Prevent form submission
+		// 	let max = document.getElementById("totalQuantity") ? document.getElementById("totalQuantity").value : 0;
+		// 	console.log("maximum : ",max);
 	
-			$.ajax({
-				url: '/addToCart',
-				method: 'post',
-				data: {
-					productId: productId,
-					name: name,
-					price: price,
-					size: size,
-					quantity: quantity
-				},
-				success: (response) => {
-					console.log("Server Response (success):", response); // Debugging response
-					if (response.status) {
-						Swal.fire({
-							title: 'Added to Cart',
-							text: 'Product added to cart successfully',
-							icon: 'success',
-							timer: 2000,
-						}).then(() => {
-                    location.reload(); // Ensure the page reloads after the alert
-                });
-					} else {
-						Swal.fire({
-							title: 'Error',
-							text: 'Product not added to cart',
-							icon: 'error',
-							timer: 2000,
-						});
-					}
-				},
-				error: (error) => {
-					console.error("Server Response (error):", error); // Debugging error
-					const errorMessage = error.responseJSON?.message || 'Error while adding product to cart';
-					Swal.fire({
-						title: 'Error',
-						text: errorMessage,
-						icon: 'error',
-						timer: 2000
-					});
-				}
-			});
-		}
+		// 	$.ajax({
+		// 		url: '/addToCart',
+		// 		method: 'post',
+		// 		data: {
+		// 			productId: productId,
+		// 			name: name,
+		// 			price: price,
+		// 			size: size,
+		// 			quantity: quantity
+		// 		},
+		// 		success: (response) => {
+		// 			console.log("Server Response (success):", response); // Debugging response
+		// 			if (response.status) {
+		// 				Swal.fire({
+		// 					title: 'Added to Cart',
+		// 					text: 'Product added to cart successfully cart1 ',
+		// 					icon: 'success',
+		// 					timer: 2000,
+		// 				}).then(() => {
+        //             location.reload(); // Ensure the page reloads after the alert
+        //         });
+		// 			} else {
+		// 				Swal.fire({
+		// 					title: 'Error',
+		// 					text: 'Product not added to cart',
+		// 					icon: 'error',
+		// 					timer: 2000,
+		// 				});
+		// 			}
+		// 		},
+		// 		error: (error) => {
+		// 			console.error("Server Response (error):", error); // Debugging error
+		// 			const errorMessage = error.responseJSON?.message || 'Error while adding product to cart';
+		// 			Swal.fire({
+		// 				title: 'Error',
+		// 				text: errorMessage,
+		// 				icon: 'error',
+		// 				timer: 2000
+		// 			});
+		// 		}
+		// 	});
+		// }
 	</script>
 
 
@@ -1451,7 +1451,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	 
 <script>
 	function addToCart(productId,name,price,size,quantity){
-
+    	// console.log("addToCart2 function triggered");
 		event.preventDefault(); // Prevent form submission
 
 
@@ -1475,7 +1475,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 				if(response.status){
 					Swal.fire({
 						title : 'Added to Cart',
-						text : 'Product added to cart successfully',
+						text : 'Product added to cart successfully cart ',
 						icon : 'success',
 						timer : 2000
 					});
