@@ -4,6 +4,8 @@ const Product = require("../../models/productSchema");
 const Brand  = require("../../models/brandSchema");
 const Banner = require("../../models/bannerSchema");
 const OTP = require("../../models/otpSchema");
+const Cart = require("../../models/cartSchema");
+const Wishlist = require("../../models/wishlistSchema");
 
 const nodemailer = require("nodemailer");
 const env = require("dotenv").config();
@@ -52,10 +54,13 @@ const loadHomepage = async (req, res) => {
 
         productData.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));  // Latest added product
         productData = productData.slice(0, 4);  // Limit to first 4 products
+        let cartItemCount = 0;
+        let wishlistItemCount = 0;
 
         // If a user is logged in, fetch their details
         if (user) {
             const userData = await User.findOne({ _id: user._id });
+            // const cart = await Cart.findOne
 
             // Check if the user is blocked
             if (userData && userData.isBlocked) {
@@ -68,7 +73,16 @@ const loadHomepage = async (req, res) => {
                     return res.render("login",{message:"User is blocked by admin"});
                 });
             } else {
-                res.render("home", { user: userData, products: productData });
+                const cart = await Cart.findOne({userId:user._id})
+                if(cart){
+                    cartItemCount = cart.items.length;
+                }
+                const wishlist = await Wishlist.findOne({userId: user._id});
+                if(wishlist){
+                    wishlistItemCount = wishlist.items.length;
+                }
+
+                res.render("home", { user: userData, products: productData, cartItemCount: cartItemCount, wishlistItemCount: wishlistItemCount});
             }
         } else {
             res.render("home", { products: productData });

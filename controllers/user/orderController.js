@@ -27,8 +27,9 @@ const rzp = new Razorpay({
 
 const placeOrder = async (req, res) => {
     try {
-        const { addressId, cartItems, totalPrice, paymentMethod } = req.body;
+        const { addressId, cartItems, totalPrice, paymentMethod,paymentStatus } = req.body;
         const userId = req.session.user._id;
+        console.log("payment status : ",paymentStatus);
 
         // Validate and fetch address
         if (!mongoose.Types.ObjectId.isValid(addressId)) {
@@ -80,6 +81,7 @@ const placeOrder = async (req, res) => {
             address: new mongoose.Types.ObjectId(addressId),
             status: "Pending",
             paymentMethod,
+            paymentStatus,
             userId,
             finalAmount,
             discount: totalDiscount, // Add the calculated discount field
@@ -148,6 +150,7 @@ const placeOrder = async (req, res) => {
 const createRazorpayOrder = async (req, res) => {
     try {
         const { amount, addressId, paymentMethod } = req.body;
+        console.log("req.body : ",req.body);
         const rzpOrder = await rzp.orders.create({
             amount: amount * 100,
             currency: 'INR',
@@ -166,19 +169,57 @@ const createRazorpayOrder = async (req, res) => {
     }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+//verifyRazorPay latest
 const verifyRazorpayPayment = async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature,orderId } = req.body;
 
+        console.log("orderId : ",orderId)
+
+        let order;
+        if (orderId) {
+            // Fetch the order from the database only if orderId is provided
+            order = await Order.findOne({ _id: orderId });
+            if (!order) {
+                return res.json({ success: false, message: "Order not found." });
+            }
+        }
+
+
+        
+        // const order = await Order.findOne({_id:orderId});
+        // if (!order) {
+        //     return res.json({ success: false, message: "Order not found." });
+        // }
         const generatedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_SECRET_KEY)
             .update(razorpay_order_id + "|" + razorpay_payment_id)
             .digest('hex');
          
         // console.log("generated signature : ",generatedSignature);
             
-        if ( razorpay_signature === razorpay_signature) {
+        if ( generatedSignature === razorpay_signature) {
+             // Update the paymentStatus to "completed" if it's currently "notCompleted"
+             if (order && order.paymentStatus === "notCompleted") {
+                order.paymentStatus = "completed";
+                await order.save(); // Save the updated order to the database
+            }
+            
+
             res.json({ success: true, message: "Payment verified successfully." });
         } else {
+            
             res.json({ success: false, message: "Payment verification failed." });
         }
     } catch (error) {

@@ -12,6 +12,9 @@ const userRouter = require("./routes/userRouter");
 const adminRouter = require("./routes/adminRouter");
 const User = require("./models/userSchema");
 
+// Import the combined middleware
+const setItemCounts = require("./middlewares/setItemCounts");
+
 
 db();
 
@@ -48,6 +51,10 @@ app.use((req, res, next) => {
     res.set('cache-control', 'no-store');
     next();
 });
+
+// Use the combined middleware globally
+app.use(setItemCounts);
+
 
 // View engine setup
 app.set("view engine", "ejs");

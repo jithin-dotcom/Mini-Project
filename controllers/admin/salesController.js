@@ -12,10 +12,38 @@ const Product = require('../../models/productSchema');
 
 const loadDashboard = async (req, res) => {
     try {
+        // Get total counts for users, products, and orders
         let totalUsers = await User.countDocuments();
         let totalProducts = await Product.countDocuments();
-        let totalOrders = await Order.countDocuments();
+        let totalOrders = await Order.countDocuments({status:"Delivered"});
 
+        // // Fetch total sales using the updated aggregation logic
+        // const Sales = await Order.aggregate([
+        //     { $match: { status: 'Delivered' } },
+        //     { 
+        //         $unwind: '$orderedItems'  // Unwind the orderedItems array to calculate sales per product
+        //     },
+        //     {
+        //         $addFields: {
+        //             itemTotal: {
+        //                 $multiply: [
+        //                     { $ifNull: ['$orderedItems.quantity', 0] },
+        //                     { $ifNull: [{ $subtract: ['$orderedItems.price', '$orderedItems.discount'] }, 0] }
+        //                 ]
+        //             }
+        //         }
+        //     },
+        //     { 
+        //         $group: {
+        //             _id: null,
+        //             totalSales: { $sum: '$itemTotal' }  // Sum the item totals to get total sales
+        //         }
+        //     }
+        // ]);
+
+
+
+          // Fetch total sales using the existing aggregation logic (keeping it as is)
         const Sales = await Order.aggregate([
             { $match: { status: 'Delivered' } },
             { 
@@ -30,6 +58,7 @@ const loadDashboard = async (req, res) => {
 
         const totalSales = Sales.length > 0 ? Sales[0].totalSales : 0;
 
+        // Fetch total discounts (no change)
         const discount = await Order.aggregate([
             { $match: { status: 'Delivered' } },
             { 
@@ -37,18 +66,386 @@ const loadDashboard = async (req, res) => {
                     _id: null,
                     discount: { $sum: '$discount' }
                 }
-            }
-        ]);
-
+    }]);
         const totalDiscount = discount.length > 0 ? discount[0].discount : 0;
 
-        const orders = await Order.find({status:"Delivered"}).sort({createdOn:-1});
+        // Get recent orders
+        const orders = await Order.find({ status: "Delivered" }).sort({ createdOn: -1 });
 
-        res.render('salesReport', { totalOrders, totalUsers, totalProducts, totalSales, totalDiscount, orders });
+
+           // Fetch best-selling products
+           const bestSellingProducts = await Order.aggregate([
+            { $match: { status: 'Delivered' } },
+            { $unwind: '$orderedItems' },
+            { 
+                $group: {
+                    _id: '$orderedItems.product',
+                    totalQuantity: { $sum: '$orderedItems.quantity' },
+                    totalRevenue: { 
+                        $sum: { 
+                            $multiply: [
+                                { $toDouble: '$orderedItems.quantity' },
+                                { $toDouble: '$orderedItems.price' }
+                            ] 
+                        }
+                    },
+                    productName: { $first: '$orderedItems.name' }
+                }
+            },
+            { $sort: { totalQuantity: -1 } },
+            { $limit: 10 },
+            { $project: {
+                productName: 1,
+                totalQuantity: 1,
+                totalRevenue: 1
+            }}
+        ]);
+
+
+
+
+        const topBrands = await Order.aggregate([
+            { $match: { status: 'Delivered' } }, // Match only delivered orders
+            { $unwind: '$orderedItems' }, // Break down the orderedItems array
+            {
+                $lookup: { // Join with the Product collection
+                    from: 'products', // Name of the Product collection
+                    localField: 'orderedItems.product', // Field in the Order collection
+                    foreignField: '_id', // Field in the Product collection
+                    as: 'productDetails'
+                }
+            },
+            { $unwind: '$productDetails' }, // Flatten the joined productDetails array
+            {
+                $group: { // Group by brand
+                    _id: '$productDetails.brand',
+                    totalQuantity: { $sum: '$orderedItems.quantity' }, // Total products sold
+                    totalRevenue: {
+                        $sum: {
+                            $multiply: [
+                                { $toDouble: '$orderedItems.quantity' },
+                                { $toDouble: '$orderedItems.price' }
+                            ]
+                        }
+                    }
+                }
+            },
+            { $sort: { totalQuantity: -1 } }, // Sort by quantity sold
+            { $limit: 10 }, // Limit to top 10 brands
+            {
+                $project: {
+                    brand: '$_id',
+                    totalQuantity: 1,
+                    totalRevenue: 1,
+                    _id: 0
+                }
+            }
+        ]);
+        
+
+
+
+
+
+        // // Get top 10 brands by product count
+        // const topBrands = await Product.aggregate([
+        //     { $group: { _id: '$brand', productCount: { $sum: 1 } } },
+        //     { $sort: { productCount: -1 } },
+        //     { $limit: 10 }
+        // ]);
+
+        // // Get top 10 categories by product count
+        // const topCategories = await Product.aggregate([
+        //     { $group: { _id: '$category', productCount: { $sum: 1 } } },
+        //     { $sort: { productCount: -1 } },
+        //     { $limit: 10 }
+        // ]);
+
+
+
+
+
+        // const topCategories = await Order.aggregate([
+        //     { $match: { status: 'Delivered' } }, // Match only delivered orders
+        //     { $unwind: '$orderedItems' }, // Break down the orderedItems array
+        //     {
+        //         $lookup: { // Join with the Product collection
+        //             from: 'products', // Name of the Product collection
+        //             localField: 'orderedItems.product', // Field in the Order collection
+        //             foreignField: '_id', // Field in the Product collection
+        //             as: 'productDetails'
+        //         }
+        //     },
+        //     { $unwind: '$productDetails' }, // Flatten the joined productDetails array
+        //     {
+        //         $group: { // Group by category
+        //             _id: '$productDetails.category',
+        //             totalQuantity: { $sum: '$orderedItems.quantity' }, // Total products sold
+        //             totalRevenue: {
+        //                 $sum: {
+        //                     $multiply: [
+        //                         { $toDouble: '$orderedItems.quantity' },
+        //                         { $toDouble: '$orderedItems.price' }
+        //                     ]
+        //                 }
+        //             }
+        //         }
+        //     },
+        //     { $sort: { totalQuantity: -1 } }, // Sort by quantity sold
+        //     { $limit: 10 }, // Limit to top 10 categories
+        //     {
+        //         $project: {            
+        //             category: '$_id',                         //'$_id'
+        //             totalQuantity: 1,
+        //             totalRevenue: 1,
+        //             _id: 0
+        //         }
+        //     }
+        // ]);
+        
+
+
+
+
+        const topCategories = await Order.aggregate([
+            { $match: { status: 'Delivered' } }, // Match only delivered orders
+            { $unwind: '$orderedItems' }, // Break down the orderedItems array
+            {
+                $lookup: { // Join with the Product collection
+                    from: 'products', // Name of the Product collection
+                    localField: 'orderedItems.product', // Field in the Order collection
+                    foreignField: '_id', // Field in the Product collection
+                    as: 'productDetails'
+                }
+            },
+            { $unwind: '$productDetails' }, // Flatten the joined productDetails array
+            {
+                $lookup: { // Join with the Category collection to fetch category name
+                    from: 'categories', // Name of the Category collection
+                    localField: 'productDetails.category', // Category ID in the Product collection
+                    foreignField: '_id', // Field in the Category collection
+                    as: 'categoryDetails'
+                }
+            },
+            { $unwind: '$categoryDetails' }, // Flatten the joined categoryDetails array
+            {
+                $group: { // Group by category name
+                    _id: '$categoryDetails.name', // Use category name instead of ID
+                    totalQuantity: { $sum: '$orderedItems.quantity' }, // Total products sold
+                    totalRevenue: {
+                        $sum: {
+                            $multiply: [
+                                { $toDouble: '$orderedItems.quantity' },
+                                { $toDouble: '$orderedItems.price' }
+                            ]
+                        }
+                    }
+                }
+            },
+            { $sort: { totalQuantity: -1 } }, // Sort by quantity sold
+            { $limit: 10 }, // Limit to top 10 categories
+            {
+                $project: {            
+                    category: '$_id', // Use category name as the final field
+                    totalQuantity: 1,
+                    totalRevenue: 1,
+                    _id: 0
+                }
+            }
+        ]);
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Render the sales report view with all the data
+        res.render('salesReport', {
+            totalOrders,
+            totalUsers,
+            totalProducts,
+            totalSales,
+            totalDiscount,
+            orders,
+            // topProductDetails,
+            bestSellingProducts,
+            topBrands,
+            topCategories
+        });
     } catch (error) {
         console.log("The error is", error);
     }
 };
+
+
+
+
+
+// const loadDashboard = async (req, res) => {
+//     try {
+//         let totalUsers = await User.countDocuments();
+//         let totalProducts = await Product.countDocuments();
+//         let totalOrders = await Order.countDocuments();
+
+//         // Fetch total sales using the existing aggregation logic (keeping it as is)
+//         const Sales = await Order.aggregate([
+//             { $match: { status: 'Delivered' } },
+//             { 
+//                 $group: {
+//                     _id: null,
+//                     totalSales: { 
+//                         $sum: { $cond: [{ $eq: ['$discount', 0] }, '$totalPrice', '$finalAmount'] }
+//                     }
+//                 }
+//             }
+//         ]);
+
+//         const totalSales = Sales.length > 0 ? Sales[0].totalSales : 0;
+
+//         // Fetch total discounts (keep the existing logic)
+//         const discount = await Order.aggregate([
+//             { $match: { status: 'Delivered' } },
+//             { 
+//                 $group: {
+//                     _id: null,
+//                     discount: { $sum: '$discount' }
+//                 }
+//             }
+//         ]);
+
+//         const totalDiscount = discount.length > 0 ? discount[0].discount : 0;
+
+//         // Get recent orders (keep the existing logic)
+//         const orders = await Order.find({status: "Delivered"}).sort({createdOn: -1});
+
+//         // Get top 10 products by total sales
+//         const topProducts = await Order.aggregate([
+//             { $match: { status: 'Delivered' } },
+//             { $unwind: '$orderedItems' },  // Unwind the orderedItems array
+//             {
+//                 $group: {
+//                     _id: '$orderedItems.product',  // Group by the product ID in orderedItems
+//                     totalSales: { 
+//                         $sum: { 
+//                             $multiply: ['$orderedItems.quantity', { $subtract: ['$orderedItems.price', '$orderedItems.discount'] }] 
+//                         }
+//                     }
+//                 }
+//             },
+//             { $sort: { totalSales: -1 } },
+//             { $limit: 10 }
+//         ]);
+
+//         // Get product details for the top products
+//         const productIds = topProducts.map(product => product._id);
+//         const productDetails = await Product.find({ '_id': { $in: productIds } });
+
+//         // Combine topProducts with product details
+//         const topProductDetails = topProducts.map(product => {
+//             const productDetail = productDetails.find(p => p._id.toString() === product._id.toString());
+//             return {
+//                 productName: productDetail ? productDetail.productName : 'Unknown',
+//                 salePrice: productDetail ? productDetail.salePrice : 0,
+//                 totalSales: product.totalSales
+//             };
+//         });
+
+//         // Get top 10 brands by product count
+//         const topBrands = await Product.aggregate([
+//             { $group: { _id: '$brand', productCount: { $sum: 1 } } },
+//             { $sort: { productCount: -1 } },
+//             { $limit: 10 }
+//         ]);
+
+//         // Get top 10 categories by product count
+//         const topCategories = await Product.aggregate([
+//             { $group: { _id: '$category', productCount: { $sum: 1 } } },
+//             { $sort: { productCount: -1 } },
+//             { $limit: 10 }
+//         ]);
+
+//         // Render the sales report view with all the data
+//         res.render('salesReport', {
+//             totalOrders,
+//             totalUsers,
+//             totalProducts,
+//             totalSales,
+//             totalDiscount,
+//             orders,
+//             topProductDetails,
+//             topBrands,
+//             topCategories
+//         });
+//     } catch (error) {
+//         console.log("The error is", error);
+//     }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const loadDashboard = async (req, res) => {
+//     try {
+//         let totalUsers = await User.countDocuments();
+//         let totalProducts = await Product.countDocuments();
+//         let totalOrders = await Order.countDocuments();
+
+//         const Sales = await Order.aggregate([
+//             { $match: { status: 'Delivered' } },
+//             { 
+//                 $group: {
+//                     _id: null,
+//                     totalSales: { 
+//                         $sum: { $cond: [{ $eq: ['$discount', 0] }, '$totalPrice', '$finalAmount'] }
+//                     }
+//                 }
+//             }
+//         ]);
+
+//         const totalSales = Sales.length > 0 ? Sales[0].totalSales : 0;
+
+//         const discount = await Order.aggregate([
+//             { $match: { status: 'Delivered' } },
+//             { 
+//                 $group: {
+//                     _id: null,
+//                     discount: { $sum: '$discount' }
+//                 }
+//             }
+//         ]);
+
+//         const totalDiscount = discount.length > 0 ? discount[0].discount : 0;
+
+//         const orders = await Order.find({status:"Delivered"}).sort({createdOn:-1});
+
+//         res.render('salesReport', { totalOrders, totalUsers, totalProducts, totalSales, totalDiscount, orders });
+//     } catch (error) {
+//         console.log("The error is", error);
+//     }
+// };
 
 
 
@@ -71,7 +468,7 @@ const dashboard = async (req, res) => {
                 $gte: new Date(startDate),
                 $lt: new Date(endDate)
             };
-        } else if (quickFilter) {
+        } else if (quickFilter && quickFilter !== "none") {
             // If quickFilter is provided and startDate/endDate are not, apply quickFilter
             matchCondition.createdOn = {};
             const now = new Date();
@@ -99,10 +496,10 @@ const dashboard = async (req, res) => {
 
         let totalUsers = await User.countDocuments();
         let totalProducts = await Product.countDocuments();
-        let totalOrders = await Order.countDocuments();
+        let totalOrders = await Order.countDocuments(matchCondition);
 
         const Sales = await Order.aggregate([
-            { $match: { status: 'Delivered' } },
+            { $match: matchCondition },                               //{ status: 'Delivered' }
             { 
                 $group: {
                     _id: null,
@@ -216,21 +613,27 @@ const generatePdfReport = async (req, res) => {
         // Draw table lines (headers)
         doc.moveTo(50, headerY + 15).lineTo(600, headerY + 15).stroke();
 
+       
+
         // Loop through each order and add its details to the table
         orders.forEach((order, index) => {
+           
             const rowY = headerY + 30 + (index * 20);
+        
 
             // Ensure that the order ID doesn't overlap by wrapping text if it's too long
             doc.text(order._id, 50, rowY, { width: columnWidths.orderId, align: 'left' });
             doc.text(new Date(order.createdOn).toLocaleDateString('en-US',{ year: 'numeric', month: 'long', day: 'numeric' }), 50 + columnWidths.orderId, rowY, { width: columnWidths.date, align: 'left' });
-            doc.text(`₹${order.totalPrice}`, 50 + columnWidths.orderId + columnWidths.date, rowY, { width: columnWidths.amount, align: 'right' });
-            doc.text(`₹${order.discount}`, 50 + columnWidths.orderId + columnWidths.date + columnWidths.amount, rowY, { width: columnWidths.discount, align: 'right' });
-            doc.text(`₹${order.finalAmount || order.totalPrice}`, 50 + columnWidths.orderId + columnWidths.date + columnWidths.amount + columnWidths.discount, rowY, { width: columnWidths.finalAmount, align: 'right' });
+            doc.text(`${order.totalPrice.toString()}`, 50 + columnWidths.orderId + columnWidths.date, rowY, { width: columnWidths.amount, align: 'right' });
+            doc.text(`${order.discount.toString()}`, 50 + columnWidths.orderId + columnWidths.date + columnWidths.amount, rowY, { width: columnWidths.discount, align: 'right' });
+            doc.text(`${order.finalAmount || order.totalPrice.toString()}`, 50 + columnWidths.orderId + columnWidths.date + columnWidths.amount + columnWidths.discount, rowY, { width: columnWidths.finalAmount, align: 'right' });
             doc.text(order.status, 50 + columnWidths.orderId + columnWidths.date + columnWidths.amount + columnWidths.discount + columnWidths.finalAmount, rowY, { width: columnWidths.status, align: 'center' });
-
+             
+           
             // Draw a line between rows
             doc.moveTo(50, rowY + 10).lineTo(600, rowY + 10).stroke();
         });
+
 
         doc.end();
     } catch (error) {

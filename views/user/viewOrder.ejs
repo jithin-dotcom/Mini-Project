@@ -52,6 +52,7 @@
                 <p><strong>Status:</strong> 
                     <span class="badge bg-warning text-dark badge-status"><%= order.status %></span>
                 </p>
+                <p> <strong>Payment Status:</strong>   <%= order.paymentStatus%></p>
                 <p><strong>Invoice Date:</strong> <%= new Date(order.createdOn).toLocaleDateString() %></p>
                 <p><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
                 <p><strong>Coupon Applied:</strong> <%= order.couponApplied ? 'Yes' : 'No' %></p>
@@ -138,7 +139,7 @@
                     const xOffset = (pageWidth - imgWidth) / 2;
     
                     // Add the image to the PDF at the calculated position
-                    doc.addImage(imgData, 'PNG', xOffset, 0, imgWidth, imgHeight);
+                    doc.addImage(imgData, 'PNG', xOffset, 30, imgWidth, imgHeight);
                     heightLeft -= pageHeight;
     
                     // Add more pages if needed

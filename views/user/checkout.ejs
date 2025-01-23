@@ -427,6 +427,12 @@ document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
 <script>
     function placeOrder() {
     const selectedPaymentOption = document.querySelector('input[name="paymentMethod"]:checked');
+    const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
+    const totalElement = document.getElementById("totalAmount");
+    let totalValue = totalElement.textContent.replace("₹", "").trim();
+    totalValue = parseFloat(totalValue);
+
+    // Validate payment method
     if (!selectedPaymentOption) {
         Swal.fire({
             icon: 'warning',
@@ -436,9 +442,49 @@ document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
         return;
     }
 
-    if (selectedPaymentOption.value === 'razorpay') {
-        const totalValue = document.getElementById("totalAmount").textContent.replace("₹", "").trim();
+    // Validate address
+    if (!selectedAddress) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Address Required',
+            text: 'Please select an address.'
+        });
+        return;
+    }
 
+    // Restrict Cash on Delivery for orders above ₹1000
+    if (selectedPaymentOption.value === 'cashOnDelivery' && totalValue > 1000) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Payment Method Not Allowed',
+            text: 'Orders greater than ₹1000 are not possible with Cash on Delivery.'
+        });
+        return;
+    }
+
+    const cartItems = '<%- JSON.stringify(cart) %>';
+    let parsedCartItems;
+    try {
+        parsedCartItems = JSON.parse(cartItems);
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Cart Error',
+            text: 'Error parsing cart items.'
+        });
+        return;
+    }
+
+    const simplifiedCartItems = parsedCartItems.map(item => ({
+        productId: item.productId._id,
+        productName: item.productId.productName,
+        quantity: item.quantity,
+        price: item.price,
+        size: item.size,
+    }));
+
+    if (selectedPaymentOption.value === 'razorpay') {
+        // Razorpay payment initiation
         fetch('/createRazorpayOrder', {
             method: 'POST',
             body: JSON.stringify({ amount: totalValue, addressId: selectedAddress.value, paymentMethod: 'razorpay' }),
@@ -454,12 +500,56 @@ document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
                 description: "Test Transaction",
                 order_id: data.orderId,
                 handler: function (response) {
-                    verifyPayment(response);
+                    verifyPayment(response); // Verify payment success
                 },
                 prefill: {
                     name: "Sandeep",
                     email: "sandeep@gmail.com",
                     contact: "9847242891"
+                },
+                modal: {
+                    ondismiss: function () {
+                        // Handle Razorpay cancellation
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Payment Cancelled',
+                            text: 'Your payment process is cancelled.'
+                        }).then(() => {
+                            const orderData = {
+                                addressId: selectedAddress.value,
+                                cartItems: simplifiedCartItems,
+                                totalPrice: totalValue,
+                                paymentMethod: selectedPaymentOption.value,
+                                paymentStatus: 'notCompleted',
+                            };
+
+                            // Place order with notCompleted status
+                            fetch('/placeOrder', {
+                                method: 'POST',
+                                body: JSON.stringify(orderData),
+                                headers: { 'Content-Type': 'application/json' }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Order Saved',
+                                        text: 'Order saved with status: notCompleted.'
+                                    }).then(() => {
+                                        window.location.href = '/userProfile#orders';
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Order Failed',
+                                        text: data.message || 'Failed to save order.'
+                                    });
+                                }
+                            })
+                            .catch(error => console.error('Error:', error));
+                        });
+                    }
                 }
             };
             const rzp1 = new Razorpay(options);
@@ -467,47 +557,13 @@ document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
         })
         .catch(error => console.error('Error:', error));
     } else {
-        const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
-        if (!selectedAddress) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Address Required',
-                text: 'Please select an address.'
-            });
-            return;
-        }
-
-        const totalElement = document.getElementById("totalAmount");
-        let totalValue = totalElement.textContent.replace("₹", "").trim();
-        const cartItems = '<%- JSON.stringify(cart) %>';
-        
-        let parsedCartItems;
-        try {
-            parsedCartItems = JSON.parse(cartItems);
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Cart Error',
-                text: 'Error parsing cart items.'
-            });
-            return;
-        }
-
-        const simplifiedCartItems = parsedCartItems.map(item => ({
-            productId: item.productId._id,
-            productName: item.productId.productName,
-            quantity: item.quantity,
-            price: item.price,
-            size: item.size,
-        }));
-
-        totalValue = parseFloat(totalValue);
-
+        // Handle non-Razorpay payment methods
         const orderData = {
             addressId: selectedAddress.value,
             cartItems: simplifiedCartItems,
             totalPrice: totalValue,
-            paymentMethod: selectedPaymentOption.value
+            paymentMethod: selectedPaymentOption.value,
+            paymentStatus: 'completed',
         };
 
         fetch('/placeOrder', {
@@ -537,10 +593,245 @@ document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
     }
 }
 
+</script>
+
+<script>
+//     function placeOrder() {
+//     const selectedPaymentOption = document.querySelector('input[name="paymentMethod"]:checked');
+//     if (!selectedPaymentOption) {
+//         Swal.fire({
+//             icon: 'warning',
+//             title: 'Payment Option Required',
+//             text: 'Please select a payment option.'
+//         });
+//         return;
+//     }
+
+
+
+
+
+//    //new code   
+//    const totalElement = document.getElementById("totalAmount");
+//     let totalValue = totalElement.textContent.replace("₹", "").trim();
+//     totalValue = parseFloat(totalValue); // Ensure totalValue is a number
+
+//     if (selectedPaymentOption.value === 'cashOnDelivery' && totalValue > 1000) {
+//         Swal.fire({
+//             icon: 'error',
+//             title: 'Payment Method Not Allowed',
+//             text: 'Orders greater than ₹1000 are not possible with Cash on Delivery.'
+//         });
+//         return;
+//     }
+
+
+
+
+//     if (selectedPaymentOption.value === 'razorpay') {
+//         const totalValue = document.getElementById("totalAmount").textContent.replace("₹", "").trim();
+
+//         fetch('/createRazorpayOrder', {
+//             method: 'POST',
+//             body: JSON.stringify({ amount: totalValue, addressId: selectedAddress.value, paymentMethod: 'razorpay' }),
+//             headers: { 'Content-Type': 'application/json' }
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             const options = {
+//                 key: data.razorpayKey,
+//                 amount: totalValue * 100,
+//                 currency: "INR",
+//                 name: "Your Company",
+//                 description: "Test Transaction",
+//                 order_id: data.orderId,
+//                 handler: function (response) {
+//                     verifyPayment(response);
+//                 },
+//                 prefill: {
+//                     name: "Sandeep",
+//                     email: "sandeep@gmail.com",
+//                     contact: "9847242891"
+//                 },
+//                 modal: {
+//                     // Handle failure scenario
+//                     ondismiss: function () {
+//                         Swal.fire({
+//                             icon: 'error',
+//                             title: 'Payment Cancelled',
+//                             text: 'Your  payment process is cancelled.'
+//                         }).then(() => {
+//                             window.location.href = '/userProfile#orders'; // Redirect to /shop on cancellation
+                             
+
+//   //new code begins cancelled razorpay
+
+//                             const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
+//         if (!selectedAddress) {
+//             Swal.fire({
+//                 icon: 'warning',
+//                 title: 'Address Required',
+//                 text: 'Please select an address.'
+//             });
+//             return;
+//         }
+
+//         const totalElement = document.getElementById("totalAmount");
+//         let totalValue = totalElement.textContent.replace("₹", "").trim();
+//         const cartItems = '<%- JSON.stringify(cart) %>';
+        
+//         let parsedCartItems;
+//         try {
+//             parsedCartItems = JSON.parse(cartItems);
+//         } catch (error) {
+//             Swal.fire({
+//                 icon: 'error',
+//                 title: 'Cart Error',
+//                 text: 'Error parsing cart items.'
+//             });
+//             return;
+//         }
+
+//         const simplifiedCartItems = parsedCartItems.map(item => ({
+//             productId: item.productId._id,
+//             productName: item.productId.productName,
+//             quantity: item.quantity,
+//             price: item.price,
+//             size: item.size,
+//         }));
+
+//         totalValue = parseFloat(totalValue);
+
+//         const orderData = {
+//             addressId: selectedAddress.value,
+//             cartItems: simplifiedCartItems,
+//             totalPrice: totalValue,
+//             paymentMethod: selectedPaymentOption.value,
+//             // paymentStatus : 'notCompleted',
+//         };
+
+//         fetch('/placeOrder', {
+//             method: 'POST',
+//             body: JSON.stringify(orderData),
+//             headers: { 'Content-Type': 'application/json' }
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.success) {
+//                 Swal.fire({
+//                     icon: 'success',
+//                     title: 'Order Placed',
+//                     text: 'Order placed successfully!'
+//                 }).then(() => {
+//                     window.location.href = '/shop';
+//                 });
+//             } else {
+//                 Swal.fire({
+//                     icon: 'error',
+//                     title: 'Order Failed',
+//                     text: data.message || 'Failed to place order. Please try again.'
+//                 });
+//             }
+//         })
+//         .catch(error => console.error('Error:', error));
+
+                            
+
+// //new order ends 
+
+//                         });
+//                     }
+//                 }
+//             };
+//             const rzp1 = new Razorpay(options);
+//             rzp1.open();
+//         })
+//         .catch(error => console.error('Error:', error));
+//     } else {
+//         const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
+//         if (!selectedAddress) {
+//             Swal.fire({
+//                 icon: 'warning',
+//                 title: 'Address Required',
+//                 text: 'Please select an address.'
+//             });
+//             return;
+//         }
+
+//         const totalElement = document.getElementById("totalAmount");
+//         let totalValue = totalElement.textContent.replace("₹", "").trim();
+//         const cartItems = '<%- JSON.stringify(cart) %>';
+        
+//         let parsedCartItems;
+//         try {
+//             parsedCartItems = JSON.parse(cartItems);
+//         } catch (error) {
+//             Swal.fire({
+//                 icon: 'error',
+//                 title: 'Cart Error',
+//                 text: 'Error parsing cart items.'
+//             });
+//             return;
+//         }
+
+//         const simplifiedCartItems = parsedCartItems.map(item => ({
+//             productId: item.productId._id,
+//             productName: item.productId.productName,
+//             quantity: item.quantity,
+//             price: item.price,
+//             size: item.size,
+//         }));
+
+//         totalValue = parseFloat(totalValue);
+
+//         const orderData = {
+//             addressId: selectedAddress.value,
+//             cartItems: simplifiedCartItems,
+//             totalPrice: totalValue,
+//             paymentMethod: selectedPaymentOption.value,
+//             // paymentStatus:'completed',
+//         };
+
+//         fetch('/placeOrder', {
+//             method: 'POST',
+//             body: JSON.stringify(orderData),
+//             headers: { 'Content-Type': 'application/json' }
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.success) {
+//                 Swal.fire({
+//                     icon: 'success',
+//                     title: 'Order Placed',
+//                     text: 'Order placed successfully!'
+//                 }).then(() => {
+//                     window.location.href = '/shop';
+//                 });
+//             } else {
+//                 Swal.fire({
+//                     icon: 'error',
+//                     title: 'Order Failed',
+//                     text: data.message || 'Failed to place order. Please try again.'
+//                 });
+//             }
+//         })
+//         .catch(error => console.error('Error:', error));
+//     }
+// }
+
+
+
+
+
+
+
+
+//verify payment latest new without redirect
+
 function verifyPayment(response) {
     const paymentDetails = {
-        razorpay_payment_id: response.razorpay_payment_Id,
-        razorpay_order_id: response.razorpay_order_Id,
+        razorpay_payment_id: response.razorpay_payment_id,  //payment_Id
+        razorpay_order_id: response.razorpay_order_id,       //payment_Id
         razorpay_signature: response.razorpay_signature,
         cartItems: '<%- JSON.stringify(cart) %>',
         totalPrice: document.getElementById("totalAmount").textContent.replace("₹", "").trim(),
@@ -604,6 +895,7 @@ function verifyPayment(response) {
                 }
 
 
+
                 totalValue = parseFloat(totalValue);
 
                 const orderData = {
@@ -645,7 +937,9 @@ function verifyPayment(response) {
                 icon: 'error',
                 title: 'Payment Failed',
                 text: 'Payment verification failed. Please try again.'
-            });
+            }).then(() => {
+                            window.location.href = '/checkOut';
+                        });
         }
     })
     .catch(error => console.error('Error:', error));

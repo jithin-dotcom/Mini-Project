@@ -56,6 +56,10 @@ const orderSchema = new Schema({
         type : String,
         // required : true,
     },
+    paymentStatus : {
+        type : String,
+        default : 'completed',
+    },
 
     userId : {
         type : Schema.Types.ObjectId,

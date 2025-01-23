@@ -649,7 +649,7 @@ const cancelOrder = async (req, res) => {
         }
 
         // Redirect back to the user profile or order page
-        res.redirect("/userProfile");
+        // res.redirect("/userProfile");
     } catch (err) {
         console.error("Error cancelling order:", err);
         res.status(500).send("Error cancelling order.");
@@ -727,7 +727,7 @@ const returnOrder = async (req, res) => {
         }
 
         // Redirect back to the user profile or order page
-        res.redirect("/userProfile");
+        // res.redirect("/userProfile");
     } catch (err) {
         console.error("Error returning order:", err);
         res.status(500).send("Error returning order.");
