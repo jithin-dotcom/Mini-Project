@@ -44,6 +44,54 @@
    background-color: #0056b3;
    border-color: #0056b3;
  }
+ /* Pagination Container */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* Pagination Links */
+.pagination a {
+  text-decoration: none;
+  padding: 10px 15px;
+  margin: 0 5px;
+  color: #007bff;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Hover Effect */
+.pagination a:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Active Page Link */
+.pagination a.active {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  border: 1px solid #007bff;
+}
+
+/* Disabled Links (for the first and last page) */
+.pagination a:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+  border: 1px solid #ddd;
+}
+
+/* Optional: Adding a Previous/Next button */
+.pagination a:first-child,
+.pagination a:last-child {
+  font-weight: bold;
+}
+
  </style>
 <section class="content-main">
  <div class="content-header">
@@ -165,66 +213,220 @@
                  </tbody>
              </table>
          </div>
+         <div class="pagination">
+          <% if (currentPage > 1) { %>
+            <a href="?page=<%= currentPage - 1 %>">Previous</a>
+          <% } %>
+        
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <a href="?page=<%= i %>" 
+               class="<%= currentPage === i ? 'active' : '' %>">
+               <%= i %>
+            </a>
+          <% } %>
+        
+          <% if (currentPage < totalPages) { %>
+            <a href="?page=<%= currentPage + 1 %>">Next</a>
+          <% } %>
+        </div>
+
      </div>
+     <td class="text-start">
+      <a href="" class="btn btn-primary btn-sm" style="width: 50px;height: 30px;padding: 5px;">reset</a>
+    </td>
      </div>
    </div>
  </div>
 </section>
-
 <script>
- function validateForm() {
-   document.querySelectorAll(".error-message").forEach((element) => (element.innerHTML = ""));
-   const sDate = document.getElementsByName("startDate")[0].value;
-   const eDate = document.getElementsByName("endDate")[0].value;
-   const sDateObj = new Date(sDate);
-   const eDateObj = new Date(eDate);
-   const todayDateObj = new Date();
-   todayDateObj.setHours(0, 0, 0, 0);
+  document.querySelector("form").addEventListener("submit", async function (event) {
+  event.preventDefault(); // Prevent form submission
 
-   if (sDateObj > eDateObj) {
-     document.getElementById("error-end-date").innerHTML ="End date should be after the start date";
-     return false;
-   }
+  const formData = new FormData(event.target);
+  const data = {
+    couponName: formData.get("couponName"),
+    startDate: formData.get("startDate"),
+    endDate: formData.get("endDate"),
+    offerPrice: formData.get("offerPrice"),
+    minimumPrice: formData.get("minimumPrice"),
+  };
 
-   if (sDateObj <= todayDateObj) {
-     document.getElementById("error-start-date").innerHTML ="Starting date should be greater than or equal to today's date";
-     return false;
-   }
+   
+  // Validation for start date and end date
+  const startDateObj = new Date(data.startDate);
+  const endDateObj = new Date(data.endDate);
 
-   let name = document.getElementsByName("couponName")[0].value;
+  if (startDateObj > endDateObj) {
+    Swal.fire({
+      icon: "error",
+      title: "Invalid Dates",
+      text: "Start Date must be less than or equal to End Date.",
+    });
+    return; // Stop execution if validation fails
+  }
+
+
+
+
+  let name = document.getElementsByName("couponName")[0].value;
    const nameRegex = /^[A-Za-z0-9]{1,50}$/;
 
    if (!nameRegex.test(name)) {
-     document.getElementById("error-coupon-name").innerHTML =
-       "Coupon Name error";
+      Swal.fire({
+        icon : "error",
+        title : "Coupon Name Error",
+        text : "Coupon name should only contain alphabets and numbers"
+      })
+
+    //  document.getElementById("error-coupon-name").innerHTML =
+    //    "Coupon Name error";
      return false;
    }
 
-   const offerPriceInput = document.getElementsByName("offerPrice")[0];
+
+     const offerPriceInput = document.getElementsByName("offerPrice")[0];
    const minimumPriceInput = document.getElementsByName("minimumPrice")[0];
 
    const offerPrice = offerPriceInput.value.trim() !== ""? parseInt(offerPriceInput.value): NaN;
    const minimumPrice = minimumPriceInput.value.trim() !== ""? parseInt(minimumPriceInput.value): NaN;
 
    if (isNaN(offerPrice) || isNaN(minimumPrice) || offerPrice >= minimumPrice) {
-     document.getElementById("error-offer-price").innerHTML = "Offer Price must be greater than Minimum Price";
+      Swal.fire({
+        icon : "error",
+        title : "Price Error",
+        text : "Offer price must be Less than Minimum price"
+      })
+
+    //  document.getElementById("error-offer-price").innerHTML = "Offer Price must be greater than Minimum Price";
      return false;
    }
 
    if (isNaN(offerPrice) || isNaN(minimumPrice)) {
-     document.getElementById("error-offer-price").innerHTML ="Please enter numeric values for Offer Price and Minimum Price";
+    Swal.fire({
+      icon : "error",
+      title : "Price Validation Error",
+      text : "Please enter numeric values for Offer Price and Minimum Price"
+    })
+    //  document.getElementById("error-offer-price").innerHTML ="Please enter numeric values for Offer Price and Minimum Price";
      return false;
    }
 
-       const formData = {
-       couponName: name,
-       startDate: sDateObj,
-       endDate: eDateObj,
-       offerPrice: offerPrice,
-       minimumPrice: minimumPrice
-   };
-   return true;
- }
+
+  try {
+    const response = await fetch("/admin/createCoupon", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (response.status === 400) {
+      const result = await response.json();
+      Swal.fire({
+        icon: "error",
+        title: "Coupon Name Exists",
+        text: result.message,
+      });
+    } else if (response.ok) {
+      Swal.fire({
+        icon: "success",
+        title: "Coupon Created",
+        text: "Coupon has been successfully created!",
+      }).then(() => {
+        window.location.href = "/admin/coupon"; // Redirect after success
+      });
+    }
+  } catch (error) {
+    console.error("Error creating coupon:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Server Error",
+      text: "Something went wrong. Please try again later.",
+    });
+  }
+});
+
+</script>
+
+<script>
+//  function validateForm() {
+//    document.querySelectorAll(".error-message").forEach((element) => (element.innerHTML = ""));
+//    const sDate = document.getElementsByName("startDate")[0].value;
+//    const eDate = document.getElementsByName("endDate")[0].value;
+//    const sDateObj = new Date(sDate);
+//    const eDateObj = new Date(eDate);
+//    const todayDateObj = new Date();
+//    todayDateObj.setHours(0, 0, 0, 0);
+
+//    if (sDateObj > eDateObj) {
+//     Swal.fire({
+//             icon: "error",
+//             title: "Invalid Date",
+//             text: "End date should be after the start date.",
+//           });
+//     //  document.getElementById("error-end-date").innerHTML ="End date should be after the start date";
+//      return false;
+//    }
+
+//   //  if (sDateObj <= todayDateObj) {
+//   //     Swal.fire({
+//   //       icon : "error"
+//   //     })
+
+//   //   //  document.getElementById("error-start-date").innerHTML ="Starting date should be greater than or equal to today's date";
+//   //    return false;
+//   //  }
+
+//    let name = document.getElementsByName("couponName")[0].value;
+//    const nameRegex = /^[A-Za-z0-9]{1,50}$/;
+
+//    if (!nameRegex.test(name)) {
+//       Swal.fire({
+//         icon : "error",
+//         title : "Coupon Name Error",
+//         text : "Coupon name should only contain alphabets and numbers"
+//       })
+
+//     //  document.getElementById("error-coupon-name").innerHTML =
+//     //    "Coupon Name error";
+//      return false;
+//    }
+
+//    const offerPriceInput = document.getElementsByName("offerPrice")[0];
+//    const minimumPriceInput = document.getElementsByName("minimumPrice")[0];
+
+//    const offerPrice = offerPriceInput.value.trim() !== ""? parseInt(offerPriceInput.value): NaN;
+//    const minimumPrice = minimumPriceInput.value.trim() !== ""? parseInt(minimumPriceInput.value): NaN;
+
+//    if (isNaN(offerPrice) || isNaN(minimumPrice) || offerPrice >= minimumPrice) {
+//       Swal.fire({
+//         icon : "error",
+//         title : "Price Error",
+//         text : "Offer price must be greater than Minimum price"
+//       })
+
+//     //  document.getElementById("error-offer-price").innerHTML = "Offer Price must be greater than Minimum Price";
+//      return false;
+//    }
+
+//    if (isNaN(offerPrice) || isNaN(minimumPrice)) {
+//     Swal.fire({
+//       icon : "error",
+//       title : "Price Validation Error",
+//       text : "Please enter numeric values for Offer Price and Minimum Price"
+//     })
+//     //  document.getElementById("error-offer-price").innerHTML ="Please enter numeric values for Offer Price and Minimum Price";
+//      return false;
+//    }
+
+//        const formData = {
+//        couponName: name,
+//        startDate: sDateObj,
+//        endDate: eDateObj,
+//        offerPrice: offerPrice,
+//        minimumPrice: minimumPrice
+//    };
+//    return true;
+//  }
 
 
 function setDefaultStartDate(){
@@ -234,6 +436,7 @@ function setDefaultStartDate(){
    let month = (today.getMonth()+1).toString().padStart(2,"0");
    let day = today.getDate().toString().padStart(2,"0");
    document.getElementById("startingDate").value = `${year}-${month}-${day}`;
+   document.getElementById("startingDate").min = `${year}-${month}-${day}`;
 
 
 }

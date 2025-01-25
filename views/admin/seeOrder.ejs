@@ -38,7 +38,7 @@
             <ul class="list-group">
                 <% order.orderedItems.forEach(item => { %>
                     <li class="list-group-item d-flex justify-content-between">
-                        <span><%= item.name %> (x<%= item.quantity %>)</span>
+                        <span><%= item.name %> <%= item.size %>(x<%= item.quantity %>)</span>
                         <strong>₹<%= item.price * item.quantity %></strong>
                     </li>
                 <% }); %>

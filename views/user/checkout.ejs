@@ -119,7 +119,7 @@
                             <li class="list-group-item d-flex justify-content-between">
                                 <span>Coupon Discount</span>
                                 <strong id="couponDiscount">
-                                    ₹0
+                                    ₹0 
                                 </strong>
                             </li>
 
@@ -170,7 +170,7 @@
                     
                      <!-- Coupon Section -->
                      <div class="mb-3">
-                        <label for="couponCode" class="form-label">Coupon Code</label>
+                        <label for="couponCode" class="form-label">Coupon Code  <%= coupon[0].name %> </label>
                         <input type="text" class="form-control" id="couponCode" placeholder="Enter coupon code">
                         <button type="button" class="btn btn-primary mt-2" onclick="applyCoupon()">Apply Coupon</button>
                         <button type="button" class="btn btn-danger mt-2" onclick="deleteCoupon()">Delete Coupon</button>
@@ -238,8 +238,11 @@
 
 
 <script>
-    function applyCoupon() {
+
+
+function applyCoupon() {
     const couponCode = document.getElementById('couponCode').value;
+
     if (!couponCode) {
         Swal.fire({
             icon: 'warning',
@@ -256,32 +259,96 @@
             'Content-Type': 'application/json'
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        const totalElement = document.getElementById("totalAmount");
-        const discountElement = document.getElementById("couponDiscount");
+        .then(response => response.json())
+        .then(data => {
+            const totalElement = document.getElementById("totalAmount");
+            const discountElement = document.getElementById("couponDiscount");
 
-        if (data.success) {
-            totalElement.textContent = `₹${data.newTotal}`;
-            discountElement.textContent = `₹${data.couponDiscount}`;
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: 'Coupon applied successfully!'
-            });
-        } else {
-            discountElement.textContent = `₹0`;
+            if (data.success) {
+                totalElement.textContent = `₹${data.newTotal}`;
+                discountElement.textContent = `₹${data.couponDiscount}`;
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Coupon applied successfully!'
+                });
+            } else {
+                discountElement.textContent = `₹0`;
+
+                let errorMessage = 'Invalid or expired coupon.';
+                if (data.message === 'Coupon already used.') {
+                    errorMessage = 'You have already used this coupon.';
+                } else if (data.message === 'Coupon cannot be applied. Minimum price not met.') {
+                    errorMessage = 'The coupon cannot be applied because the minimum price is not met.';
+                } else if (data.message === 'You have already applied a coupon. Remove the existing coupon first.') {
+                    errorMessage = 'You have already applied a coupon. Remove the existing coupon first.';
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: errorMessage
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
-                text: data.message === 'Coupon cannot be applied. Minimum price not met.'
-                    ? 'The coupon cannot be applied because the minimum price is not met.'
-                    : 'Invalid or expired coupon.'
+                text: 'Something went wrong. Please try again later.'
             });
-        }
-    })
-    .catch(error => console.error('Error:', error));
+        });
 }
+
+
+
+
+
+
+//     function applyCoupon() {
+//     const couponCode = document.getElementById('couponCode').value;
+//     if (!couponCode) {
+//         Swal.fire({
+//             icon: 'warning',
+//             title: 'Oops...',
+//             text: 'Please enter a coupon code.'
+//         });
+//         return;
+//     }
+
+//     fetch('/applyCoupon', {
+//         method: 'POST',
+//         body: JSON.stringify({ couponCode }),
+//         headers: {
+//             'Content-Type': 'application/json'
+//         }
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         const totalElement = document.getElementById("totalAmount");
+//         const discountElement = document.getElementById("couponDiscount");
+
+//         if (data.success) {
+//             totalElement.textContent = `₹${data.newTotal}`;
+//             discountElement.textContent = `₹${data.couponDiscount}`;
+//             Swal.fire({
+//                 icon: 'success',
+//                 title: 'Success!',
+//                 text: 'Coupon applied successfully!'
+//             });
+//         } else {
+//             discountElement.textContent = `₹0`;
+//             Swal.fire({
+//                 icon: 'error',
+//                 title: 'Error!',
+//                 text: data.message === 'Coupon cannot be applied. Minimum price not met.'
+//                     ? 'The coupon cannot be applied because the minimum price is not met.'
+//                     : 'Invalid or expired coupon.'
+//             });
+//         }
+//     })
+//     .catch(error => console.error('Error:', error));
+// }
 
 function deleteCoupon() {
     const couponCode = document.getElementById('couponCode').value;

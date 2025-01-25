@@ -15,6 +15,13 @@ const productDetails = async(req,res)=>{
         const product = await Product.findById(productId).populate('category');
 
 
+        // Check if the product is blocked
+        if (!product || product.isBlocked) {
+            console.log("Product is blocked or does not exist. Redirecting to shop page.");
+            return res.redirect("/shop");
+        }
+
+
          // Initialize total quantity to 0
          let totalSizeQuantity = 0;
 

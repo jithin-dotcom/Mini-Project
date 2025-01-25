@@ -2,6 +2,7 @@ const User = require("../../models/userSchema");
 const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Cart = require("../../models/cartSchema");
+const { addToList } = require("../../helpers/listController");
 
 
 
@@ -46,7 +47,11 @@ const getCart = async (req, res) => {
         let totalPrice = 0;
         cart.items.forEach(item => {
             totalPrice += item.price * item.quantity; // price * quantity for each item
+           
         });
+        //updating total price in cart new code wishlist-cart
+        cart.totalPrice = totalPrice;
+        await cart.save();
 
         console.log("Cart : ",cart);
         
@@ -186,79 +191,22 @@ const getCart = async (req, res) => {
 
 
 
-
+//add to cart helper 
 const addToCart = async (req, res) => {
     try {
         const userId = req.session.user;
         const { productId, quantity, price, size } = req.body;
-        const quantityNum = Number(quantity);
-
-        if (quantityNum <= 0) {
-            return res.status(400).json({
-                status: false,
-                message: "Quantity must be greater than 0."
-            });
-        }
-
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).json({ status: false, message: "Product not found." });
-        }
-
-        const availableQuantity = product.size.get(size);
-        if (availableQuantity === undefined) {
-            return res.status(400).json({
-                status: false,
-                message: "Selected size not available."
-            });
-        }
 
         let cart = await Cart.findOne({ userId });
-
         if (!cart) {
             cart = new Cart({
                 userId,
-                items: []
+                items: [],
             });
         }
 
-        const existingProductIndex = cart.items.findIndex(item => item.productId.toString() === productId && item.size === size);
-        let newQuantity;
-
-        if (existingProductIndex !== -1) {
-            newQuantity = cart.items[existingProductIndex].quantity + quantityNum;
-
-            if (newQuantity > Math.min(10, availableQuantity)) {
-                return res.status(400).json({
-                    status: false,
-                    message: `You can add a maximum of ${Math.min(10, availableQuantity)} items for the selected size. You already have ${cart.items[existingProductIndex].quantity} in your cart.`
-                });
-            }
-
-            cart.items[existingProductIndex].quantity = newQuantity;
-        } else {
-            if (quantityNum > Math.min(10, availableQuantity)) {
-                return res.status(400).json({
-                    status: false,
-                    message: `You can add a maximum of ${Math.min(10, availableQuantity)} items for the selected size.`
-                });
-            }
-
-            cart.items.push({
-                productId,
-                quantity: quantityNum,
-                name: product.productName,
-                price,
-                size,
-                maxStock: availableQuantity,
-                status: "Placed",
-                cancellationReason: "none"
-            });
-        }
-
-        cart.totalPrice = cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
-
-        await cart.save();
+        // Use the helper function to add the item to the cart
+        cart = await addToList(cart, productId, quantity, price, size, userId);
 
         const user = await User.findById(userId);
         if (!user.cart.includes(cart._id)) {
@@ -268,13 +216,118 @@ const addToCart = async (req, res) => {
 
         return res.status(200).json({ status: true, message: "Product added to cart" });
     } catch (error) {
-        console.error('Error adding product to cart', error);
+        console.error("Error adding product to cart", error);
         return res.status(500).json({
             status: false,
-            message: 'An error occurred while adding the product to the cart.'
+            message:  error.message || "Failed to add product to cart.",
         });
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// addto cart before helper  
+// const addToCart = async (req, res) => {
+//     try {
+//         const userId = req.session.user;
+//         const { productId, quantity, price, size } = req.body;
+//         const quantityNum = Number(quantity);
+
+//         if (quantityNum <= 0) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: "Quantity must be greater than 0."
+//             });
+//         }
+
+//         const product = await Product.findById(productId);
+//         if (!product) {
+//             return res.status(404).json({ status: false, message: "Product not found." });
+//         }
+
+//         const availableQuantity = product.size.get(size);
+//         if (availableQuantity === undefined) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: "Selected size not available."
+//             });
+//         }
+
+//         let cart = await Cart.findOne({ userId });
+
+//         if (!cart) {
+//             cart = new Cart({
+//                 userId,
+//                 items: []
+//             });
+//         }
+
+//         const existingProductIndex = cart.items.findIndex(item => item.productId.toString() === productId && item.size === size);
+//         let newQuantity;
+
+//         if (existingProductIndex !== -1) {
+//             newQuantity = cart.items[existingProductIndex].quantity + quantityNum;
+
+//             if (newQuantity > Math.min(10, availableQuantity)) {
+//                 return res.status(400).json({
+//                     status: false,
+//                     message: `You can add a maximum of ${Math.min(10, availableQuantity)} items for the selected size. You already have ${cart.items[existingProductIndex].quantity} in your cart.`
+//                 });
+//             }
+
+//             cart.items[existingProductIndex].quantity = newQuantity;
+//         } else {
+//             if (quantityNum > Math.min(10, availableQuantity)) {
+//                 return res.status(400).json({
+//                     status: false,
+//                     message: `You can add a maximum of ${Math.min(10, availableQuantity)} items for the selected size.`
+//                 });
+//             }
+
+//             cart.items.push({
+//                 productId,
+//                 quantity: quantityNum,
+//                 name: product.productName,
+//                 price,
+//                 size,
+//                 maxStock: availableQuantity,
+//                 status: "Placed",
+//                 cancellationReason: "none"
+//             });
+//         }
+
+//         cart.totalPrice = cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
+
+//         await cart.save();
+
+//         const user = await User.findById(userId);
+//         if (!user.cart.includes(cart._id)) {
+//             user.cart.push(cart._id);
+//             await user.save();
+//         }
+
+//         return res.status(200).json({ status: true, message: "Product added to cart" });
+//     } catch (error) {
+//         console.error('Error adding product to cart', error);
+//         return res.status(500).json({
+//             status: false,
+//             message: 'An error occurred while adding the product to the cart.'
+//         });
+//     }
+// };
 
 
 

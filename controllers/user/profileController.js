@@ -680,20 +680,22 @@ const returnOrder = async (req, res) => {
         order.status = "Returned";
         await order.save();
 
-        // Update stock or perform any additional return logistics here
-        for (const item of order.orderedItems) {
-            const product = await Product.findById(item.product);
 
-            if (product) {
-                // Adjust the stock if necessary (optional based on return policy)
-                const currentStock = product.size.get(item.size);
-                if (currentStock !== undefined) {
-                    product.size.set(item.size, currentStock + item.quantity);
-                    await product.save();
-                    console.log(`Stock updated for product ${product.productName}, size ${item.size}.`);
-                }
-            }
-        }
+        // Update stock or perform any additional return logistics here
+        // for (const item of order.orderedItems) {
+        //     const product = await Product.findById(item.product);
+
+        //     if (product) {
+        //         // Adjust the stock if necessary (optional based on return policy)
+        //         const currentStock = product.size.get(item.size);
+        //         if (currentStock !== undefined) {
+        //             product.size.set(item.size, currentStock + item.quantity);
+        //             await product.save();
+        //             console.log(`Stock updated for product ${product.productName}, size ${item.size}.`);
+        //         }
+        //     }
+        // }
+        
 
         // Process refund or any financial adjustment if applicable
         if (order.paymentMethod === "cashOnDelivery" || order.paymentMethod !== "cashOnDelivery") {                        //change made

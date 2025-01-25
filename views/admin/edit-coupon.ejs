@@ -168,12 +168,22 @@
    todayDateObj.setHours(0, 0, 0, 0);
 
    if (sDateObj > eDateObj) {
-     document.getElementById("error-end-date").innerHTML ="End date should be after the start date";
+    //  document.getElementById("error-end-date").innerHTML ="End date should be after the start date";
+    Swal.fire({
+      icon: "error",
+      title: "Date Error",
+      text: "End date should be after the start date",
+    })
      return false;
    }
 
    if (sDateObj <= todayDateObj) {
-     document.getElementById("error-start-date").innerHTML ="Starting date should be greater than or equal to today's date";
+    //  document.getElementById("error-start-date").innerHTML ="Starting date should be greater than or equal to today's date";
+    Swal.fire({
+      icon: "error",
+      title: "Date Error",
+      text: "Starting date should be greater than or equal to today's date",
+    })
      return false;
    }
 
@@ -181,7 +191,12 @@
    const nameRegex = /^[A-Za-z0-9]{1,50}$/;
 
    if (!nameRegex.test(name)) {
-     document.getElementById("error-coupon-name").innerHTML ="Coupon Name should only contain alphanumeric characters and be between 1 to 50 characters.";
+    //  document.getElementById("error-coupon-name").innerHTML ="Coupon Name should only contain alphanumeric characters and be between 1 to 50 characters.";
+    Swal.fire({
+      icon: "error",
+      title: "Name Error",
+      text: "Coupon Name should only contain alphanumeric characters and be between 1 to 50 characters",
+    })
      return false;
    }
 
@@ -192,28 +207,53 @@
    const minimumPrice =minimumPriceInput.value.trim() !== ""? parseInt(minimumPriceInput.value): NaN;
 
    if (isNaN(offerPrice)) {
-     document.getElementById("error-offer-price").innerHTML =
-       "Please enter a valid numeric value for Offer Price";
+    //  document.getElementById("error-offer-price").innerHTML =
+    //    "Please enter a valid numeric value for Offer Price";
+    Swal.fire({
+      icon: "error",
+      title: "Price Error",
+      text: "Please enter a valid numeric value for Offer Price",
+    })
      return false;
    }
 
    if (isNaN(minimumPrice)) {
-     document.getElementById("error-minimum-price").innerHTML ="Please enter a valid numeric value for Minimum Price";
-     return false;
+    //  document.getElementById("error-minimum-price").innerHTML ="Please enter a valid numeric value for Minimum Price";
+     Swal.fire({
+      icon: "error",
+      title: "Price Error",
+      text: "Please enter a valid numeric value for Minimum Price"
+     })
+    return false;
    }
 
    if (offerPrice < 0) {
-     document.getElementById("error-offer-price").innerHTML ="Offer Price must be a positive number";
+    //  document.getElementById("error-offer-price").innerHTML ="Offer Price must be a positive number";
+    Swal.fire({
+      icon: "error",
+      title: "Price Error",
+      text: "Offer Price must be a positive number"
+     })
      return false;
    }
 
    if (minimumPrice < 0) {
-     document.getElementById("error-minimum-price").innerHTML ="Minimum Price must be a positive number";
+    //  document.getElementById("error-minimum-price").innerHTML ="Minimum Price must be a positive number";
+    Swal.fire({
+      icon: "error",
+      title: "Price Error",
+      text: "Minimum Price must be a positive number"
+     })
      return false;
    }
 
    if (offerPrice >= minimumPrice) {
-     document.getElementById("error-offer-price").innerHTML ="Offer Price must be less than Minimum Price";
+    //  document.getElementById("error-offer-price").innerHTML ="Offer Price must be less than Minimum Price";
+    Swal.fire({
+      icon: "error",
+      title: "Price Error",
+      text: "Offer Price must be less than Minimum Price"
+     })
      return false;
    }
 

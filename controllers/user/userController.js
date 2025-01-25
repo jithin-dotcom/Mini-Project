@@ -49,10 +49,12 @@ const loadHomepage = async (req, res) => {
             {
                 isBlocked: false,
                 category: {$in: categories.map(category => category._id)},
-            }
-        );
 
-        productData.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));  // Latest added product
+            }
+        ).sort({createdAt: -1});
+
+        // productData.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));  // Latest added product
+
         productData = productData.slice(0, 4);  // Limit to first 4 products
         let cartItemCount = 0;
         let wishlistItemCount = 0;
@@ -383,6 +385,7 @@ const loadShoppingPage = async (req, res) => {
 
         // Fetch all brands that are not blocked
         const brands = await Brand.find({ isBlocked: false });
+        const unblockedBrandNames = brands.map((brand) => brand.brandName);   //new added
 
         // Pagination logic
         const page = parseInt(req.query.page) || 1;
@@ -447,6 +450,14 @@ const loadShoppingPage = async (req, res) => {
             .limit(limit)
             .lean();
 
+         
+        // Filter products by brand isBlocked  new added
+        // const filteredProducts = products.filter(product => !product.brand.isBlocked);
+        const filteredProducts = products.filter(product => unblockedBrandNames.includes(product.brand));    //new added
+        
+        
+   
+
         // Count the total number of products that match the criteria
         const totalProducts = await Product.countDocuments(filter);
         const totalPages = Math.ceil(totalProducts / limit);
@@ -457,7 +468,7 @@ const loadShoppingPage = async (req, res) => {
         // Render the shop page and pass the necessary data, including search query
         res.render("shop", {
             user: userData,
-            products,
+            products: filteredProducts,   //new added     : filteredProducts, 
             category: categoriesWithIds,
             brand: brands,
             totalProducts,

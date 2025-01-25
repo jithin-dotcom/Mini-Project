@@ -100,7 +100,40 @@
             <td>₹<%= order.total %></td>
             <td>
               <form action="/admin/orders/<%= order.id %>/status" method="POST">
-                <select name="status" onchange="this.form.submit()" <%= order.status === 'Delivered' ? 'disabled' : '' %>>
+                <select name="status" onchange="this.form.submit()" <%= ['Returned', 'Cancelled'].includes(order.status) ? 'disabled' : '' %>>
+                  <!-- Show the current state as default -->
+                  <option value="<%= order.status %>" selected><%= order.status %></option>
+                  
+                  <!-- Show only the next valid states -->
+                  <% if (order.status === 'Pending') { %>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Cancelled">Cancelled</option>
+                  <% } else if (order.status === 'Shipped') { %>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                  <% } else if (order.status === 'Delivered') { %>
+                    <option value="Returned">Returned</option>
+                  <% } %>
+                </select>
+              </form>
+            </td>
+            
+         
+<!--             
+            <td>
+              <form action="/admin/orders/<%= order.id %>/status" method="POST">
+                <select name="status" onchange="this.form.submit()" <%= ['Returned', 'Cancelled'].includes(order.status) ? 'disabled' : '' %>>
+                  <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %> <%= order.status !== 'Pending' ? 'disabled' : '' %>>Pending</option>
+                  <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %> <%= order.status === 'Pending' ? '' : 'disabled' %>>Shipped</option>
+                  <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %> <%= order.status === 'Shipped' ? '' : 'disabled' %>>Delivered</option>
+                  <option value="Returned" <%= order.status === 'Returned' ? 'selected' : '' %> <%= order.status === 'Delivered' ? '' : 'disabled' %>>Returned</option>
+                  <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %> <%= ['Pending', 'Shipped'].includes(order.status) ? '' : 'disabled' %>>Cancelled</option>
+                </select>
+              </form>
+            </td> -->
+            <!-- <td>
+              <form action="/admin/orders/<%= order.id %>/status" method="POST">
+                <select name="status" onchange="this.form.submit()" <%= order.status === 'Returned'  || order.status === 'Cancelled' ? 'disabled' : '' %>>
                   <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
                   <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                   <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
@@ -108,7 +141,7 @@
                   <option value="Returned" <%= order.status === 'Returned' ? 'selected' : '' %>>Returned</option>
                 </select>
               </form>
-            </td>
+            </td> -->
             <td class="actions">
               <form action="/admin/orders/<%= order.id %>/cancel" method="POST" style="display: inline;">
                 <button type="submit" class="cancel-btn" <%= order.status === 'Cancelled' ? 'disabled' : '' %>>Cancel</button>
