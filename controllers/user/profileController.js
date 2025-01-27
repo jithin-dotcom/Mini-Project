@@ -42,6 +42,7 @@ const sendVerificationEmail = async(email,otp)=>{
         }
          
         const info = await transporter.sendMail(mailOptions);
+        console.log("this is from sendVerificationEmail");
         console.log("Email sent:",info.messageId);
         return true;
 
@@ -81,9 +82,11 @@ const forgotEmailValid = async(req,res)=>{
         
         const {email} = req.body;
         const findUser = await User.findOne({email:email});
+        // console.log("req.body : ",req.body);
         if(findUser){
             const otp = generateOtp();
             const emailSend = await sendVerificationEmail(email,otp);
+            console.log("send email : ",emailSend);
             if(emailSend){
                 req.session.userOtp = otp;
                 req.session.email = email;
@@ -140,6 +143,7 @@ const resendOtp = async(req,res)=>{
         const otp = generateOtp();
         req.session.userOtp = otp;
         const email = req.session.email;
+        console.log("this is resendOtp");
         console.log("Resending OTP to email:",email);
         const  emailSend = await sendVerificationEmail(email,otp);
         if(emailSend){
@@ -202,9 +206,16 @@ const userProfile = async (req, res) => {
         const totalOrderPages = Math.ceil(totalOrders / orderLimit);
 
         // Wallet Data and Transaction Pagination
-        const walletData = await Wallet.findOne({ userId: userId });
+        let walletData = await Wallet.findOne({ userId: userId });
         if (!walletData) {
-            throw new Error("Wallet not found");
+
+             // Create a new wallet if it doesn't exist
+             walletData = await Wallet.create({
+                userId: userId,
+                balance: 0,
+                transactionHistory: []
+            });
+            // throw new Error("Wallet not found");
         }
 
         const walletLimit = 5; // Number of transactions per page
@@ -253,11 +264,14 @@ const changeEmail = async(req,res)=>{
 }
 
 
+//change email from profile first otp
 const changeEmailValid = async(req,res)=>{
     try {
         
         const {email} = req.body;
+        console.log("req.body : ",req.body);
         const userExists = await User.findOne({email});
+        console.log("req.session.user.email : ",req.session.user.email);
         
         if(userExists && email == req.session.user.email){
             
@@ -268,6 +282,7 @@ const changeEmailValid = async(req,res)=>{
                 req.session.userData = req.body;
                 req.session.email = email;
                 res.render("change-email-otp");
+                console.log("this is changeEmailValid");
                 console.log("Email send: ",email);
                 console.log("OTP: ",otp);
             }else{
@@ -285,7 +300,7 @@ const changeEmailValid = async(req,res)=>{
     }
 }
 
-
+//verify otp for change in email
 const verifyEmailOtp = async(req,res)=>{
     try {
         
@@ -315,6 +330,9 @@ const updateEmail = async(req,res)=>{
         
         const newEmail = req.body.newEmail;
         const userId = req.session.user;
+       
+        req.session.user.email = newEmail;   //new code ehange email not working from profile
+        
         await User.findByIdAndUpdate(userId,{email:newEmail});
         res.redirect("/userProfile");
 
@@ -346,6 +364,7 @@ const changePasswordValid = async(req,res)=>{
                 req.session.userData = req.body;
                 req.session.email = email;
                 res.render("change-password-otp");
+                console.log("this is changePasswordValid");
                 console.log("OTP: ",otp);
             }else{
                 res.json({
@@ -369,6 +388,7 @@ const verifyChangePassOtp = async(req,res)=>{
     try {
         
         const enteredOtp = req.body.otp.trim();
+        console.log("this is verifyChangePassOtp");
         console.log("Stored OTP:", req.session.userOtp);
         console.log("Entered OTP:", enteredOtp);
         if(enteredOtp===req.session.userOtp){

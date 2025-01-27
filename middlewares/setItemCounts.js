@@ -13,9 +13,13 @@ const setItemCounts = async (req, res, next) => {
             // Fetch wishlist item count
             const wishlist = await Wishlist.findOne({ userId });
             res.locals.wishlistItemCount = wishlist ? wishlist.items.length : 0;
+ 
+            // console.log("userId middleware : ",userId);
+           
         } else {
             res.locals.cartItemCount = 0;
             res.locals.wishlistItemCount = 0;
+        
         }
     } catch (error) {
         console.error("Error fetching item counts:", error);

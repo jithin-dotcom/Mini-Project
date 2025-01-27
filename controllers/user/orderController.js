@@ -74,22 +74,6 @@ const placeOrder = async (req, res) => {
             };
         }));
 
-        // Create new order
-        const order = new Order({
-            orderedItems: mappedCartItems,
-            totalPrice,
-            address: new mongoose.Types.ObjectId(addressId),
-            status: "Pending",
-            paymentMethod,
-            paymentStatus,
-            userId,
-            finalAmount,
-            discount: totalDiscount, // Add the calculated discount field
-        });
-
-        const savedOrder = await order.save();
-
-        // If the payment method is wallet, process the wallet payment
         if (paymentMethod === "wallet") {
             const wallet = await Wallet.findOne({ userId });
 
@@ -114,7 +98,31 @@ const placeOrder = async (req, res) => {
             await wallet.save();
         }
 
+
+        // Create new order
+        const order = new Order({
+            orderedItems: mappedCartItems,
+            totalPrice,
+            address: new mongoose.Types.ObjectId(addressId),
+            status: "Pending",
+            paymentMethod,
+            paymentStatus,
+            userId,
+            finalAmount,
+            discount: totalDiscount, // Add the calculated discount field
+        });
+
+        const savedOrder = await order.save();
+
+        
+
         // Reduce stock and remove cart items
+        const cart = await Cart.findOne({ userId });           //new added to dele cart item instead of whole cart
+        if (!cart) {
+            return res.json({ success: false, message: "Cart not found." });
+        }
+
+
         for (const item of mappedCartItems) {
             const product = await Product.findById(item.product);
             if (product) {
@@ -126,10 +134,14 @@ const placeOrder = async (req, res) => {
                     return res.json({ success: false, message: `Not enough stock for product ${product.productName}.` });
                 }
             }
+
+            // Remove the purchased item from the cart   new code  cart item delete
+            cart.items = cart.items.filter((cartItem) => cartItem.productId.toString() !== item.product.toString() || cartItem.size !== item.size);
         }
 
         // Clear the cart
-        await Cart.deleteMany({ userId });
+        await cart.save();  //new code cart item delete
+        // await Cart.deleteMany({ userId });
 
         // Store the order ID in session for reference (optional)
         req.session.orderId = order._id;

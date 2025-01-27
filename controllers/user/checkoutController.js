@@ -19,7 +19,7 @@ const getCheckout = async (req, res) => {
         const userData = await User.findOne({ _id: user });
         const address = await Address.find({ userId: user });
         const cart = await Cart.findOne({ userId: user }).populate('items.productId');
-        const wallet = await Wallet.findOne({userId: user});
+        const wallet = await Wallet.findOne({userId: user})|| { balance: 0 }; // Default wallet;
         const coupon = await Coupon.find();
         // const userId = user._id;
         // console.log("userId ch : ",userId);

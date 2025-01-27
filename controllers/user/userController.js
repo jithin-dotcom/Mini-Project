@@ -231,10 +231,14 @@ const verifyOtp = async (req, res) => {
             await newUser.save();
 
             // Log the user in by storing their ID in the session
-            req.session.user = newUser.id;
+            // req.session.user = newUser.id;
+            req.session.user = newUser;
+            // req.session.user._id = newUser.id;
+            // console.log("req.session.user._id  :",req.session.user._id );
+            // console.log("req.session.user : ",req.session.user);
 
             // Clean up session data and OTP record
-            req.session.userData = null;
+            // req.session.userData = null;
             await OTP.deleteOne({ email: userData.email });
 
             res.json({ success: true, redirectUrl: "/" });
@@ -261,7 +265,7 @@ const resendOtp = async (req, res) => {
 
         // Generate a new OTP
         const otp = generateOtp();
-
+        req.session.userOtp = otp; //added for profile change email
         // Send the OTP via email
         const emailSend = await sendVerificationEmail(email, otp);
         if (!emailSend) {
@@ -274,7 +278,8 @@ const resendOtp = async (req, res) => {
             { otp, createdAt: Date.now() },
             { new: true, upsert: true } // upsert creates a new document if one doesn't exist
         );
-
+ 
+        console.log("this is resendOtp");
         console.log("OTP Sent:", otp);
         res.json({ success: true, message: "OTP resent successfully" });
 
