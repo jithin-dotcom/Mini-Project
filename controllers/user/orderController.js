@@ -30,6 +30,10 @@ const placeOrder = async (req, res) => {
         const { addressId, cartItems, totalPrice, paymentMethod,paymentStatus } = req.body;
         const userId = req.session.user._id;
         console.log("payment status : ",paymentStatus);
+        const wallet = await Wallet.findOne({ userId });
+        if (!wallet) {
+            wallet = { balance: 0, transactionHistory: [] };
+        }
 
         // Validate and fetch address
         if (!mongoose.Types.ObjectId.isValid(addressId)) {
@@ -73,30 +77,12 @@ const placeOrder = async (req, res) => {
                 image: product.productImage[0],
             };
         }));
+         
 
-        if (paymentMethod === "wallet") {
-            const wallet = await Wallet.findOne({ userId });
-
-            if (!wallet) {
-                return res.json({ success: false, message: "Wallet not found." });
-            }
-
-            if (wallet.balance < finalAmount) {
-                return res.json({ success: false, message: "Insufficient wallet balance." });
-            }
-
-            // Deduct the final amount from the wallet balance
-            wallet.balance -= finalAmount;
-
-            // Add transaction history entry
-            wallet.transactionHistory.push({
-                transactionType: 'debit',
-                transactionAmount: finalAmount,
-                description: `Payment for order ${savedOrder.orderId}`
-            });
-
-            await wallet.save();
+        if (wallet.balance < finalAmount && paymentMethod === 'wallet') {
+            return res.json({ success: false, message: "Insufficient wallet balance." });
         }
+       
 
 
         // Create new order
@@ -113,6 +99,32 @@ const placeOrder = async (req, res) => {
         });
 
         const savedOrder = await order.save();
+
+
+        if (paymentMethod === "wallet") {
+            // const wallet = await Wallet.findOne({ userId });
+
+            if (!wallet) {
+                return res.json({ success: false, message: "Wallet not found." });
+            }
+
+            // if (wallet.balance < finalAmount) {
+            //     return res.json({ success: false, message: "Insufficient wallet balance." });
+            // }
+
+            // Deduct the final amount from the wallet balance
+            wallet.balance -= finalAmount;
+
+            // Add transaction history entry
+            wallet.transactionHistory.push({
+                transactionType: 'debit',
+                transactionAmount: finalAmount,
+                description: `Payment for order ${savedOrder.orderId}`
+            });
+
+            await wallet.save();
+        }
+
 
         
 
@@ -145,6 +157,7 @@ const placeOrder = async (req, res) => {
 
         // Store the order ID in session for reference (optional)
         req.session.orderId = order._id;
+        // req.session.orderId = savedOrder._id;
 
         res.json({ success: true, message: "Order placed successfully!", order: savedOrder });
     } catch (error) {
@@ -211,10 +224,6 @@ const verifyRazorpayPayment = async (req, res) => {
 
 
         
-        // const order = await Order.findOne({_id:orderId});
-        // if (!order) {
-        //     return res.json({ success: false, message: "Order not found." });
-        // }
         const generatedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_SECRET_KEY)
             .update(razorpay_order_id + "|" + razorpay_payment_id)
             .digest('hex');

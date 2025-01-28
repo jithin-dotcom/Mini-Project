@@ -74,8 +74,8 @@ const updateOrderStatus = async (req, res) => {
       return res.status(404).send('Wallet not found');
     }
 
-    // Logic for handling wallet balance cancelled orders
-    if (order.status !== 'Cancelled'  && newStatus === 'Cancelled' && order.paymentMethod !== 'cashOnDelivery') {
+    // Logic for handling wallet balance cancelled orders   order.paymentStatus !== "notCompleted" new added
+    if (order.status !== 'Cancelled'  && newStatus === 'Cancelled' && order.paymentMethod !== 'cashOnDelivery'&& order.paymentStatus !== "notCompleted") {
       // Increment wallet balance when order is cancelled and payment method is not COD
       wallet.balance += order.finalAmount;
       wallet.transactionHistory.push({
@@ -91,26 +91,12 @@ const updateOrderStatus = async (req, res) => {
         transactionAmount: order.finalAmount,
         description: `Debit for reactivated order from canceling ${orderId}`
       });
+    }else if(order.status !== 'Cancelled'  && newStatus === 'Cancelled' && order.paymentMethod !== 'cashOnDelivery'&& order.paymentStatus === "notCompleted"){
+          order.paymentStatus = "completed";   //else if block newly added
+          await order.save();
     }
 
-      // Logic for handling wallet balance  returned orders
-      // if (order.status !== 'Cancelled' && order.status !== 'Returned' && newStatus === 'Returned' && order.paymentMethod !== 'cashOnDelivery') {
-      //   // Increment wallet balance when order is cancelled and payment method is not COD
-      //   wallet.balance += order.finalAmount;
-      //   wallet.transactionHistory.push({
-      //     transactionType: 'refund',
-      //     transactionAmount: order.finalAmount,
-      //     description: `Refund for Returned order ${orderId}`
-      //   });
-      // } else if (order.status === 'Returned' && ['Pending', 'Shipped', 'Delivered'].includes(newStatus)&& order.paymentMethod !== 'cashOnDelivery') {
-      //   // Decrement wallet balance when order status changes from Cancelled back to Pending/Shipped/Delivered
-      //   wallet.balance -= order.finalAmount;
-      //   wallet.transactionHistory.push({
-      //     transactionType: 'debit',
-      //     transactionAmount: order.finalAmount,
-      //     description: `Debit for reactivated order from returning ${orderId}`
-      //   });
-      // }
+     
 
       //new code
       if (order.status === 'Delivered' && newStatus === 'Returned' ) {

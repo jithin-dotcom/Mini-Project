@@ -456,11 +456,15 @@ const loadShoppingPage = async (req, res) => {
             .lean();
 
          
-        // Filter products by brand isBlocked  new added
-        // const filteredProducts = products.filter(product => !product.brand.isBlocked);
-        const filteredProducts = products.filter(product => unblockedBrandNames.includes(product.brand));    //new added
+
+         //render products with total stock greater than zero and brand blocked 
+         const filteredProducts = products.filter(product => {
+            // const totalStock = Array.from(product.size.values()).reduce((acc, qty) => acc + qty, 0);
+            const totalStock = Object.values(product.size).reduce((acc, qty) => acc + qty, 0);
+            return totalStock > 0 && unblockedBrandNames.includes(product.brand); // Check brand unblocked
+        });
         
-        
+
    
 
         // Count the total number of products that match the criteria

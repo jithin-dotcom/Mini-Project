@@ -217,7 +217,14 @@
                    <div class="card-body text-center">
                      <h5 class="card-title"><%=user.name%></h5>
                      <p class="card-text">
-                       <strong>Phone:</strong><%=user.phone%>
+                      <strong>Phone:</strong> 
+                      <% if (user.phone) { %>
+                          <%= user.phone %>
+                      <% } else if (userAddress && userAddress.address[0] && userAddress.address[0].phone) { %>
+                          <%= userAddress.address[0].phone %>
+                      <% } else { %>
+                          Please provide phone number
+                      <% } %>
                      </p>
                      <p class="card-text">
                        <strong>Email:</strong><%=user.email%>
@@ -355,36 +362,7 @@
                                     </td>
                                     
                                         
-                                    <!-- <td>
-                                      <% if (order.status === "Pending"||order.status ==="Shipped") { %>
-                                          <form action="/cancelOrder/<%= order._id %>" method="POST" style="display:inline;">
-                                              <button type="submit" class="btn btn-danger btn-sm"  onclick="return confirmCancellation('<%= order._id %>')" >Cancel</button>
-                                          </form>
-
-                                      <% } else  { %>
-                                          <span class="text-muted"><%=order.status%></span>
-                                      <% } %>
-                                  </td>
-
-                                  <td>
-                                    <% if (order.status === "Delivered") { %>
-                                      <form action="/returnOrder/<%= order._id %>" method="POST" style="display:inline;">
-                                        <button type="submit" class="btn btn-warning btn-sm" onclick="return confirmReturn('<%= order._id %>')">Return</button>
-                                      </form>
-                                    <% } else { %>
-                                      <span class="text-muted"><%= order.status %></span>
-                                    <% } %>
-                                  </td>
-
- -->
-
-                                    <!-- <td>
-                                      <a href="/viewOrder/<%= order._id %>" class="btn btn-danger btn-sm">cancel</a>
-                                  </td> -->
-                                    <!-- <td>Delete</td> -->
-                                    <!-- <td>
-                                        <a href="/viewOrder/<%= order._id %>" class="btn-small d-block">View</a>
-                                    </td> -->
+                                   
 
                                     <td>
                                       <a href="/viewOrder/<%= order._id %>" class="btn btn-primary btn-sm">View</a>
@@ -405,48 +383,7 @@
                                       <% } %>
                                     </td>
 
-                                    <!-- <td>
-                                       
-                                        <% if(order.paymentStatus === "notCompleted") { %>
-                                           
-                                          <form id="razorpay-form" action="/createRazorpayOrder" method="POST">
-                                            <input type="hidden" name="amount" value="3889">
-                                            <input type="hidden" name="addressId" value="<%= order.address %>">
-                                            <input type="hidden" name="paymentMethod" value="<%= order.paymentMethod %>">
-                                            <button type="submit" class="btn btn-success btn-sm">Payment</button>
-                                          </form>
-                                         
-                                        
-                                        <% } else { %>
-
-                                            <%= order.paymentStatus %>
-
-                                        <% } %>
-
-                                    </td> -->
-                            
-                                
-                                  
-                                  <!-- <td>
-                                    <% if (order.paymentStatus === "notCompleted") { %>
-                                        <form action="/createRazorpayOrder" method="POST" style="display: inline;">
-                                            <input type="hidden" name="orderId" value="<%= order._id %>">
-                                            <button type="submit" class="btn btn-success btn-sm">Payment</button>
-                                        </form>
-                                    <% } else { %>
-                                        <%= order.paymentStatus %>
-                                    <% } %>
-                                </td> -->
-
-                                   <!-- <td>
-                                    <% if (order.paymentStatus === "notCompleted") { %>
-                                      <a href="/createRazorpayOrder" class="btn btn-success btn-sm">Payment</a>
-                                  <% } else{ %>
-                                       <%= order.paymentStatus %>
-                                  <% } %>
-                                   </td> -->
-                                  
-                                 
+                                   
                                 
                             <% }) %>
                         <% } else { %>
@@ -469,30 +406,7 @@
                        </table>
                      </div>
 
-                           <!-- Pagination Controls -->
-
-                           <!-- <% if (totalOrderPages > 1) { %> -->
-                            <!-- Pagination for Orders -->
-                            <!-- <nav>
-                                <ul class="pagination">
-                                    <li class="page-item <%= currentOrderPage === 1 ? 'disabled' : '' %>">
-                                        <a class="page-link" href="?orderPage=<%= currentOrderPage - 1 %>&limit=<%= orderLimit %>">Previous</a>
-                                    </li>
-                                    <% for (let i = 1; i <= totalOrderPages; i++) { %>
-                                        <li class="page-item <%= currentOrderPage === i ? 'active' : '' %>">
-                                            <a class="page-link" href="?orderPage=<%= i %>&limit=<%= orderLimit %>"><%= i %></a>
-                                        </li>
-                                    <% } %>
-                                    <li class="page-item <%= currentOrderPage === totalOrderPages ? 'disabled' : '' %>">
-                                        <a class="page-link" href="?orderPage=<%= currentOrderPage + 1 %>&limit=<%= orderLimit %>">Next</a>
-                                    </li>
-                                </ul>
-                            </nav>
-                          <% } %> -->
-
-
-
-
+                          
                     
 
                    </div>
@@ -569,26 +483,7 @@
                           <% }) %>
 
 
-                           <!-- <tr> -->
-
-                           <!--print in reverse order-->
-                            <!-- <% wallet.transactionHistory.slice().reverse().forEach(transaction => { %>
-                              <tr>
-                                <td><%= new Date(transaction.transactionDate).toLocaleString() %></td>
-                                <td><%= transaction.transactionType %></td>
-                                <td>₹<%= transaction.transactionAmount %></td>
-                                <td><%= transaction.description %></td>
-                              </tr>
-                            <% }) %>
-                             -->
-                            <!-- <% wallet.transactionHistory.forEach(transaction => { %>
-                              <tr>
-                                  <td><%= new Date(transaction.transactionDate).toLocaleString() %></td>
-                                  <td><%= transaction.transactionType %></td>
-                                  <td>₹<%= transaction.transactionAmount %></td>
-                                  <td><%= transaction.description %></td>
-                              </tr>
-                          <% }) %> -->
+                          
                          </tbody>
                        </table>
                                        
@@ -604,24 +499,31 @@
                        
                      <!-- Pagination Controls for Wallet Transactions -->
 
-                     <div class="pagination">
+                    
+             
+                    <div class="pagination">
                       <% if (currentWalletPage > 1) { %>
                         <a href="?walletPage=<%= currentWalletPage - 1 %>">&laquo; Previous</a>
                       <% } else { %>
                         <span class="disabled">&laquo; Previous</span>
                       <% } %>
-                    
-                      <% for (let i = 1; i <= totalWalletPages; i++) { %>
-                        <a href="?walletPage=<%= i %>" class="<%= i === currentWalletPage ? 'active' : '' %>"><%= i %></a>
+                      
+                      <% 
+                        const maxVisiblePages = 9;
+                        const startPage = Math.floor((currentWalletPage - 1) / maxVisiblePages) * maxVisiblePages + 1;
+                        const endPage = Math.min(startPage + maxVisiblePages - 1, totalWalletPages);
+                      
+                        for (let i = startPage; i <= endPage; i++) { %>
+                          <a href="?walletPage=<%= i %>" class="<%= i === currentWalletPage ? 'active' : '' %>"><%= i %></a>
                       <% } %>
-                    
+                      
                       <% if (currentWalletPage < totalWalletPages) { %>
                         <a href="?walletPage=<%= currentWalletPage + 1 %>">Next &raquo;</a>
                       <% } else { %>
                         <span class="disabled">Next &raquo;</span>
                       <% } %>
                     </div>
-             
+                    
 
                    </div>
                  </div>

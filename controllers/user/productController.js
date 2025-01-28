@@ -1,6 +1,7 @@
 const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const User = require("../../models/userSchema");
+const Brand = require("../../models/brandSchema");
 
 
 const productDetails = async(req,res)=>{
@@ -14,12 +15,16 @@ const productDetails = async(req,res)=>{
         const productId = req.query.id;
         const product = await Product.findById(productId).populate('category');
 
+         // Fetch the brand using the brand name (assuming it's a reference to the brand model)
+         const brand = await Brand.findOne({ brandName: product.brand });
 
-        // Check if the product is blocked
-        if (!product || product.isBlocked) {
-            console.log("Product is blocked or does not exist. Redirecting to shop page.");
-            return res.redirect("/shop");
+        // Check if the product is blocked, brand is blocked or category is not listed
+        if (!product || product.isBlocked || (brand && brand.isBlocked) || (product.category && !product.category.isListed)) {
+            console.log("Product is blocked, brand is blocked, or category is not listed. Redirecting to shop page.");
+            return res.redirect("/shop"); 
         }
+
+
 
 
          // Initialize total quantity to 0

@@ -432,134 +432,184 @@
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Get today's date in the format 'YYYY-MM-DD'
-        const today = new Date().toISOString().split('T')[0];
-    
-        document.getElementById('applyFilter').addEventListener('click', async () => {
-            const quickFilter = document.getElementById('quickFilter').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-    
-            // Validate date input
-            if (new Date(startDate) > new Date(endDate)) {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Start date must be before end date!',
-                });
-                return;
-            }
-    
-          
-    
-            try {
 
 
-               
-                // Fetch filtered data from the server
-                const response = await fetch('/admin/dashboard', {
-                    method: "POST",
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ quickFilter, startDate, endDate })
-                });
-    
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-    
-                const data = await response.json();
-    
-                // Insert data for orders table
-                const ordersTableBody = document.getElementById('ordersTableBody');
-                ordersTableBody.innerHTML = '';
-                data.orders.forEach(order => {
-                    const row = `<tr>
-                        <td>${order._id}</td>
-                        <td>${new Date(order.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
-                        <td>₹${order.totalPrice}</td>
-                        <td>₹${order.discount}</td>
-                        <td>₹${order.finalAmount ? order.finalAmount : order.totalPrice}</td>
-                        <td><span class="status ${order.status}">${order.status}</span></td>
-                    </tr>`;
-                    ordersTableBody.insertAdjacentHTML('beforeend', row);
-                });
 
 
-                //new code  updating total sales and total orders
-                const totalSales = document.getElementById("totalSales");
-                totalSales.innerHTML = data.totalSales;
-                const totalOrders = document.getElementById("totalOrders");
-                totalOrders.innerHTML = data.totalOrders;
+document.addEventListener('DOMContentLoaded', () => {
+    const today = new Date().toISOString().split('T')[0];
 
-    
-                // Update the chart with filtered data
-                updateChartWithFilteredData(data.orders);
-    
-                // Hide loading indicator once the data is loaded
-                document.getElementById('loadingIndicator').style.display = 'none';
-    
-                // Success message using SweetAlert
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Data loaded successfully!',
-                    text: 'The data has been successfully filtered.',
-                });
-            } catch (error) {
-                // Hide loading indicator if there is an error
-                document.getElementById('loadingIndicator').style.display = 'none';
-    
-                // Show SweetAlert for error
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: `Something went wrong: ${error.message}`,
-                });
-            }
-        });
-    });
-    
-    // Function to update the chart with filtered data
-    function updateChartWithFilteredData(filteredOrders) {
-        const labels = filteredOrders.map(order => new Date(order.createdOn).toLocaleDateString('en-US',{ day: 'numeric', month: 'short', year: 'numeric' }));
-        const data = filteredOrders.map(order => order.finalAmount || order.totalPrice);
-    
-        // Call the initializeChart function to update the chart
-        initializeChart(labels, data);
-    }
-    
-    // Function to initialize and create the chart
-    let salesChart;
-    
-    function initializeChart(labels, data) {
-        const ctx = document.getElementById('salesChart').getContext('2d');
-    
-        if (salesChart) {
-            salesChart.destroy();  // Destroy previous chart instance to avoid overlapping charts
+    document.getElementById('applyFilter').addEventListener('click', async () => {
+        const quickFilter = document.getElementById('quickFilter').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        // Validate date input
+        if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Start date must be before end date!',
+            });
+            return;
         }
-    
-        salesChart = new Chart(ctx, {
-            type: 'bar',  // Change the chart type if needed
-            data: {
-                labels: labels,  // X-axis labels (for example, order dates)
-                datasets: [{
-                    label: 'Sales Amount (₹)',  // Label for the chart
-                    data: data,  // Data (for example, sales amount per order)
+
+        // Check if no filters are applied
+        if (quickFilter === "none" && !startDate && !endDate) {
+            // Clear the chart and table if no filters are applied
+            clearChart();
+            const ordersTableBody = document.getElementById('ordersTableBody');
+            ordersTableBody.innerHTML = '';
+            document.getElementById('totalSales').innerHTML = '0';
+            document.getElementById('totalOrders').innerHTML = '0';
+
+            await Swal.fire({
+                icon: 'info',
+                title: 'No Filter Applied',
+                text: 'Please apply a filter to view the data.',
+            });
+
+            return;
+        }
+
+        // Handle missing date cases
+        if ((!startDate || !endDate) && quickFilter === "none") {
+            // If one of the dates is missing, don't filter and show message
+            await Swal.fire({
+                icon: 'info',
+                title: 'Missing Date(s)',
+                text: 'Start date or end date is missing. Data will not be filtered by date.',
+            });
+        }
+
+        try {
+            // Fetch filtered data from the server
+            const response = await fetch('/admin/dashboard', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quickFilter, startDate, endDate }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+
+            // Update orders table
+            const ordersTableBody = document.getElementById('ordersTableBody');
+            ordersTableBody.innerHTML = '';
+            data.orders.forEach(order => {
+                const row = `<tr>
+                    <td>${order._id}</td>
+                    <td>${new Date(order.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                    <td>₹${order.totalPrice}</td>
+                    <td>₹${order.discount}</td>
+                    <td>₹${order.finalAmount ? order.finalAmount : order.totalPrice}</td>
+                    <td><span class="status ${order.status}">${order.status}</span></td>
+                </tr>`;
+                ordersTableBody.insertAdjacentHTML('beforeend', row);
+            });
+
+            // Update total sales and total orders
+            document.getElementById('totalSales').innerHTML = data.totalSales;
+            document.getElementById('totalOrders').innerHTML = data.totalOrders;
+
+            // Update the chart
+            if (data.orders.length > 0) {
+                if (startDate && endDate || quickFilter!=="none" ) {
+                    // Show chart only when both startDate and endDate are provided
+                    updateChartWithFilteredData(data.orders);
+                } else {
+                    clearChart(); // Clear chart if date filters are missing
+                }
+            } else {
+                clearChart(); // Clear the chart if no data is returned
+            }
+
+            // Hide loading indicator
+            document.getElementById('loadingIndicator').style.display = 'none';
+
+            // Success message
+            await Swal.fire({
+                icon: 'success',
+                title: 'Data loaded successfully!',
+                text: 'The data has been successfully filtered.',
+            });
+        } catch (error) {
+            document.getElementById('loadingIndicator').style.display = 'none';
+
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: `Something went wrong: ${error.message}`,
+            });
+        }
+    });
+});
+
+// Function to update the chart with filtered data
+function updateChartWithFilteredData(filteredOrders) {
+    const labels = filteredOrders.map(order =>
+        new Date(order.createdOn).toLocaleDateString('en-US', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+        })
+    );
+    const data = filteredOrders.map(order => order.finalAmount || order.totalPrice);
+
+    initializeChart(labels, data);
+}
+
+// Function to clear the chart
+function clearChart() {
+    if (salesChart) {
+        salesChart.destroy(); // Destroy existing chart instance
+        salesChart = null; // Reset the chart instance
+    }
+}
+
+// Function to initialize and create the chart
+let salesChart;
+
+function initializeChart(labels, data) {
+    const ctx = document.getElementById('salesChart').getContext('2d');
+
+    if (salesChart) {
+        salesChart.destroy(); // Destroy previous chart instance to avoid overlapping charts
+    }
+
+    salesChart = new Chart(ctx, {
+        type: 'bar', // Change the chart type if needed
+        data: {
+            labels: labels, // X-axis labels (e.g., order dates)
+            datasets: [
+                {
+                    label: 'Sales Amount (₹)', // Label for the chart
+                    data: data, // Data (e.g., sales amount per order)
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                     borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
+                    borderWidth: 1,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                },
             },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    }
+        },
+    });
+}
+
+
+
+
+
+
     </script>
     
 
@@ -567,179 +617,13 @@
 
 
 
-<!--filtering latest-->>
-<!-- <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Get today's date in the format 'YYYY-MM-DD'
-        const today = new Date().toISOString().split('T')[0];
-
-        document.getElementById('applyFilter').addEventListener('click', async () => {
-            const quickFilter = document.getElementById('quickFilter').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-
-            // Validate date input
-            if (new Date(startDate) > new Date(endDate)) {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Start date must be before end date!',
-                });
-                return;
-            }
-
-            // Show loading indicator
-            document.getElementById('loadingIndicator').style.display = 'block';
-
-            try {
-                // Fetch filtered data from the server
-                const response = await fetch('/admin/dashboard', {
-                    method: "POST",
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ quickFilter, startDate, endDate })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const data = await response.json();
-
-                // Insert data for orders table
-                const ordersTableBody = document.getElementById('ordersTableBody');
-                ordersTableBody.innerHTML = '';
-                data.orders.forEach(order => {
-                    const row = `<tr>
-                        <td>${order._id}</td>
-                        <td>${new Date(order.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
-                        <td>₹${order.totalPrice}</td>
-                        <td>₹${order.discount}</td>
-                        <td>₹${order.finalAmount ? order.finalAmount : order.totalPrice}</td>
-                        <td><span class="status ${order.status}">${order.status}</span></td>
-                    </tr>`;
-                    ordersTableBody.insertAdjacentHTML('beforeend', row);
-                });
-
-                
-                // Hide loading indicator once the data is loaded
-                document.getElementById('loadingIndicator').style.display = 'none';
-
-                // Success message using SweetAlert
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Data loaded successfully!',
-                    text: 'The data has been successfully filtered.',
-                });
-            } catch (error) {
-                // Hide loading indicator if there is an error
-                document.getElementById('loadingIndicator').style.display = 'none';
-
-                // Show SweetAlert for error
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: `Something went wrong: ${error.message}`,
-                });
-            }
-        });
-    });
-</script> -->
 
 
-
-
-
-
-
-<!--filtering latest -->
-<!-- <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Get today's date in the format 'YYYY-MM-DD'
-        const today = new Date().toISOString().split('T')[0];
-    
-        // Set the minimum date for the start date input
-        // document.getElementById('startDate').setAttribute('min', today);
-    
-        document.getElementById('applyFilter').addEventListener('click', async () => {
-            const quickFilter = document.getElementById('quickFilter').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-    
-            // Validate date input
-            if (new Date(startDate) > new Date(endDate)) {
-                // Show SweetAlert instead of normal alert
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Start date must be before end date!',
-                });
-                return;
-            }
-    
-            // Show loading indicator
-            document.getElementById('loadingIndicator').style.display = 'block';
-    
-            try {
-                // Fetch filtered data from the server
-                const response = await fetch('/admin/dashboard', {
-                    method: "POST",
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ quickFilter, startDate, endDate })
-                });
-    
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-    
-                const data = await response.json();
-                const ordersTableBody = document.getElementById('ordersTableBody');
-                ordersTableBody.innerHTML = '';
-    
-                // Insert orders into table
-                data.orders.forEach(order => {
-                    const row = `<tr>
-                        <td>${order._id}</td>
-                        <td>${new Date(order.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
-                        <td>₹${order.totalPrice}</td>
-                        <td>₹${order.discount}</td>
-                        <td>₹${order.finalAmount ? order.finalAmount : order.totalPrice}</td>
-                        <td><span class="status ${order.status}">${order.status}</span></td>
-                    </tr>`;
-                    ordersTableBody.insertAdjacentHTML('beforeend', row);
-                });
-    
-                // Hide loading indicator once the data is loaded
-                document.getElementById('loadingIndicator').style.display = 'none';
-    
-                // Success message using SweetAlert
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Data loaded successfully!',
-                    text: 'Orders have been successfully filtered.',
-                });
-    
-            } catch (error) {
-                // Hide loading indicator if there is an error
-                document.getElementById('loadingIndicator').style.display = 'none';
-    
-                // Show SweetAlert for error
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: `Something went wrong: ${error.message}`,
-                });
-            }
-        });
-    });
-    </script> -->
 
 
 <script>
 
 
-
-
-//generate pdf
 
 document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
     const quickFilter = document.getElementById('quickFilter').value;
@@ -752,16 +636,65 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async () => 
         endDate
     }).toString();
 
-    window.location.href = `/admin/dashboard/download/pdf?${queryParams}`;
+    try {
+        // Use fetch to send the request
+        const response = await fetch(`/admin/dashboard/download/pdf?${queryParams}`, {
+            method: 'GET',
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            // Show SweetAlert if an error occurs
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message || 'Something went wrong!',
+            });
+        } else {
+            // If no error, initiate PDF download
+            window.location.href = `/admin/dashboard/download/pdf?${queryParams}`;
+        }
+    } catch (error) {
+        // If the request fails (e.g., network error)
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An unexpected error occurred!',
+        });
+    }
 });
 
 
 
-//generate excel
-document.getElementById('downloadExcelBtn').addEventListener('click', () => {
+
+
+
+
+
+document.getElementById('downloadExcelBtn').addEventListener('click', async () => {
     const quickFilter = document.getElementById('quickFilter').value;
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
+
+    // If both startDate and endDate are missing and quickFilter is none
+    if (!startDate && !endDate && quickFilter === 'none') {
+        await Swal.fire({
+            icon: 'error',
+            title: 'No Filters Applied',
+            text: 'Please provide either a date range or choose a quick filter.',
+        });
+        return;
+    }
+
+    // Validate if startDate is later than endDate
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+        await Swal.fire({
+            icon: 'error',
+            title: 'Invalid Date Range',
+            text: 'Start date must be before end date.',
+        });
+        return;
+    }
 
     // Build the URL with query parameters based on filters
     let url = '/admin/dashboard/download/excel?';
@@ -779,10 +712,54 @@ document.getElementById('downloadExcelBtn').addEventListener('click', () => {
 
 
 
-
 </script>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -863,9 +840,48 @@ document.getElementById('downloadExcelBtn').addEventListener('click', () => {
 
 
 
+<script>
 
+    //generate pdf before review
 
+    // document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
+    //     const quickFilter = document.getElementById('quickFilter').value;
+    //     const startDate = document.getElementById('startDate').value;
+    //     const endDate = document.getElementById('endDate').value;
+    
+    //     const queryParams = new URLSearchParams({
+    //         quickFilter,
+    //         startDate,
+    //         endDate
+    //     }).toString();
+    
+    //     window.location.href = `/admin/dashboard/download/pdf?${queryParams}`;
+    // });
+    
+    
+    
+    //generate excel before review
+    // document.getElementById('downloadExcelBtn').addEventListener('click', () => {
+    //     const quickFilter = document.getElementById('quickFilter').value;
+    //     const startDate = document.getElementById('startDate').value;
+    //     const endDate = document.getElementById('endDate').value;
+    
+    //     // Build the URL with query parameters based on filters
+    //     let url = '/admin/dashboard/download/excel?';
+    //     if (quickFilter) url += `quickFilter=${quickFilter}&`;
+    //     if (startDate) url += `startDate=${startDate}&`;
+    //     if (endDate) url += `endDate=${endDate}&`;
+    
+    //     // Remove the last '&' if any
+    //     url = url.slice(0, -1);
+    
+    //     // Redirect to the URL to trigger the report download
+    //     window.location.href = url;
+    // });
+    
+    
 
+</script>
 
 
 
@@ -931,3 +947,305 @@ document.getElementById('downloadExcelBtn').addEventListener('click', () => {
 
 
 
+<script>
+    //filter before review 
+
+    // document.addEventListener('DOMContentLoaded', () => {
+    //     // Get today's date in the format 'YYYY-MM-DD'
+    //     const today = new Date().toISOString().split('T')[0];
+    
+    //     document.getElementById('applyFilter').addEventListener('click', async () => {
+    //         const quickFilter = document.getElementById('quickFilter').value;
+    //         const startDate = document.getElementById('startDate').value;
+    //         const endDate = document.getElementById('endDate').value;
+    
+    //         // Validate date input
+    //         if (new Date(startDate) > new Date(endDate)) {
+    //             await Swal.fire({
+    //                 icon: 'error',
+    //                 title: 'Oops...',
+    //                 text: 'Start date must be before end date!',
+    //             });
+    //             return;
+    //         }
+    
+          
+    
+    //         try {
+
+
+               
+    //             // Fetch filtered data from the server
+    //             const response = await fetch('/admin/dashboard', {
+    //                 method: "POST",
+    //                 headers: { 'Content-Type': 'application/json' },
+    //                 body: JSON.stringify({ quickFilter, startDate, endDate })
+    //             });
+    
+    //             if (!response.ok) {
+    //                 throw new Error('Network response was not ok');
+    //             }
+    
+    //             const data = await response.json();
+    
+    //             // Insert data for orders table
+    //             const ordersTableBody = document.getElementById('ordersTableBody');
+    //             ordersTableBody.innerHTML = '';
+    //             data.orders.forEach(order => {
+    //                 const row = `<tr>
+    //                     <td>${order._id}</td>
+    //                     <td>${new Date(order.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+    //                     <td>₹${order.totalPrice}</td>
+    //                     <td>₹${order.discount}</td>
+    //                     <td>₹${order.finalAmount ? order.finalAmount : order.totalPrice}</td>
+    //                     <td><span class="status ${order.status}">${order.status}</span></td>
+    //                 </tr>`;
+    //                 ordersTableBody.insertAdjacentHTML('beforeend', row);
+    //             });
+
+
+    //             //new code  updating total sales and total orders
+    //             const totalSales = document.getElementById("totalSales");
+    //             totalSales.innerHTML = data.totalSales;
+    //             const totalOrders = document.getElementById("totalOrders");
+    //             totalOrders.innerHTML = data.totalOrders;
+
+    
+    //             // Update the chart with filtered data
+    //             updateChartWithFilteredData(data.orders);
+    
+    //             // Hide loading indicator once the data is loaded
+    //             document.getElementById('loadingIndicator').style.display = 'none';
+    
+    //             // Success message using SweetAlert
+    //             await Swal.fire({
+    //                 icon: 'success',
+    //                 title: 'Data loaded successfully!',
+    //                 text: 'The data has been successfully filtered.',
+    //             });
+    //         } catch (error) {
+    //             // Hide loading indicator if there is an error
+    //             document.getElementById('loadingIndicator').style.display = 'none';
+    
+    //             // Show SweetAlert for error
+    //             await Swal.fire({
+    //                 icon: 'error',
+    //                 title: 'Error!',
+    //                 text: `Something went wrong: ${error.message}`,
+    //             });
+    //         }
+    //     });
+    // });
+    
+    // // Function to update the chart with filtered data
+    // function updateChartWithFilteredData(filteredOrders) {
+    //     const labels = filteredOrders.map(order => new Date(order.createdOn).toLocaleDateString('en-US',{ day: 'numeric', month: 'short', year: 'numeric' }));
+    //     const data = filteredOrders.map(order => order.finalAmount || order.totalPrice);
+    
+    //     // Call the initializeChart function to update the chart
+    //     initializeChart(labels, data);
+    // }
+    
+    // // Function to initialize and create the chart
+    // let salesChart;
+    
+    // function initializeChart(labels, data) {
+    //     const ctx = document.getElementById('salesChart').getContext('2d');
+    
+    //     if (salesChart) {
+    //         salesChart.destroy();  // Destroy previous chart instance to avoid overlapping charts
+    //     }
+    
+    //     salesChart = new Chart(ctx, {
+    //         type: 'bar',  // Change the chart type if needed
+    //         data: {
+    //             labels: labels,  // X-axis labels (for example, order dates)
+    //             datasets: [{
+    //                 label: 'Sales Amount (₹)',  // Label for the chart
+    //                 data: data,  // Data (for example, sales amount per order)
+    //                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
+    //                 borderColor: 'rgba(54, 162, 235, 1)',
+    //                 borderWidth: 1
+    //             }]
+    //         },
+    //         options: {
+    //             responsive: true,
+    //             scales: {
+    //                 y: {
+    //                     beginAtZero: true
+    //                 }
+    //             }
+    //         }
+    //     });
+    // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+//filter previous just
+
+// document.addEventListener('DOMContentLoaded', () => {
+//     const today = new Date().toISOString().split('T')[0];
+
+//     document.getElementById('applyFilter').addEventListener('click', async () => {
+//         const quickFilter = document.getElementById('quickFilter').value;
+//         const startDate = document.getElementById('startDate').value;
+//         const endDate = document.getElementById('endDate').value;
+
+//         // Validate date input
+//         if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+//             await Swal.fire({
+//                 icon: 'error',
+//                 title: 'Oops...',
+//                 text: 'Start date must be before end date!',
+//             });
+//             return;
+//         }
+
+//         // Check if no filters are applied
+//         if (quickFilter === "none" && !startDate && !endDate) {
+//             // Clear the chart and table if no filters are applied
+//             clearChart();
+//             const ordersTableBody = document.getElementById('ordersTableBody');
+//             ordersTableBody.innerHTML = '';
+//             document.getElementById('totalSales').innerHTML = '0';
+//             document.getElementById('totalOrders').innerHTML = '0';
+
+//             await Swal.fire({
+//                 icon: 'info',
+//                 title: 'No Filter Applied',
+//                 text: 'Please apply a filter to view the data.',
+//             });
+
+//             return;
+//         }
+
+//         try {
+//             // Fetch filtered data from the server
+//             const response = await fetch('/admin/dashboard', {
+//                 method: 'POST',
+//                 headers: { 'Content-Type': 'application/json' },
+//                 body: JSON.stringify({ quickFilter, startDate, endDate }),
+//             });
+
+//             if (!response.ok) {
+//                 throw new Error('Network response was not ok');
+//             }
+
+//             const data = await response.json();
+
+//             // Update orders table
+//             const ordersTableBody = document.getElementById('ordersTableBody');
+//             ordersTableBody.innerHTML = '';
+//             data.orders.forEach(order => {
+//                 const row = `<tr>
+//                     <td>${order._id}</td>
+//                     <td>${new Date(order.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+//                     <td>₹${order.totalPrice}</td>
+//                     <td>₹${order.discount}</td>
+//                     <td>₹${order.finalAmount ? order.finalAmount : order.totalPrice}</td>
+//                     <td><span class="status ${order.status}">${order.status}</span></td>
+//                 </tr>`;
+//                 ordersTableBody.insertAdjacentHTML('beforeend', row);
+//             });
+
+//             // Update total sales and total orders
+//             document.getElementById('totalSales').innerHTML = data.totalSales;
+//             document.getElementById('totalOrders').innerHTML = data.totalOrders;
+
+//             // Update the chart
+//             if (data.orders.length > 0) {
+//                 updateChartWithFilteredData(data.orders);
+//             } else {
+//                 clearChart(); // Clear the chart if no data is returned
+//             }
+
+//             // Hide loading indicator
+//             document.getElementById('loadingIndicator').style.display = 'none';
+
+//             // Success message
+//             await Swal.fire({
+//                 icon: 'success',
+//                 title: 'Data loaded successfully!',
+//                 text: 'The data has been successfully filtered.',
+//             });
+//         } catch (error) {
+//             document.getElementById('loadingIndicator').style.display = 'none';
+
+//             await Swal.fire({
+//                 icon: 'error',
+//                 title: 'Error!',
+//                 text: `Something went wrong: ${error.message}`,
+//             });
+//         }
+//     });
+// });
+
+// // Function to update the chart with filtered data
+// function updateChartWithFilteredData(filteredOrders) {
+//     const labels = filteredOrders.map(order =>
+//         new Date(order.createdOn).toLocaleDateString('en-US', {
+//             day: 'numeric',
+//             month: 'short',
+//             year: 'numeric',
+//         })
+//     );
+//     const data = filteredOrders.map(order => order.finalAmount || order.totalPrice);
+
+//     initializeChart(labels, data);
+// }
+
+// // Function to clear the chart
+// function clearChart() {
+//     if (salesChart) {
+//         salesChart.destroy(); // Destroy existing chart instance
+//         salesChart = null; // Reset the chart instance
+//     }
+// }
+
+// // Function to initialize and create the chart
+// let salesChart;
+
+// function initializeChart(labels, data) {
+//     const ctx = document.getElementById('salesChart').getContext('2d');
+
+//     if (salesChart) {
+//         salesChart.destroy(); // Destroy previous chart instance to avoid overlapping charts
+//     }
+
+//     salesChart = new Chart(ctx, {
+//         type: 'bar', // Change the chart type if needed
+//         data: {
+//             labels: labels, // X-axis labels (e.g., order dates)
+//             datasets: [
+//                 {
+//                     label: 'Sales Amount (₹)', // Label for the chart
+//                     data: data, // Data (e.g., sales amount per order)
+//                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
+//                     borderColor: 'rgba(54, 162, 235, 1)',
+//                     borderWidth: 1,
+//                 },
+//             ],
+//         },
+//         options: {
+//             responsive: true,
+//             scales: {
+//                 y: {
+//                     beginAtZero: true,
+//                 },
+//             },
+//         },
+//     });
+// }
+
+</script>

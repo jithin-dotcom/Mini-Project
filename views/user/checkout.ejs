@@ -7,6 +7,51 @@
 <!-- SweetAlert JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<style>
+    .coupon-section {
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+  
+    .coupon-section h3 {
+      font-size: 1.5rem;
+      color: #333;
+      font-weight: 700;
+    }
+  
+    .coupon-section .card {
+      border: none;
+      border-radius: 8px;
+      transition: transform 0.2s ease-in-out;
+    }
+  
+    .coupon-section .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+  
+    .coupon-section .card-title {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+  
+    .coupon-section .card-text {
+      font-size: 0.75rem;
+    }
+  
+    @media (max-width: 768px) {
+      .coupon-section .card-title {
+        font-size: 1rem;  
+      }
+  
+      .coupon-section .card-text {
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+  
 
 <main class="main" style="margin-top: 150px;">
 
@@ -166,15 +211,69 @@
                             </li>
                         <% } %>
                     </ul>
+
+
+
+                    <!-- Coupon Section -->
+<div class="coupon-section mb-4">
+    <% if (coupon.length > 0) { %>
+      <h3 class="text-center mb-3">Available Coupons</h3>
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+        <% coupon.forEach(coupon => { %>
+          <div class="col">
+            <div class="card shadow-sm h-100">
+              <div class="card-body">
+                <h5 class="card-title text-primary text-center"><%= coupon.name %></h5>
+                <p class="card-text text-center mb-2">
+                  Save ₹<%= coupon.offerPrice %>
+                </p>
+                <p class="text-center text-muted">
+                  Minimum Price: ₹<%= coupon.minimumPrice %>
+                </p>
+                <p class="text-center text-muted">
+                  Expires On: <%= new Date(coupon.expireOn).toLocaleDateString() %>
+                </p>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="alert alert-info text-center" role="alert">
+        No coupons available.
+      </div>
+    <% } %>
+  
+    <div class="mt-4">
+      <label for="couponCode" class="form-label fw-bold">Coupon Code</label>
+      <input type="text" class="form-control" id="couponCode" placeholder="Enter coupon code">
+      <div class="d-flex justify-content-between mt-3">
+        <button type="button" class="btn btn-primary" onclick="applyCoupon()">Apply Coupon</button>
+        <button type="button" class="btn btn-danger" onclick="deleteCoupon()">Delete Coupon</button>
+      </div>
+    </div>
+  </div>
+  
                     
                     
                      <!-- Coupon Section -->
-                     <div class="mb-3">
-                        <label for="couponCode" class="form-label">Coupon Code  <%= coupon[0].name %> </label>
+                     <!-- <div class="mb-3">
+                        <% if (coupon.length > 0) { %>
+                            <h3>Available Coupons</h3>
+                            <ul>
+                                <% coupon.forEach(coupon => { %>
+                                    <li><%= coupon.name %> - ₹<%= coupon.offerPrice %></li>
+                                <% }) %>
+                            </ul>
+                        <% } else { %>
+                            <p>No coupons available.</p>
+                        <% } %>
+                        
+                        <label for="couponCode" class="form-label">Coupon Code  </label>
                         <input type="text" class="form-control" id="couponCode" placeholder="Enter coupon code">
                         <button type="button" class="btn btn-primary mt-2" onclick="applyCoupon()">Apply Coupon</button>
                         <button type="button" class="btn btn-danger mt-2" onclick="deleteCoupon()">Delete Coupon</button>
-                    </div>
+                    </div> -->
                     
                        
                      <!-- Wallet Balance Section -->
@@ -267,6 +366,7 @@ function applyCoupon() {
             if (data.success) {
                 totalElement.textContent = `₹${data.newTotal}`;
                 discountElement.textContent = `₹${data.couponDiscount}`;
+                console.log("data apply coupon : ",data);
                 Swal.fire({
                     icon: 'success',
                     title: 'Success!',
@@ -372,6 +472,7 @@ function deleteCoupon() {
     .then(data => {
         const totalElement = document.getElementById("totalAmount");
         const discountElement = document.getElementById("couponDiscount");
+        console.log("data delete coupon : ",data);
 
         if (data.success) {
             totalElement.textContent = `₹${data.newTotal}`;

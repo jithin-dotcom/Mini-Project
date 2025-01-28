@@ -614,6 +614,8 @@ const cancelOrder = async (req, res) => {
             return res.status(400).send("Order cannot be cancelled.");
         }
 
+        
+
         // Update the order status to "Cancelled"
         order.status = "Cancelled";
         await order.save();
@@ -636,8 +638,9 @@ const cancelOrder = async (req, res) => {
             }
         }
 
+        //add new for razorpay cancel payment bug when cancelling
         // Check payment method and credit the amount to the wallet if not "Cash on Delivery"
-        if (order.paymentMethod !== "cashOnDelivery") {
+        if (order.paymentMethod !== "cashOnDelivery" && order.paymentStatus !== "notCompleted") {
             const wallet = await Wallet.findOne({ userId: order.userId });
 
             if (wallet) {
@@ -667,6 +670,13 @@ const cancelOrder = async (req, res) => {
                 await newWallet.save();
             }
         }
+
+         //add new for razorpay cancel payment bug when cancelling
+        // If paymentStatus is "notCompleted", do not process refund and update paymentStatus to "completed"
+        if (order.paymentStatus === "notCompleted") {
+            order.paymentStatus = "completed"; // Update paymentStatus to "completed"
+        }
+        await order.save();
 
         // Redirect back to the user profile or order page
         // res.redirect("/userProfile");

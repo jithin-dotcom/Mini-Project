@@ -53,47 +53,6 @@ const addBrand = async (req, res) => {
 
 
 
-// const addBrand = async (req, res) => {
-//     try {
-//         const brand = req.body.name;
-
-//         // Regex for case-insensitive comparison
-//         const findBrand = await Brand.findOne({
-//             brandName: { $regex: new RegExp(`^${brand}$`, 'i') }
-//         });
-
-//         if (!findBrand) {
-//             if (req.file && req.file.filename) {
-//                 const image = req.file.filename;
-//                 const newBrand = new Brand({
-//                     brandName: brand,
-//                     brandImage: image
-//                 });
-//                 await newBrand.save();
-//                 res.redirect("/admin/brands");
-//             } else {
-//                 // Handle case where the image file is not provided
-//                 // res.status(400).send("Brand image is required.");
-//                 res.status(400).json({ success: false, message: "Brand image is required." });
-//             }
-//         } else {
-//             // Handle case where the brand already exists
-//             // res.status(400).send("Brand already exists.");
-//             res.status(400).json({success: false, message: "Brand already exists."});
-//         }
-//     } catch (error) {
-//         console.error(error);
-//         res.redirect("/pageerror");
-//     }
-// };
-
-
-
-
-
-
-
-
 const getBrandPage = async(req,res)=>{
     try{
        const page = parseInt(req.query.page)||1;
@@ -171,6 +130,233 @@ const deleteBrand = async (req, res) => {
 
 
 
+
+
+
+module.exports = {
+    getBrandPage,
+    addBrand,
+    blockBrand,
+    unBlockBrand,
+    deleteBrand,
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const addBrand = async (req, res) => {
+//     try {
+//         const brand = req.body.name;
+
+//         // Regex for case-insensitive comparison
+//         const findBrand = await Brand.findOne({
+//             brandName: { $regex: new RegExp(`^${brand}$`, 'i') }
+//         });
+
+//         if (!findBrand) {
+//             if (req.file && req.file.filename) {
+//                 const image = req.file.filename;
+//                 const newBrand = new Brand({
+//                     brandName: brand,
+//                     brandImage: image
+//                 });
+//                 await newBrand.save();
+//                 res.redirect("/admin/brands");
+//             } else {
+//                 // Handle case where the image file is not provided
+//                 // res.status(400).send("Brand image is required.");
+//                 res.status(400).json({ success: false, message: "Brand image is required." });
+//             }
+//         } else {
+//             // Handle case where the brand already exists
+//             // res.status(400).send("Brand already exists.");
+//             res.status(400).json({success: false, message: "Brand already exists."});
+//         }
+//     } catch (error) {
+//         console.error(error);
+//         res.redirect("/pageerror");
+//     }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //delete brand latest
 // const deleteBrand = async(req,res)=>{
 //     try {
@@ -187,13 +373,3 @@ const deleteBrand = async (req, res) => {
 //         res.status(500).redirect("/pageerror");
 //     }
 // }
-
-
-module.exports = {
-    getBrandPage,
-    addBrand,
-    blockBrand,
-    unBlockBrand,
-    deleteBrand,
-    
-}

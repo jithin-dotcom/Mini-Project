@@ -20,11 +20,7 @@ const getCheckout = async (req, res) => {
         const address = await Address.find({ userId: user });
         const cart = await Cart.findOne({ userId: user }).populate('items.productId');
         const wallet = await Wallet.findOne({userId: user})|| { balance: 0 }; // Default wallet;
-        const coupon = await Coupon.find();
-        // const userId = user._id;
-        // console.log("userId ch : ",userId);
-        
-        // console.log("user checkout : ",userData);
+       
 
         // Calculate the total price
         const total = cart.items.reduce((acc, item) => acc + item.quantity * item.price, 0);
@@ -34,30 +30,15 @@ const getCheckout = async (req, res) => {
         req.session.totalPrice = total;
 
 
-          // Find coupons that match the criteria and exclude the current user's userId from the userId array
-        //   const todayDate = new Date();
-        //   todayDate.setHours(0, 0, 0, 0); // Normalize time for comparison
-        //   const validCoupons = await Coupon.find({
-        //       isList: true,  // Coupon must be listed
-        //       expireOn: { $gte: todayDate },  // Coupon must not be expired
-        //       minimumPrice: { $gt: total },  // Coupon must have a higher minimumPrice than the total
-        //       userId: { $nin: [userId] },
-        //     //   userId: { $ne: userId }  // Exclude coupons where the current user ID is in the userId array
-        //   });
+         // Fetch only coupons where:
+        // - The current user's ID is not in the `userId` array
+        // - The `minimumPrice` is less than or equal to the cart total price
+        const availableCoupon = await Coupon.find({
+            userId: { $nin: [user] },
+            minimumPrice: { $lte: total },
+            expireOn: { $gt: new Date() } 
+        });
 
-
-
-        // const validCoupons = await Coupon.find({
-        //     isList: true,  // Coupon must be listed
-        //     expireOn: { $gte: todayDate },  // Coupon must not be expired
-        //     minimumPrice: { $gt: total },  // Coupon must have a higher minimumPrice than the total
-        //     $or: [
-        //         { userId: { $nin: [userId] } },  // Exclude coupons where the userId array contains the current user's ID
-        //         { userId: { $size: 0 } }  // Include coupons with an empty userId array
-        //     ]
-        // });
-
-        //   console.log("validCoupon : ",validCoupons);
         
         const couponDiscount = req.session.couponDiscount || 0;
 
@@ -69,7 +50,7 @@ const getCheckout = async (req, res) => {
             totalPrice: cart.totalPrice,           
             session: req.session,
             wallet,
-            coupon, 
+            coupon: availableCoupon||[], 
             couponDiscount,  
         });
 
