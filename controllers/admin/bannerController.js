@@ -33,10 +33,6 @@ const addBanner = async(req,res)=>{
     const data = req.body;
     const image = req.file;
 
-      // Log the req.body to check if title and description are coming through
-    //   console.log(data);  // Log to see if title and description are present
-    //   console.log(image); // Log the image object
-
     // Ensure that the image is uploaded
     if (!image) {
         return res.status(400).send("No image file uploaded.");

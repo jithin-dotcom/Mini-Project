@@ -29,16 +29,31 @@
             font-size: 0.9rem;
             padding: 0.4em 0.7em;
         }
-        .download-btn {
+        /* .download-btn {
             position: absolute;
             top: 20px;
             right: 20px;
-        }
+        } */
+        .download-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    text-align: center;
+    border-radius: 8px; /* Rounded corners */
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .download-btn {
+        font-size: 14px; /* Slightly smaller font on small screens */
+        padding: 8px 15px;
+    }
+}
+
     </style>
 </head>
 <body>
     <div class="container mt-5 position-relative" id="orders">
-        <button id="downloadPDF" class="btn btn-primary download-btn">Download PDF</button>
+        <button id="downloadPDF" class="btn btn-primary download-btn w-md-auto">Download PDF</button>
         <div class="text-center mb-4" >
             <h2>Order Details</h2>
             <p class="text-muted">Detailed view of your order</p>
@@ -111,9 +126,203 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('downloadPDF').addEventListener('click', () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const rupeeSymbol = String.fromCharCode(8377); // ₹ symbol
+    
+                let yPos = 20; // Start position
+    
+                // Title
+                doc.setFontSize(18);
+                doc.text("Order Invoice", 80, yPos);
+                doc.setLineWidth(.5); 
+                const textWidth = doc.getTextWidth("Order Invoice"); // Get text width dynamically
+                doc.line(80, yPos + 2, 80 + textWidth, yPos + 2);   // Draw line under tex
+                yPos += 30;     //10
+    
+                // Order Details
+                doc.setFontSize(12);
+                doc.text(`Order ID: <%= order.orderId %>`, 10, yPos);
+                doc.text(`Status: <%= order.status %>`, 10, yPos + 5);   //10
+                doc.text(`Payment Status: <%= order.paymentStatus %>`, 10, yPos + 10); //20
+                doc.text(`Invoice Date: <%= new Date(order.createdOn).toLocaleDateString() %>`, 10, yPos + 15); //30
+                doc.text(`Payment Method: <%= order.paymentMethod %>`, 10, yPos + 20); //40
+                // doc.text(`Coupon Applied: <%= order.couponApplied ? 'Yes' : 'No' %>`, 10, yPos + 25); //50
+    
+                yPos += 60;
+    
+                // Ordered Items Table
+                doc.setFontSize(14);
+                doc.text("Ordered Items", 10, yPos);
+                yPos += 5; //10
+                doc.setFontSize(12);
+    
+                const orderTableColumn = ["Product Name", "Size", "Quantity", "Price"];
+                const orderTableRows = [];
+    
+                '<% order.orderedItems.forEach(item => { %>'
+                    orderTableRows.push([
+                        "<%= item.name %>",
+                        "<%= item.size %>",
+                        "<%= item.quantity %>",
+                        "<%= item.price %>",
+                    ]);
+                '<% }) %>'
+    
+                doc.autoTable({
+                    startY: yPos,
+                    head: [orderTableColumn],
+                    body: orderTableRows,
+                    theme: 'grid',
+                    margin: { top: 10 },
+                });
+    
+                yPos = doc.lastAutoTable.finalY + 10;  //15
+    
+                // Pricing Details Table (Same Format as Order Items)
+                doc.setFontSize(14);
+                doc.text("Pricing Details", 10, yPos);
+                yPos += 5;  //10
+                doc.setFontSize(12);
+    
+                const pricingTableColumn = ["Description", "Amount"];
+                const pricingTableRows = [
+                    ["Total Price", "<%= order.totalPrice %>"],
+                    ["Discount", "<%= order.discount %>"],
+                    ["Final Amount", "<%= order.finalAmount %>"],
+                ];
+    
+                doc.autoTable({
+                    startY: yPos,
+                    head: [pricingTableColumn],
+                    body: pricingTableRows,
+                    theme: 'grid',
+                    margin: { top: 10 },
+                    columnStyles: {
+                        1: { halign: 'left' } // Align amounts to the right
+                    }
+                });
+    
+                yPos = doc.lastAutoTable.finalY + 30;   //15
+    
+                // Delivery Address
+                doc.setFontSize(14);
+                doc.text("Delivery Address", 10, yPos);
+                yPos += 10;  //10
+                doc.setFontSize(12);
+    
+                doc.text(`<%= address.name %>`, 10, yPos);
+                doc.text(`<%= address.city %>, <%= address.state %>`, 10, yPos + 5); //10
+                doc.text(`Landmark: <%= address.landMark %>`, 10, yPos + 10); //20
+                doc.text(`Pincode: <%= address.pincode %>`, 10, yPos + 15); //30
+                doc.text(`Phone: <%= address.phone %>`, 10, yPos + 20); //40
+                yPos += 50;
+    
+                // Save PDF
+                doc.save(`Invoice_<%= order.orderId %>.pdf`);
+            });
+        });
+    </script>
+    
+
+
+
+
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('downloadPDF').addEventListener('click', () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+    
+                let yPos = 20; // Start position
+    
+                // Title
+                doc.setFontSize(18);
+                doc.text("Order Invoice", 80, yPos);
+                yPos += 10;
+    
+                // Order Details
+                doc.setFontSize(12);
+                doc.text(`Order ID: <%= order.orderId %>`, 10, yPos);
+                doc.text(`Status: <%= order.status %>`, 10, yPos + 10);
+                doc.text(`Payment Status: <%= order.paymentStatus %>`, 10, yPos + 20);
+                doc.text(`Invoice Date: <%= new Date(order.createdOn).toLocaleDateString() %>`, 10, yPos + 30);
+                doc.text(`Payment Method: <%= order.paymentMethod %>`, 10, yPos + 40);
+                doc.text(`Coupon Applied: <%= order.couponApplied ? 'Yes' : 'No' %>`, 10, yPos + 50);
+    
+                yPos += 60;
+    
+                // Pricing Details
+                doc.setFontSize(14);
+                doc.text("Pricing Details", 10, yPos);
+                yPos += 10;
+                doc.setFontSize(12);
+    
+                doc.text(`Total Price: ₹<%= order.totalPrice %>`, 10, yPos);
+                doc.text(`Discount: ₹<%= order.discount %>`, 10, yPos + 10);
+                doc.text(`Final Amount: ₹<%= order.finalAmount %>`, 10, yPos + 20);
+                yPos += 40;
+    
+                // Ordered Items Table
+                doc.setFontSize(14);
+                doc.text("Ordered Items", 10, yPos);
+                yPos += 10;
+                doc.setFontSize(12);
+    
+                const tableColumn = ["Product Name", "Size", "Quantity", "Price (₹)"];
+                const tableRows = [];
+    
+                '<% order.orderedItems.forEach(item => { %>'
+                    tableRows.push([
+                        "<%= item.name %>",
+                        "<%= item.size %>",
+                        "<%= item.quantity %>",
+                        "₹<%= item.price %>",
+                    ]);
+               ' <% }) %>'
+    
+                doc.autoTable({
+                    startY: yPos,
+                    head: [tableColumn],
+                    body: tableRows,
+                    theme: 'grid',
+                    margin: { top: 10 },
+                });
+    
+                yPos = doc.lastAutoTable.finalY + 15;
+    
+                // Delivery Address
+                doc.setFontSize(14);
+                doc.text("Delivery Address", 10, yPos);
+                yPos += 10;
+                doc.setFontSize(12);
+    
+                doc.text(`<%= address.name %>`, 10, yPos);
+                doc.text(`<%= address.city %>, <%= address.state %>`, 10, yPos + 10);
+                doc.text(`Landmark: <%= address.landMark %>`, 10, yPos + 20);
+                doc.text(`Pincode: <%= address.pincode %>`, 10, yPos + 30);
+                doc.text(`Phone: <%= address.phone %>`, 10, yPos + 40);
+                yPos += 50;
+    
+                // Save PDF
+                doc.save(`Invoice_<%= order.orderId %>.pdf`);
+            });
+        });
+    </script>
+     -->
+
+
+
+
+
+    <!-- <script>
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('downloadPDF').addEventListener('click', () => {
                 const { jsPDF } = window.jspdf;
@@ -162,7 +371,7 @@
             });
         });
     </script>
-    
+     -->
 
     
 </body>

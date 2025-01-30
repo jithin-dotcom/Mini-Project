@@ -32,28 +32,71 @@
     .delete-btn { background-color: green; color: #fff; }
     @media (max-width: 768px) { .filters { flex-direction: column; } .filters select, .filters input { width: 100%; } table th, table td { font-size: 14px; } }
   
-    .pagination {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
+    
+
+ 
+
+
+
+  .pagination-container {
+  margin-top: 20px;
+  padding: 15px;
+}
+
+.pagination a {
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.pagination .btn {
+  border-radius: 25px;
+  padding: 8px 16px;
+  font-size: 14px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.pagination .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.pagination .btn-primary {
+  background-color: red;
+  border-color: red;
+  color: #fff;
+}
+
+.pagination .btn-outline-primary {
+  background-color: #fff;
+  border-color: red;
+  color: red;
+}
+
+.pagination .btn-outline-primary:hover {
+  background-color: red;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .pagination .btn {
+    font-size: 12px;
+    padding: 6px 12px;
   }
-  .pagination a {
-    padding: 10px 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    text-decoration: none;
-    color: #333;
-    transition: background-color 0.3s ease;
+}
+
+@media (max-width: 576px) {
+  .pagination .btn {
+    font-size: 11px;
+    padding: 5px 10px;
   }
-  .pagination a:hover {
-    background-color: #ff6f61;
-    color: #fff;
+
+  .pagination-container {
+    padding: 10px;
   }
-  .pagination a.active {
-    background-color: #ff6f61;
-    color: white;
-  }
+}
+
+
   
   
   </style>
@@ -63,19 +106,7 @@
     <div class="header"><%= pageTitle %></div>
     <div class="filters">
       <form action="/admin/orders" method="GET">
-        <!-- <input type="text" name="search" placeholder="Search by Order ID or Customer">
-        <select name="status">
-          <option value="all">All Status</option>
-          <option value="Pending">Pending</option>
-          <option value="Completed">Completed</option>
-          <option value="Cancelled">Cancelled</option>
-          <option value="Returned">Returned</option>
-        </select> -->
-        <!-- <select name="sort">
-          <option value="date">Sort by Date</option>
-          <option value="amount">Sort by Amount</option>
-        </select>
-        <button type="submit">Filter</button> -->
+       
       </form>
     </div>
     <div class="table-container">
@@ -87,7 +118,7 @@
             <th>Date</th>
             <th>Total</th>
             <th>Status</th>
-            <th>Actions</th>
+            <!-- <th>Actions</th> -->
             <th>Actions</th>
           </tr>
         </thead>
@@ -119,34 +150,7 @@
             </td>
             
          
-<!--             
-            <td>
-              <form action="/admin/orders/<%= order.id %>/status" method="POST">
-                <select name="status" onchange="this.form.submit()" <%= ['Returned', 'Cancelled'].includes(order.status) ? 'disabled' : '' %>>
-                  <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %> <%= order.status !== 'Pending' ? 'disabled' : '' %>>Pending</option>
-                  <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %> <%= order.status === 'Pending' ? '' : 'disabled' %>>Shipped</option>
-                  <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %> <%= order.status === 'Shipped' ? '' : 'disabled' %>>Delivered</option>
-                  <option value="Returned" <%= order.status === 'Returned' ? 'selected' : '' %> <%= order.status === 'Delivered' ? '' : 'disabled' %>>Returned</option>
-                  <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %> <%= ['Pending', 'Shipped'].includes(order.status) ? '' : 'disabled' %>>Cancelled</option>
-                </select>
-              </form>
-            </td> -->
-            <!-- <td>
-              <form action="/admin/orders/<%= order.id %>/status" method="POST">
-                <select name="status" onchange="this.form.submit()" <%= order.status === 'Returned'  || order.status === 'Cancelled' ? 'disabled' : '' %>>
-                  <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
-                  <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                  <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                  <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                  <option value="Returned" <%= order.status === 'Returned' ? 'selected' : '' %>>Returned</option>
-                </select>
-              </form>
-            </td> -->
-            <td class="actions">
-              <form action="/admin/orders/<%= order.id %>/cancel" method="POST" style="display: inline;">
-                <button type="submit" class="cancel-btn" <%= order.status === 'Cancelled' ? 'disabled' : '' %>>Cancel</button>
-              </form>
-            </td>
+
             <td>
               <a href="/admin/seeOrder/<%= order.id %>" class=""> <button type="submit" class="view-btn">View</button></a>
             </td>
@@ -157,20 +161,30 @@
         </tbody>
       </table>
 
+      
 
-      <div class="pagination">
-        <% if (currentPage > 1) { %>
-          <a href="/admin/orderList?page=<%= currentPage - 1 %>">&laquo; Previous</a>
-        <% } %>
+      <div class="pagination-container text-center mt-4">
+        <div class="pagination d-flex flex-wrap justify-content-center align-items-center gap-2">
+          <% if (currentPage > 1) { %>
+            <a href="/admin/orderList?page=<%= currentPage - 1 %>" class="btn btn-outline-primary btn-sm px-3">&laquo; Previous</a>
+          <% } %>
       
-        <% for (let i = 1; i <= totalPages; i++) { %>
-          <a href="/admin/orderList?page=<%= i %>" class="<%= currentPage === i ? 'active' : '' %>"><%= i %></a>
-        <% } %>
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <a href="/admin/orderList?page=<%= i %>" 
+               class="btn btn-sm <%= currentPage === i ? 'btn-primary' : 'btn-outline-primary' %>">
+              <%= i %>
+            </a>
+          <% } %>
       
-        <% if (currentPage < totalPages) { %>
-          <a href="/admin/orderList?page=<%= currentPage + 1 %>">Next &raquo;</a>
-        <% } %>
+          <% if (currentPage < totalPages) { %>
+            <a href="/admin/orderList?page=<%= currentPage + 1 %>" class="btn btn-outline-primary btn-sm px-3">Next &raquo;</a>
+          <% } %>
+        </div>
       </div>
+      
+      
+
+
       
       
     </div>

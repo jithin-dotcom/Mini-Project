@@ -295,6 +295,8 @@ const editProduct = async(req,res)=>{
         const categoryId = category._id;
         // console.log("categoryId : ",categoryId);     //debug point
 
+       
+
         const updateFields = {
             productName:data.productName,
             description:data.description,

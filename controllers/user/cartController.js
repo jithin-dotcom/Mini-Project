@@ -3,6 +3,7 @@ const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Cart = require("../../models/cartSchema");
 const { addToList } = require("../../helpers/listController");
+const Brand = require("../../models/brandSchema");
 
 
 
@@ -14,11 +15,34 @@ const getCart = async (req, res) => {
         const userId = req.session.user;
         // console.log("User ID:", userId);
 
-        // Find the cart associated with the user and populate product details
+
+         // Fetch all blocked brands new add
+         const blockedBrands = await Brand.find({ isBlocked: true }).select('brandName');
+         const blockedBrandNames = blockedBrands.map(brand => brand.brandName); // Get an array of blocked brand names
+         console.log("Blocked Brands:",blockedBrandNames);
+
+
+        // // Find the cart associated with the user and populate product details
+        // const cart = await Cart.findOne({ userId }).populate({
+        //     path: 'items.productId', // Populate the product details
+        //     select: 'productName salePrice description productImage size isBlocked' // Select relevant fields, including size info
+        // }).exec();
+
+
+
+
+        // Find the cart associated with the user and populate product details along with category
         const cart = await Cart.findOne({ userId }).populate({
-            path: 'items.productId', // Populate the product details
-            select: 'productName salePrice description productImage size ' // Select relevant fields, including size info
+            path: 'items.productId',
+            select: 'productName salePrice description productImage size isBlocked category brand', // Include category field
+            populate: {
+                path: 'category', // Populate category details
+                select: 'isListed' // Only fetch isListed field
+            }
         }).exec();
+
+
+
 
         if (!cart) {
             return res.render("cart", {
@@ -28,14 +52,27 @@ const getCart = async (req, res) => {
             });
         }
 
-        // Filter out items where the stock for the specific size is less than the quantity in the cart
-        const updatedItems = cart.items.filter(item => {
-            const product = item.productId; // Product details from populate
-            const productSizeStock = product.size.get(item.size); // Get stock from the Map using the selected size
 
-            // If the stock for the selected size is less than the quantity in the cart, remove the item
-            return productSizeStock >= item.quantity;
+
+
+
+
+        // Filter out items if:
+        // - The product is blocked
+        // - The stock for the selected size is less than quantity
+        // - The category of the product is not listed
+        const updatedItems = cart.items.filter(item => {
+            const product = item.productId;
+            if (!product || !product.category) return false; // Ensure product and category exist
+            
+            const productSizeStock = product.size.get(item.size); // Get stock from the size Map
+            const isCategoryListed = product.category.isListed; // Check if category is listed
+            const isBrandBlocked = blockedBrandNames.includes(product.brand); // Check if brand is blocked new add
+
+            return !product.isBlocked && isCategoryListed && !isBrandBlocked && productSizeStock >= item.quantity;
         });
+
+
 
 
 
@@ -47,10 +84,24 @@ const getCart = async (req, res) => {
 
         // Calculate the total price of the items in the cart
         let totalPrice = 0;
-        cart.items.forEach(item => {
-            totalPrice += item.price * item.quantity; // price * quantity for each item
+
+
+        // Ensure totalPrice is reset if the cart is empty
+        if (cart.items.length > 0) {
+           cart.items.forEach(item => {
+           totalPrice += item.price * item.quantity; // Calculate price
+           });
+        }else {
+            totalPrice = 0; // Reset total price when no items in cart
+        }
+
+
+        // cart.items.forEach(item => {
+        //     totalPrice += item.price * item.quantity; // price * quantity for each item
            
-        });
+        // });
+
+        
         //updating total price in cart new code wishlist-cart
         cart.totalPrice = totalPrice;
         await cart.save();

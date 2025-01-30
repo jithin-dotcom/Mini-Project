@@ -149,6 +149,7 @@ const placeOrder = async (req, res) => {
 
             // Remove the purchased item from the cart   new code  cart item delete
             cart.items = cart.items.filter((cartItem) => cartItem.productId.toString() !== item.product.toString() || cartItem.size !== item.size);
+            cart.totalPrice = 0;   //new add
         }
 
         // Clear the cart

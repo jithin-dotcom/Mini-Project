@@ -3,6 +3,7 @@ const Product = require("../../models/productSchema");
 const Wishlist = require("../../models/wishlistSchema");
 const Cart = require("../../models/cartSchema");
 const { addToList } = require("../../helpers/listController");
+const Brand = require("../../models/brandSchema");
 
 
 
@@ -17,10 +18,19 @@ const loadWishlist = async (req, res) => {
         const userId = req.session.user;
         console.log(userId);
 
+
+
+          // Fetch all blocked brands
+          const blockedBrands = await Brand.find({ isBlocked: true }).select('brandName');
+          const blockedBrandNames = blockedBrands.map(brand => brand.brandName); // Extract brand names
+
+
+
         // Find the wishlist associated with the user and populate product details
         const wishlist = await Wishlist.findOne({ userId }).populate({
             path: 'items.productId', // Populate the product details                    
-            select: 'productName salePrice description productImage size' // Select the fields you want
+            select: 'productName salePrice description productImage size isBlocked category brand', // Select the fields you want
+            populate: { path: 'category', select: 'isListed' } // Populate category details
         }).exec(); // Make sure to call exec()
 
         console.log(JSON.stringify(wishlist, null, 2));
@@ -36,10 +46,16 @@ const loadWishlist = async (req, res) => {
         // Loop through the wishlist items and check for stock
         const updatedItems = wishlist.items.filter(item => {
             const product = item.productId; // Product details from populate
+            if (!product || !product.category) return false; // Ensure product and category exist
+
             const availableStock = product.size.get(item.size); // Check the stock for the selected size
+            const isCategoryListed = product.category.isListed; // Check if category is listed
+            const isBrandBlocked = blockedBrandNames.includes(product.brand); // Check if brand is blocked
 
             // If the stock for the selected size is less than the quantity in the wishlist, remove the item
-            return availableStock >= item.quantity;
+            // return   availableStock >= item.quantity;
+            return !product.isBlocked  && isCategoryListed && !isBrandBlocked && availableStock >= item.quantity;
+           
         });
 
         // If there are items removed (i.e., stock for size is less than quantity), update the wishlist
@@ -48,10 +64,13 @@ const loadWishlist = async (req, res) => {
             await wishlist.save();  // Save the updated wishlist
         }
 
+
+
         // Pass the updated wishlist data to the view
         res.render("wishlist", {
             user: await User.findById(userId),
             wishlist: wishlist.items, // Pass the updated items in the wishlist
+            // totalPrice: totalPrice // Pass the total price to the view new add
         });
 
     } catch (error) {

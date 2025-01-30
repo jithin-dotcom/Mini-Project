@@ -18,15 +18,7 @@ const productDetails = async(req,res)=>{
          // Fetch the brand using the brand name (assuming it's a reference to the brand model)
          const brand = await Brand.findOne({ brandName: product.brand });
 
-        // Check if the product is blocked, brand is blocked or category is not listed
-        if (!product || product.isBlocked || (brand && brand.isBlocked) || (product.category && !product.category.isListed)) {
-            console.log("Product is blocked, brand is blocked, or category is not listed. Redirecting to shop page.");
-            return res.redirect("/shop"); 
-        }
-
-
-
-
+        
          // Initialize total quantity to 0
          let totalSizeQuantity = 0;
 
@@ -34,9 +26,13 @@ const productDetails = async(req,res)=>{
          product.size.forEach((quantity) => {
              totalSizeQuantity += quantity;
          });
- 
-        console.log("Total quantity of all sizes: ", totalSizeQuantity);
-        console.log("product :",product);
+
+
+          // Check if the product is blocked, brand is blocked or category is not listed
+        if (!product || product.isBlocked||totalSizeQuantity===0|| (brand && brand.isBlocked) || (product.category && !product.category.isListed)) {
+            console.log("Product is blocked, brand is blocked, or category is not listed. Redirecting to shop page.");
+            return res.redirect("/shop"); 
+        }
 
          // Calculate offers
         const findCategory = product.category;
@@ -44,9 +40,7 @@ const productDetails = async(req,res)=>{
         const productOffer = product.productOffer || 0;
         const totalOffer = categoryOffer + productOffer;
 
-        // console.log(product.productImage);
-
-
+       
         // Render the product details page
         res.render("productDetails",{
             user:userData,

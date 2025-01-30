@@ -1,14 +1,25 @@
 const mongoose = require("mongoose");
 const {Schema} = mongoose;
-const {v4:uuidv4} = require("uuid");
+// const {v4:uuidv4} = require("uuid");
 const Size = require("./sizeSchema");
 
+// Custom function to generate a 6-digit UUID
+const generate6DigitUUID = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
+
 const orderSchema = new Schema({
-    orderId : {
-        type : String,
-        default : ()=>uuidv4(),
-        unique : true
-    },
+    // orderId : {
+    //     type : String,
+    //     default : ()=>uuidv4(),
+    //     unique : true
+    // },
+    orderId: {
+        type: String,
+        default: generate6DigitUUID,
+        unique: true
+      },
     orderedItems : [{
        
         product : {

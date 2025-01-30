@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Product Detail</title>
+	<title>Cuza Store</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->	
@@ -124,7 +124,7 @@
 
 						<a href="/cart">
                             
-							<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti " data-notify="<%= cartItemCount %>">  <!-- data-notify="2", js-show-cart -->
+							<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti " data-notify="<%= cartItemCount %>" id="cartItemCountText">  <!-- data-notify="2", js-show-cart -->
 								<i class="zmdi zmdi-shopping-cart"></i>  
 						  </div>
 
@@ -1488,6 +1488,12 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						timer : 2000
 					});
 
+					
+				   // Refresh the page to update cart count and other changes
+					  setTimeout(() => {
+                           location.reload();  // Refresh the page
+                      }, 500);  // Wait for 2 seconds before reloading the page
+
 				}else{
 						Swal.fire({
 							title : 'Error',
@@ -1544,6 +1550,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 		       icon : 'success',
 		       timer : 2000
         	   });
+			   // Refresh the page to update cart count and other changes
+			   setTimeout(() => {
+                     location.reload();  // Refresh the page
+               }, 500);  // Wait for 2 seconds before reloading the page
+
 
            }else{
 		       Swal.fire({

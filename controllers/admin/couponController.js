@@ -36,27 +36,6 @@ const loadCoupon = async (req, res) => {
 
 
 
-// const loadCoupon = async (req,res) => {
-
-//   try {
-
-
-//     const findCoupons = await Coupon.find({});
-    
-//     return res.render("coupon",{
-//         coupons : findCoupons,
-//     });
-
-
-//   } catch (error) {
-     
-//     return res.redirect("/pageerror");
-
-//   }
-
-// }
-
-
 
 const createCoupon = async (req, res) => {
    try {

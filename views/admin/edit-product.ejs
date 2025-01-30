@@ -55,27 +55,27 @@
                                    <!-- Size S -->
                                    <div class="col-lg-4 mb-3">
                                        <label class="form-label">Size S</label>
-                                       <input type="number" name="size[S]"  value="<%= product.size.get('S') %>" class="form-control border" min="0" required>
+                                       <input type="number" name="size[S]"  value="<%= product.size.get('S') %>" id="s" class="form-control border" min="0" required>
                                    </div>
                                    <!-- Size M -->
                                    <div class="col-lg-4 mb-3">
                                        <label class="form-label">Size M</label>
-                                       <input type="number" name="size[M]" value="<%=product.size.get('M')%>" class="form-control border" min="0" required>
+                                       <input type="number" name="size[M]" value="<%=product.size.get('M')%>" id="m" class="form-control border" min="0" required>
                                    </div>
                                    <!-- Size L -->
                                    <div class="col-lg-4 mb-3">
                                        <label class="form-label">Size L</label>
-                                       <input type="number" name="size[L]" value="<%=product.size.get('L')%>" class="form-control border" min="0" required>
+                                       <input type="number" name="size[L]" value="<%=product.size.get('L')%>" id="l" class="form-control border" min="0" required>
                                    </div>
                                    <!-- Size XL -->
                                    <div class="col-lg-4 mb-3">
                                        <label class="form-label">Size XL</label>
-                                       <input type="number" name="size[XL]" value="<%=product.size.get('XL')%>" class="form-control border" min="0" required>
+                                       <input type="number" name="size[XL]" value="<%=product.size.get('XL')%>" id="xl" class="form-control border" min="0" required>
                                    </div>
                                    <!-- Size XXL -->
                                    <div class="col-lg-4 mb-3">
                                        <label class="form-label">Size XXL</label>
-                                       <input type="number" name="size[XXL]" value="<%=product.size.get('XXL')%>" class="form-control border" min="0" required>
+                                       <input type="number" name="size[XXL]" value="<%=product.size.get('XXL')%>" id="xxl" class="form-control border" min="0" required>
                                    </div>
                                </div>
                            </div>
@@ -226,6 +226,8 @@
        </div>
    </section>
    <script src="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.js"></script>
+   <!-- Include SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 function validateAndSubmit() {
     if (validateForm()) {
@@ -247,13 +249,31 @@ function validateForm() {
     const images = document.getElementById('input1');
     const quantity = document.getElementsByName('quantity');
     imageDatas = document.getElementById("imageDatas")?.value;
+    const s = document.getElementById('s').value;
+    const m = document.getElementById('m').value;
+    const l = document.getElementById('l').value;
+    const xl = document.getElementById('xl').value;
+    const xxl = document.getElementById('xxl').value;
+    const sizeValues = { s, m, l, xl, xxl };
+    const numberRegex = /^[0-9]+$/; // Only allows numbers
+    const regex = /^[A-Za-z\s]+$/; // Only allows alphabets and spaces
     let isValid = true;    
-    if (name.trim() === "") {
-        displayErrorMessage('productName-error', 'Please enter a product name.');
+    if (name.trim() === "" || !regex.test(name.trim())) {
+        // displayErrorMessage('productName-error', 'Please enter valid a product name it should only have alphabets.');
+        Swal.fire({
+        icon: 'error',
+        title: 'Invalid Product Name',
+        text: 'Please enter a valid product name. It should only contain alphabets.',
+        });
         isValid = false;
     }
     if (description === '') {
-        displayErrorMessage('description-error', 'Please enter a product description.');
+        // displayErrorMessage('description-error', 'Please enter a product description.');
+        Swal.fire({
+        icon: 'error',
+        title: 'Product Discription',
+        text: 'Please enter a product description.',
+        });
         isValid = false;
     } 
     if (parseInt(quantity) < 0) {
@@ -261,21 +281,64 @@ function validateForm() {
         isValid = false;
     }
     if (!/^\d+(\.\d{1,2})?$/.test(price) || parseFloat(price) < 0) {
-        displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
+        // displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
+        Swal.fire({
+        icon: 'error',
+        title: 'Price Error',
+        text: 'Please enter a valid non-negative price',
+        });
+        
         isValid = false;
     }
     if (!/^\d+(\.\d{1,2})?$/.test(saleprice) || parseFloat(saleprice) < 0) {
-        displayErrorMessage('salePrice-error', 'Please enter a valid non-negative price.');
+        // displayErrorMessage('salePrice-error', 'Please enter a valid non-negative price.');
+        Swal.fire({
+        icon: 'error',
+        title: 'Price Error',
+        text: 'Please enter a valid non-negative price',
+        });
         isValid = false;
     }
     if (color.trim() === "") {
-        displayErrorMessage('color-error', 'Please enter a color.');
+        // displayErrorMessage('color-error', 'Please enter a color.');
+        Swal.fire({
+        icon: 'error',
+        title: 'Color Error',
+        text: 'Please enter a color',
+        });
         isValid = false;
     }
     if (!imageDatas && images.files.length === 0) {
-        displayErrorMessage("images-error",'Please select an image.');
+        // displayErrorMessage("images-error",'Please select an image.');
+        Swal.fire({
+        icon: 'error',
+        title: 'Image Error',
+        text: 'Please select an image',
+        });
         isValid = false;
     }
+    if(price < saleprice){
+        Swal.fire({
+        icon: 'error',
+        title: 'Price Error',
+        text: 'Sale price should be less than regular price',
+        });
+        isValid = false;
+    }
+     
+   for (const [size, value] of Object.entries(sizeValues)) {
+    if (value === "" || !numberRegex.test(value)) {
+        swal.fire({
+            title: "Invalid Input",
+            text: `Please enter a valid number for size ${size.toUpperCase()}.`,
+            icon: "warning",
+            button: "OK",
+        });
+        isValid = false;
+        break; // Stop validation after first invalid entry
+    }
+   }
+      
     return isValid;
 }
       

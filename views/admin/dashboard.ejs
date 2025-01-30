@@ -1,10 +1,1257 @@
 <%- include("../../views/partials/admin/header") %>
+<style>
+
+
+.container {
+            width: 90%;
+            margin: 20px auto;
+        }
+
+      
+
+
+        /* Base Styles */
+.dashboard-header {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.header-title h1 {
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.header-title p {
+    margin: 5px 0 0;
+    font-size: 1rem;
+    color: #555;
+}
+
+.download-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.download-btn {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.download-btn i {
+    font-size: 1rem;
+}
+
+.download-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Filter Section Styles */
+.filter-section {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-group label {
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 8px;
+    font-size: 0.9rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.filter-actions button {
+    padding: 10px 15px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.filter-actions button:hover {
+    background-color: #218838;
+}
+
+.filter-actions a button {
+    background-color: #dc3545;
+}
+
+.filter-actions a button:hover {
+    background-color: #c82333;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .header-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .filter-section {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .filter-actions {
+        justify-content: flex-start;
+    }
+
+    .download-btn {
+        font-size: 0.8rem;
+        padding: 8px 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .header-title h1 {
+        font-size: 1.5rem;
+    }
+
+    .header-title p {
+        font-size: 0.9rem;
+    }
+
+    .download-btn {
+        padding: 5px 8px;
+        font-size: 0.8rem;
+    }
+
+    .filter-group label {
+        font-size: 0.8rem;
+    }
+
+    .filter-group input,
+    .filter-group select {
+        font-size: 0.8rem;
+        padding: 6px;
+    }
+
+    .filter-actions button {
+        font-size: 0.8rem;
+        padding: 8px 10px;
+    }
+}
+
+
+
+
+
+
+
+
+
+        /* Stats Grid Styles */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            font-size: 40px;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .stat-card h3 {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .trend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .trend.up i {
+            color: #28a745;
+            margin-right: 5px;
+        }
+
+        .trend.down i {
+            color: #dc3545;
+            margin-right: 5px;
+        }
+
+       
+
+         /* Table container for horizontal scrolling on smaller screens */
+.table-container {
+    overflow-x: auto;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    text-align: left;
+    background-color: #fff;
+}
+
+thead {
+    background-color: #f5f5f5;
+}
+
+th, td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+}
+
+th {
+    font-weight: 600;
+}
+
+/* Highlight for table rows on hover */
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Status badges */
+.status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.status.completed {
+    color: #fff;
+    background-color: #28a745; /* Green */
+}
+
+.status.pending {
+    color: #fff;
+    background-color: #ffc107; /* Yellow */
+}
+
+.status.canceled {
+    color: #fff;
+    background-color: #dc3545; /* Red */
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    table {
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    thead {
+        display: none; /* Hide table headers on small screens */
+    }
+
+    tr {
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 5px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+    }
+
+    td:before {
+        content: attr(data-label); /* Add custom labels for each cell */
+        font-weight: bold;
+        width: 50%;
+        display: inline-block;
+    }
+}
+
+/* Add a shadow effect for better visuals */
+.sales-table {
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f5f7;
+    }
+
+    .content-main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .content-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    #chartContainer {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        font-size: 20px;
+        color: #333;
+        margin: 20px 0 10px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    table thead {
+        background-color: #007bff;
+        color: white;
+    }
+
+    table th,
+    table td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+        font-size: 14px;
+    }
+
+    table tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    table tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    @media (max-width: 768px) {
+        .content-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .content-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        table th,
+        table td {
+            font-size: 12px;
+            padding: 8px;
+        }
+
+        #chartContainer {
+            width: 100%;
+            overflow-x: auto;
+        }
+    }
+
+    @media (max-width: 480px) {
+        h2 {
+            font-size: 18px;
+        }
+
+        .content-title {
+            font-size: 18px;
+        }
+
+        table th,
+        table td {
+            font-size: 11px;
+            padding: 6px;
+        }
+    }
+    
+
+    /* Make the row for the charts */
+.charts-row {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px; /* Adjust gap between charts as needed */
+}
+
+/* Each chart container */
+.chart-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 33%; /* Limit each chart's container width */
+}
+
+/* Ensure the charts scale properly */
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+</style>
+
+
+
 <section class="content-main">
     <div class="content-header">
         <div>
             <h2 class="content-title card-title">Dashboard </h2>
         </div>
-       
+        
     </div>
+
+
+    <div class="container">
+
+
+        <div class="dashboard-header">
+            <div class="header-top">
+                <div class="header-title">
+                    <h1>Sales Analytics</h1>
+                    <p>Monitor your business performance in real-time</p>
+                </div>
+                <div class="download-buttons">
+                    <button class="download-btn" id="downloadPdfBtn">
+                        <i class="fas fa-file-pdf"></i>
+                        Export PDF
+                    </button>
+                    <button class="download-btn" id="downloadExcelBtn">
+                        <i class="fas fa-file-excel"></i>
+                        Export Excel
+                    </button>
+                </div>
+            </div>
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label>Quick Filter</label>
+                    <select id="quickFilter">
+                        <option value="none" selected>No Filter</option> 
+                        <option value="today">Daily</option>
+                        <option value="week">Weekly</option>
+                        <option value="month">Monthly</option>
+                        <option value="year">This Year</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Start Date</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="filter-group">
+                    <label>End Date</label>
+                    <input type="date" id="endDate">
+                </div>
+                <div class="filter-actions">
+                    <button id="applyFilter">Apply Filter</button>
+                    <a href="/admin"><button id="removeFilter">Remove Filter</button></a>
+                </div>
+            </div>
+        </div>
+        
+        
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-lg">₹</i>
+                </div>
+                <h3>Total Sales</h3>
+                <div class="value" id="totalSales"><%= totalSales %></div>
+                <div class="trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>12.5% vs last period</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-shopping-cart fa-lg"></i>
+                </div>
+                <h3>Orders Count</h3>
+                <div class="value" id="totalOrders"><%= totalOrders %></div>
+                <div class="trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>8.2% vs last period</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-tags fa-lg"></i>
+                </div>
+                <h3>Total Users</h3>
+                <div class="value"><%= totalUsers %></div>
+                <div class="trend down">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>4.3% vs last period</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class=" fas fa-chart-line fa-lg"></i>
+                </div>
+                <h3>Total Products</h3>
+                <div class="value" ><%= totalProducts %></div>
+                <div class="trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>3.7% vs last period</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-percent fa-lg"></i>
+                </div>
+                <h3>Total Discount</h3>
+                <div class="value"><%= totalDiscount %></div>
+                <div class="trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>12.5% vs last period</span>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="sales-table">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Discount</th>
+                            <th>Final Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <% orders.forEach(order => { %>
+                        <tr>
+                            <td><%= order.orderId %></td>
+                            <td><%= new Date(order.createdOn).toLocaleDateString('en-US',{ year: 'numeric', month: 'long', day: 'numeric' }) %></td>
+                            <td>₹<%= order.totalPrice %></td>
+                            <td>₹<%= order.discount %></td>
+                            <td>₹<%= order.finalAmount || order.totalPrice %></td>
+                            <td>
+                                <span class="status <%= order.status %>">
+                                    <%= order.status %>
+                                </span>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+
+
+       
+
+            <!-- Chart Container -->
+    <div id="chartContainer" style="margin-top: 20px;">
+        <h4 class="content-title card-title" style="color:#4A9EDA;" id="chartTitle1">Filtered Sales </h4>
+        <canvas id="salesChart" width="400" height="200"></canvas>
+    </div>
+
+
+    
+   
+
+
+
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+     <!-- Bar Chart for Total Sales -->
+    <div id="chartContainer">
+        <h4 class="content-title card-title" style="color: rgba(75, 192, 192, 1);" id="chartTitle">Daily Total Sales </h4>
+        <canvas id="salesChart1" width="400" height="200"></canvas>
+    </div>
+
+
+    <!-- Pie Charts for Product, Brand, and Category Sales -->
+<div class="charts-row">
+    <div class="chart-container">
+      <h4>Total Sales by Product</h4>
+      <canvas id="productSalesChart" width="100" height="50"></canvas>
+    </div>
+    
+    <div class="chart-container">
+      <h4>Total Sales by Brand</h4>
+      <canvas id="brandSalesChart" width="400" height="200"></canvas>
+    </div>
+    
+    <div class="chart-container">
+      <h4>Total Sales by Category</h4>
+      <canvas id="categorySalesChart" width="400" height="200"></canvas>
+    </div>
+  </div>
+  
+
+    <!-- Pie Charts for Product, Brand, and Category Sales -->
+    <!-- <h4>Total Sales by Product</h4>
+    <canvas id="productSalesChart" width="400" height="200"></canvas>
+    
+    <h4>Total Sales by Brand</h4>
+    <canvas id="brandSalesChart" width="400" height="200"></canvas>
+    
+    <h4>Total Sales by Category</h4>
+    <canvas id="categorySalesChart" width="400" height="200"></canvas> -->
+
+    <!-- Top 10 Products -->
+    <h2>Top 10 Products by Sales</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Total Quantity</th>
+                <th>Total Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% bestSellingProducts.forEach(product => { %>
+                <tr>
+                    <td><%= product.productName %></td>
+                    <td><%= product.totalQuantity %></td>
+                    <td>₹<%= product.totalRevenue.toFixed(2) %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+
+    <!-- Top 10 Brands -->
+    <h2>Top 10 Brands by Total Products Sold and Revenue</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Brand Name</th>
+                <th>Total Products Sold</th>
+                <th>Total Revenue (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% topBrands.forEach(brand => { %>
+                <tr>
+                    <td><%= brand.brand %></td>
+                    <td><%= brand.totalQuantity %></td>
+                    <td>₹<%= brand.totalRevenue.toLocaleString('en-IN') %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+
+    <!-- Top 10 Categories -->
+    <h2>Top 10 Categories by Total Products Sold and Revenue</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Category Name</th>
+                <th>Total Products Sold</th>
+                <th>Total Revenue (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% topCategories.forEach(category => { %>
+                <tr>
+                    <td><%= category.category %></td>
+                    <td><%= category.totalQuantity %></td>
+                    <td>₹<%= category.totalRevenue.toLocaleString('en-IN') %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
 </section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<script>
+    document.getElementById('chartTitle').style.setProperty('color', 'rgba(75, 192, 192, 1)', 'important');
+    document.getElementById('chartTitle1').style.setProperty('color', '#4A9EDA', 'important');
+</script>
+
+
+
+
+  
+
+
+
+<script>
+    // Ensure these arrays are correctly parsed from the backend
+    const bestSellingProducts = JSON.parse('<%- JSON.stringify(bestSellingProducts) %>');
+    const topBrands = JSON.parse('<%- JSON.stringify(topBrands) %>');
+    const topCategories = JSON.parse('<%- JSON.stringify(topCategories) %>');
+  
+    // Log data to ensure it is correct
+    console.log("Best Selling Products: ", bestSellingProducts);
+    console.log("Top Brands: ", topBrands);
+    console.log("Top Categories: ", topCategories);
+  
+    // Extract names and total revenue from the data
+    const productNames = bestSellingProducts.map(product => product.productName);
+    const productSales = bestSellingProducts.map(product => product.totalRevenue);
+  
+    const brandNames = topBrands.map(brand => brand.brand);
+    const brandSales = topBrands.map(brand => brand.totalRevenue);
+  
+    const categoryNames = topCategories.map(category => category.category);
+    const categorySales = topCategories.map(category => category.totalRevenue);
+  
+    // Create Pie chart for Best Selling Products
+    const ctxProduct = document.getElementById('productSalesChart').getContext('2d');
+    new Chart(ctxProduct, {
+      type: 'pie',
+      data: {
+        labels: productNames, // Product names as labels
+        datasets: [{
+          data: productSales, // Product sales for each slice
+          backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40'], // Slice colors
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                return tooltipItem.label + ': ₹' + tooltipItem.raw.toLocaleString();
+              }
+            }
+          }
+        }
+      }
+    });
+  
+    // Create Pie chart for Top Brands
+    const ctxBrand = document.getElementById('brandSalesChart').getContext('2d');
+    new Chart(ctxBrand, {
+      type: 'pie',
+      data: {
+        labels: brandNames, // Brand names as labels
+        datasets: [{
+          data: brandSales, // Brand sales for each slice
+          backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'], // Slice colors
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                return tooltipItem.label + ': ₹' + tooltipItem.raw.toLocaleString();
+              }
+            }
+          }
+        }
+      }
+    });
+  
+    // Create Pie chart for Top Categories
+    const ctxCategory = document.getElementById('categorySalesChart').getContext('2d');
+    new Chart(ctxCategory, {
+      type: 'pie',
+      data: {
+        labels: categoryNames, // Category names as labels
+        datasets: [{
+          data: categorySales, // Category sales for each slice
+          backgroundColor: ['#FF6384', '#36A2EB'], // Slice colors
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                return tooltipItem.label + ': ₹' + tooltipItem.raw.toLocaleString();
+              }
+            }
+          }
+        }
+      }
+    });
+  </script>
+
+
+
+<!--dashboard graph-->
+ 
+ <script>
+    const ctx = document.getElementById('salesChart1').getContext('2d');
+    
+    // // Assuming orders is passed from the backend (with 'createdOn' field)
+    // const orders = '<%- JSON.stringify(orders) %>';
+
+     // Parse the 'orders' string into a JavaScript array
+  const orders = JSON.parse('<%- JSON.stringify(orders) %>');
+
+    console.log("orders : ",orders);
+  
+    // Process the orders to calculate total sales by date
+    const salesByDate = {};
+  
+    orders.forEach(order => {
+      const date = new Date(order.createdOn).toISOString().split('T')[0]; // Extract the date in 'YYYY-MM-DD' format
+      const totalSale = order.discount === 0 ? order.totalPrice : order.finalAmount;
+  
+      if (salesByDate[date]) {
+        salesByDate[date] += totalSale; // Accumulate sales for the same date
+      } else {
+        salesByDate[date] = totalSale; // Initialize sales for the date
+      }
+    });
+  
+    // Convert the salesByDate object into arrays for chart data
+    const dates = Object.keys(salesByDate); // Extract the dates
+    const totalSales = Object.values(salesByDate); // Extract the corresponding total sales
+  
+    // Create the chart
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: dates, // Use dates as x-axis labels
+        datasets: [{
+          label: 'Total Sales',
+          data: totalSales, // Use total sales for each date
+          backgroundColor: 'rgba(75, 192, 192, 0.2)', // Color for total sales
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false // Hide the legend since we have only one dataset
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Date' // Label for the x-axis
+            }
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Sales (₹)' // Label for the y-axis
+            }
+          }
+        }
+      }
+    });
+  </script>
+
+
+
+
+
+  
+ 
+<!--new salesreport-->
+
+<script>
+
+
+
+    document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
+        const quickFilter = document.getElementById('quickFilter').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+    
+        const queryParams = new URLSearchParams({
+            quickFilter,
+            startDate,
+            endDate
+        }).toString();
+    
+        try {
+            // Use fetch to send the request
+            const response = await fetch(`/admin/dashboardMain/download/pdf?${queryParams}`, {
+                method: 'GET',
+            });
+    
+            if (!response.ok) {
+                const data = await response.json();
+                // Show SweetAlert if an error occurs
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Something went wrong!',
+                });
+            } else {
+                // If no error, initiate PDF download
+                window.location.href = `/admin/dashboardMain/download/pdf?${queryParams}`;
+            }
+        } catch (error) {
+            // If the request fails (e.g., network error)
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An unexpected error occurred!',
+            });
+        }
+    });
+    
+    
+    
+    
+    
+    
+    
+    
+    document.getElementById('downloadExcelBtn').addEventListener('click', async () => {
+        const quickFilter = document.getElementById('quickFilter').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+    
+        // If both startDate and endDate are missing and quickFilter is none
+        if (!startDate || !endDate && quickFilter === 'none') {    // or condition instead of and
+            await Swal.fire({
+                icon: 'error',
+                title: 'No Filters Applied',
+                text: 'Please provide either a date range or choose a quick filter.',
+            });
+            return;
+        }
+    
+        // Validate if startDate is later than endDate
+        if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Invalid Date Range',
+                text: 'Start date must be before end date.',
+            });
+            return;
+        }
+    
+        // Build the URL with query parameters based on filters
+        let url = '/admin/dashboardMain/download/excel?';
+        if (quickFilter) url += `quickFilter=${quickFilter}&`;
+        if (startDate) url += `startDate=${startDate}&`;
+        if (endDate) url += `endDate=${endDate}&`;
+    
+        // Remove the last '&' if any
+        url = url.slice(0, -1);
+    
+        // Redirect to the URL to trigger the report download
+        window.location.href = url;
+    });
+    
+    
+    
+    
+    </script>
+
+
+
+
+
+<script>
+
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date().toISOString().split('T')[0];
+    
+        document.getElementById('applyFilter').addEventListener('click', async () => {
+            const quickFilter = document.getElementById('quickFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+    
+            // Validate date input
+            if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Start date must be before end date!',
+                });
+                return;
+            }
+    
+            // Check if no filters are applied
+            if (quickFilter === "none" && !startDate && !endDate) {
+                // Clear the chart and table if no filters are applied
+                clearChart();
+                const ordersTableBody = document.getElementById('ordersTableBody');
+                ordersTableBody.innerHTML = '';
+                document.getElementById('totalSales').innerHTML = '0';
+                document.getElementById('totalOrders').innerHTML = '0';
+    
+                await Swal.fire({
+                    icon: 'info',
+                    title: 'No Filter Applied',
+                    text: 'Please apply a filter to view the data.',
+                });
+    
+                return;
+            }
+    
+            // Handle missing date cases
+            if ((!startDate || !endDate) && quickFilter === "none") {
+                // If one of the dates is missing, don't filter and show message
+                await Swal.fire({
+                    icon: 'info',
+                    title: 'Missing Date(s)',
+                    text: 'Start date or end date is missing. Data will not be filtered by date.',
+                });
+            }
+    
+            try {
+                // Fetch filtered data from the server
+                const response = await fetch('/admin/dashboardMain', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quickFilter, startDate, endDate }),
+                });
+    
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+    
+                const data = await response.json();
+    
+                // Update orders table
+                const ordersTableBody = document.getElementById('ordersTableBody');
+                ordersTableBody.innerHTML = '';
+                data.orders.forEach(order => {
+                    const row = `<tr>
+                        <td>${order.orderId}</td>
+                        <td>${new Date(order.createdOn).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                        <td>₹${order.totalPrice}</td>
+                        <td>₹${order.discount}</td>
+                        <td>₹${order.finalAmount ? order.finalAmount : order.totalPrice}</td>
+                        <td><span class="status ${order.status}">${order.status}</span></td>
+                    </tr>`;
+                    ordersTableBody.insertAdjacentHTML('beforeend', row);
+                });
+    
+                // Update total sales and total orders
+                document.getElementById('totalSales').innerHTML = data.totalSales;
+                document.getElementById('totalOrders').innerHTML = data.totalOrders;
+    
+                // Update the chart
+                if (data.orders.length > 0) {
+                    if (startDate && endDate || quickFilter!=="none" ) {
+                        // Show chart only when both startDate and endDate are provided
+                        updateChartWithFilteredData(data.orders);
+                    } else {
+                        clearChart(); // Clear chart if date filters are missing
+                    }
+                } else {
+                    clearChart(); // Clear the chart if no data is returned
+                }
+    
+                // Hide loading indicator
+                document.getElementById('loadingIndicator').style.display = 'none';
+    
+                // Success message
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Data loaded successfully!',
+                    text: 'The data has been successfully filtered.',
+                });
+            } catch (error) {
+                document.getElementById('loadingIndicator').style.display = 'none';
+    
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: `Something went wrong: ${error.message}`,
+                });
+            }
+        });
+    });
+    
+    // Function to update the chart with filtered data
+    function updateChartWithFilteredData(filteredOrders) {
+        const labels = filteredOrders.map(order =>
+            new Date(order.createdOn).toLocaleDateString('en-US', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+            })
+        );
+        const data = filteredOrders.map(order => order.finalAmount || order.totalPrice);
+    
+        initializeChart(labels, data);
+    }
+    
+    // Function to clear the chart
+    function clearChart() {
+        if (salesChart) {
+            salesChart.destroy(); // Destroy existing chart instance
+            salesChart = null; // Reset the chart instance
+        }
+    }
+    
+    // Function to initialize and create the chart
+    let salesChart;
+    
+    function initializeChart(labels, data) {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+    
+        if (salesChart) {
+            salesChart.destroy(); // Destroy previous chart instance to avoid overlapping charts
+        }
+    
+        salesChart = new Chart(ctx, {
+            type: 'bar', // Change the chart type if needed
+            data: {
+                labels: labels, // X-axis labels (e.g., order dates)
+                datasets: [
+                    {
+                        label: 'Sales Amount (₹)', // Label for the chart
+                        data: data, // Data (e.g., sales amount per order)
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+    }
+    
+    
+    
+    
+    
+    
+        </script>
+        
+    
+    
+
+
+
+
+
 <%- include("../../views/partials/admin/footer") %>

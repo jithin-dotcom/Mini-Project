@@ -10,6 +10,7 @@ const orderController = require("../controllers/admin/orderController");
 const couponController = require("../controllers/admin/couponController");
 const salesController = require("../controllers/admin/salesController");
 const profileController = require("../controllers/user/profileController");
+const dashboardController = require("../controllers/admin/dashboardController");
 
 
 const {userAuth,adminAuth} = require("../middlewares/auth");
@@ -21,7 +22,7 @@ const uploads = multer({storage:storage});
 router.get("/pageerror",adminController.pageerror);
 router.get("/login",adminController.loadLogin);
 router.post("/login",adminController.login);
-router.get("/",adminAuth,adminController.loadDashboard);
+// router.get("/",adminAuth,adminController.loadDashboard);
 
 
 // user management
@@ -92,6 +93,11 @@ router.get("/loadDashboard",adminAuth,salesController.loadDashboard);
 router.post("/dashboard",adminAuth,salesController.dashboard);
 router.get("/dashBoard/download/pdf",adminAuth,salesController.generatePdfReport);
 router.get("/dashBoard/download/excel",adminAuth,salesController.generateExcelReport);
+
+router.get("/",adminAuth,dashboardController.loadDashboardMain);
+router.post("/dashboardMain",adminAuth,dashboardController.dashboardMain);
+router.get("/dashBoardMain/download/pdf",adminAuth,dashboardController.generatePdfReportMain);
+router.get("/dashBoardMain/download/excel",adminAuth,dashboardController.generateExcelReportMain);
 
 
 module.exports = router;

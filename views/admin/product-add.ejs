@@ -54,45 +54,6 @@
                            </div>
 
 
-                           <!-- <div class="col-lg-4 mb-4">
-                            <label class="form-label">Size</label>
-                            <select class="form-select border" name="size">
-                                <option>Choose an option</option>
-                                <option>Size S</option>
-                                <option>Size M</option>
-                                <option>Size L</option>
-                                <option>Size XL</option>
-                                <option>Size XXL</option>
-                                  
-                            </select>
-                            <div id="brand-error" class="error-message"></div>
-                        </div> -->
-
-
-                            <!-- Size Selection -->
-    <!-- <div class="mb-4">
-        <label for="size" class="form-label">Size</label>
-        <select id="size" name="size" class="form-select border" required>
-            <option value="" disabled selected>Choose a size</option>
-            <option value="S">Size S</option>
-            <option value="M">Size M</option>
-            <option value="L">Size L</option>
-            <option value="XL">Size XL</option>
-            <option value="XXL">Size XXL</option>
-        </select>
-        <div id="size-error" class="error-message"></div>
-    </div>
-
-
-
-                        <div class="col-lg-4">
-                            <div class="mb-4">
-                                <label class="form-label">Quantity</label>
-                                <input placeholder="" name="quantity" type="text" class="form-control border">
-                                <div id="quantity-error" class="error-message"></div>
-                            </div>
-                        </div> -->
-
 
 
 
@@ -103,27 +64,27 @@
                                 <!-- Size S -->
                                 <div class="col-lg-4 mb-3">
                                     <label class="form-label">Size S</label>
-                                    <input type="number" name="size[S]" placeholder="Enter quantity for S" class="form-control border" min="0" required>
+                                    <input type="number" name="size[S]" placeholder="Enter quantity for S" id="s" class="form-control border" min="0" required>
                                 </div>
                                 <!-- Size M -->
                                 <div class="col-lg-4 mb-3">
                                     <label class="form-label">Size M</label>
-                                    <input type="number" name="size[M]" placeholder="Enter quantity for M" class="form-control border" min="0" required>
+                                    <input type="number" name="size[M]" placeholder="Enter quantity for M" id="m" class="form-control border" min="0" required>
                                 </div>
                                 <!-- Size L -->
                                 <div class="col-lg-4 mb-3">
                                     <label class="form-label">Size L</label>
-                                    <input type="number" name="size[L]" placeholder="Enter quantity for L" class="form-control border" min="0" required>
+                                    <input type="number" name="size[L]" placeholder="Enter quantity for L" id="l" class="form-control border" min="0" required>
                                 </div>
                                 <!-- Size XL -->
                                 <div class="col-lg-4 mb-3">
                                     <label class="form-label">Size XL</label>
-                                    <input type="number" name="size[XL]" placeholder="Enter quantity for XL" class="form-control border" min="0" required>
+                                    <input type="number" name="size[XL]" placeholder="Enter quantity for XL" id="xl" class="form-control border" min="0" required>
                                 </div>
                                 <!-- Size XXL -->
                                 <div class="col-lg-4 mb-3">
                                     <label class="form-label">Size XXL</label>
-                                    <input type="number" name="size[XXL]" placeholder="Enter quantity for XXL" class="form-control border" min="0" required>
+                                    <input type="number" name="size[XXL]" placeholder="Enter quantity for XXL" id="xxl" class="form-control border" min="0" required>
                                 </div>
                             </div>
                         </div>
@@ -155,20 +116,7 @@
                                    </div>
                                    <div id="salePrice-error" class="error-message"></div>
                                </div>
-                               <!-- <div class="col-lg-4">
-                                   <div class="mb-4">
-                                       <label class="form-label">Quantity</label>
-                                       <input placeholder="" name="quantity" type="text" class="form-control border">
-                                       <div id="quantity-error" class="error-message"></div>
-                                   </div>
-                               </div> -->
-                               <!-- <div class="col-lg-4">
-                                <div class="mb-4">
-                                    <label class="form-label">Quantity</label>
-                                    <input placeholder="" name="quantity" type="text" class="form-control border">
-                                    <div id="quantity-error" class="error-message"></div>
-                                </div>
-                            </div> -->
+                               
                            </div>
 
 
@@ -301,7 +249,8 @@
        </div>
    </section>
 <script src="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.js"></script>
-    
+<!-- Include SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 <script>
@@ -433,24 +382,63 @@
               const category = document.getElementsByName('category')[0].value;
               const images = document.getElementById('input1')
               const quantity=document.getElementsByName('quantity')
+              const m = document.getElementById('m').value;
+              const s = document.getElementById('s').value;
+              const l = document.getElementById('l').value;
+              const xl = document.getElementById('xl').value;
+              const xxl = document.getElementById('xxl').value;
+              const sizeValues = { s, m, l, xl, xxl };
+              const numberRegex = /^[0-9]+$/; // Only allows numbers
               let isValid = true
-            if (name.trim() === "") {
-      displayErrorMessage('productName-error', 'Please enter a product name.');
-      isValid = false;
-   } else if (!/^[a-zA-Z\s]+$/.test(name.trim())) {
-      displayErrorMessage('productName-error', 'Product name should contain only alphabetic characters.');
-      isValid = false;
-   }
+              if (name.trim() === "") {
+              //   displayErrorMessage('productName-error', 'Please enter a product name.');
+                 Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Please enter a product name!',
+            });
+             isValid = false;
+            } else if (!/^[a-zA-Z\s]+$/.test(name.trim())) {
+             //   displayErrorMessage('productName-error', 'Product name should contain only alphabetic characters.');
+                Swal.fire({
+                   icon: 'error',
+                   title: 'Oops...',
+                   text: 'Product name should contain only alphabetic characters!',
+                });
+                isValid = false;
+            }
             
-   if (description.trim() === "") {
-      displayErrorMessage('description-error', 'Please enter a product description.');
-      isValid = false;
-   } else if (!/^[a-zA-Z\s.,']+$/.test(description.trim())) {
-      displayErrorMessage('description-error', 'Product description should contain only alphabetic characters.');
-      isValid = false;
-   }
+            if (description.trim() === "") {
+             //   displayErrorMessage('description-error', 'Please enter a product description.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Please enter a product description!',
+            });
+            isValid = false;
+            } else if (!/^[a-zA-Z\s.,']+$/.test(description.trim())) {
+            //   displayErrorMessage('description-error', 'Product description should contain only alphabetic characters.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Product description should contain only alphabetic characters!',
+            });
+            isValid = false;
+            }
   
   
+            for (const [size, value] of Object.entries(sizeValues)) {
+               if (value === "" || !numberRegex.test(value)) {
+                   swal.fire({
+                      title: "Invalid Input",
+                      text: `Please enter a valid number for size ${size.toUpperCase()}.`,
+                      icon: "warning",
+                      button: "OK",
+                   });
+                isValid = false;
+                break; // Stop validation after first invalid entry
+                }
+            }
            
   
   
@@ -463,7 +451,12 @@
   
   
               if (!/^\d+(\.\d{1,2})?$/.test(price) || parseFloat(price) < 0) {
-                  displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
+                //   displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Please enter a valid non-negative price!',
+                });
                   isValid = false;
               }
   
@@ -471,46 +464,66 @@
   
   
               if (!/^\d+(\.\d{1,2})?$/.test(saleprice) || parseFloat(saleprice) < 0) {
-                  displayErrorMessage('salePrice-error', 'Please enter a valid non-negative price.');
+                //   displayErrorMessage('salePrice-error', 'Please enter a valid non-negative price.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Please enter a valid non-negative price!',
+                })
                   isValid = false;
               }
               if (parseFloat(price) <= parseFloat(saleprice)) {
-      displayErrorMessage('regularPrice-error', 'Regular price must be greater than sale price.');
-      isValid = false;
-   }
+              //   displayErrorMessage('regularPrice-error', 'Regular price must be greater than sale price.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Regular price must be greater than sale price!',
+                });
+             isValid = false;
+              }
   
   
               if (color.trim() === "") {
-                  displayErrorMessage('color-error', 'Please enter a color.');
+                //   displayErrorMessage('color-error', 'Please enter a color.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Please enter a color!',
+                });
                   isValid = false;
               }
   
   
               if (images.files.length === 0) {
-                  displayErrorMessage("images-error",'Please select an image.');
+                //   displayErrorMessage("images-error",'Please select an image.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Please select an image!',
+                });
                   isValid = false;
               }
               return isValid;
-          }
+    }
 
 
-          function displayErrorMessage(elementId, message) {
-              var errorElement = document.getElementById(elementId);
-              errorElement.innerText = message;
-              errorElement.style.display = "block";
-          }
+    function displayErrorMessage(elementId, message) {
+         var errorElement = document.getElementById(elementId);
+         errorElement.innerText = message;
+         errorElement.style.display = "block";
+    }
   
   
-          function clearErrorMessages() {
-              const errorElements = document.getElementsByClassName('error-message');
-              Array.from(errorElements).forEach(element => {
-                  element.innerText = '';
-                  element.style.display = 'none'; //add
-              });
-              const errorMessage = document.getElementById('errorMessage');
+    function clearErrorMessages() {
+         const errorElements = document.getElementsByClassName('error-message');
+         Array.from(errorElements).forEach(element => {
+             element.innerText = '';
+             element.style.display = 'none'; //add
+        });
+        const errorMessage = document.getElementById('errorMessage');
   
   
-          }
+    }
 
 
 
