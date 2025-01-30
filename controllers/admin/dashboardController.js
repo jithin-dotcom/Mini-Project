@@ -18,6 +18,11 @@ const loadDashboardMain = async (req, res) => {
         let totalOrders = await Order.countDocuments({status:"Delivered"});
 
 
+        const page = parseInt(req.query.page) || 1; // Current page number
+        const limit = 10; // Number of orders per page
+        const skip = (page - 1) * limit;
+
+
 
           // Fetch total sales using the existing aggregation logic (keeping it as is)
         const Sales = await Order.aggregate([
@@ -45,8 +50,17 @@ const loadDashboardMain = async (req, res) => {
     }]);
         const totalDiscount = discount.length > 0 ? discount[0].discount : 0;
 
+        const orders1 = await Order.find({ status: "Delivered" }).sort({ createdOn: -1 });
+
         // Get recent orders
-        const orders = await Order.find({ status: "Delivered" }).sort({ createdOn: -1 });
+        const orders = await Order.find({ status: "Delivered" })
+                             .sort({ createdOn: -1 })
+                             .skip(skip)
+                             .limit(limit);
+
+         // Count total pages
+         const totalOrdersCount = await Order.countDocuments({ status: "Delivered" });
+         const totalPages = Math.ceil(totalOrdersCount / limit)
 
 
            // Fetch best-selling products
@@ -178,10 +192,12 @@ const loadDashboardMain = async (req, res) => {
             totalSales,
             totalDiscount,
             orders,
-            // topProductDetails,
+            orders1,
             bestSellingProducts,
             topBrands,
-            topCategories
+            topCategories,
+            totalPages,
+            currentPage: page
         });
     } catch (error) {
         console.log("The error is", error);
@@ -196,6 +212,12 @@ const dashboardMain = async (req, res) => {
         const { quickFilter, startDate, endDate } = req.body;
         let matchCondition = { status: "Delivered" };
         console.log("quickFilter : ",quickFilter);
+
+
+        const page = parseInt(req.query.page) || 1; // Current page number
+        const limit = 10; // Number of orders per page
+        const skip = (page - 1) * limit;
+
 
 
          // Check if either startDate or endDate is missing  new added
@@ -268,11 +290,28 @@ const dashboardMain = async (req, res) => {
 
         const totalSales = Sales.length > 0 ? Sales[0].totalSales : 0;
 
+
+
+          // Fetch total count based on filters
+        const totalOrdersCount = await Order.countDocuments(matchCondition);
+        const totalPages = Math.ceil(totalOrdersCount / limit);
+
+        const orders1 = await Order.find(matchCondition).sort({ createdOn: -1 });
+
         // Fetch filtered orders
-        const orders = await Order.find(matchCondition).sort({ createdOn: -1 });
+        const orders = await Order.find(matchCondition)
+                             .sort({ createdOn: -1 })
+                             .skip(skip)
+                             .limit(limit);
+
+
+
+        //  // Count total pages
+        //  const totalOrdersCount = await Order.countDocuments({ status: "Delivered" });
+        //  const totalPages = Math.ceil(totalOrdersCount / limit);
 
         // Send response
-        res.json({ totalOrders, totalUsers, totalProducts, totalSales, orders });
+        res.json({ totalOrders, totalUsers, totalProducts, totalSales, orders,totalPages, currentPage: page,orders1 });
     } catch (error) {
         console.log("The error is", error);
         res.status(500).json({ message: "An error occurred while fetching dashboard data" });
@@ -556,6 +595,8 @@ const generateExcelReportMain = async (req, res) => {
         // Fetch filtered orders from database
         const orders = await Order.find(matchCondition).sort({ createdOn: -1 });
 
+      
+
         // Create a new Excel workbook and worksheet
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Sales Report');
@@ -592,6 +633,7 @@ const generateExcelReportMain = async (req, res) => {
     } catch (error) {
         console.error("Error generating Excel report:", error);
         res.status(500).send("Error generating report.");
+       
     }
 };
 

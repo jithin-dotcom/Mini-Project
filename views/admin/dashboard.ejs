@@ -344,6 +344,45 @@ tr:hover {
 
 
 
+/* Pagination styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.pagination a {
+    padding: 10px 15px;
+    margin: 0 5px;
+    text-decoration: none;
+    color: #007BFF;
+    background: #f8f8f8;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    transition: 0.3s ease;
+}
+
+.pagination a:hover {
+    background:#007BFF;
+    color: #fff;
+}
+
+.pagination .active {
+    background: #007BFF;
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+    .pagination a {
+        padding: 8px 12px;
+        margin: 0 3px;
+        font-size: 14px;
+    }
+}
+
+
 
 
 
@@ -639,6 +678,19 @@ canvas {
                         <% }); %>
                     </tbody>
                 </table>
+                 <!-- Pagination Controls -->
+    <div class="pagination">
+        <% if (currentPage > 1) { %>
+            <a href="?page=<%= currentPage - 1 %>" class="prev">← Prev</a>
+        <% } %>
+
+        <% for (let i = 1; i <= totalPages; i++) { %>
+            <a href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+
+        <% if (currentPage < totalPages) { %>
+            <a href="?page=<%= currentPage + 1 %>" class="next">Next →</a>
+        <% } %>
             </div>
         </div>
         
@@ -669,7 +721,7 @@ canvas {
 
      <!-- Bar Chart for Total Sales -->
     <div id="chartContainer">
-        <h4 class="content-title card-title" style="color: rgba(75, 192, 192, 1);" id="chartTitle">Daily Total Sales </h4>
+        <h4 class="content-title card-title" style="color: rgba(75, 192, 192, 1);" id="chartTitle">Overall Total Sales </h4>
         <canvas id="salesChart1" width="400" height="200"></canvas>
     </div>
 
@@ -900,7 +952,7 @@ canvas {
     // const orders = '<%- JSON.stringify(orders) %>';
 
      // Parse the 'orders' string into a JavaScript array
-  const orders = JSON.parse('<%- JSON.stringify(orders) %>');
+  const orders = JSON.parse('<%- JSON.stringify(orders1) %>');
 
     console.log("orders : ",orders);
   
@@ -1011,6 +1063,12 @@ canvas {
             });
         }
     });
+
+
+
+
+    
+
     
     
     
@@ -1023,9 +1081,12 @@ canvas {
         const quickFilter = document.getElementById('quickFilter').value;
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
+        console.log("quickFilter : ",quickFilter);
+        console.log("startDate : ",startDate);
+        console.log("endDate : ",endDate);
     
         // If both startDate and endDate are missing and quickFilter is none
-        if (!startDate || !endDate && quickFilter === 'none') {    // or condition instead of and
+        if ((!startDate || !endDate) && quickFilter === 'none') {    // or condition instead of and
             await Swal.fire({
                 icon: 'error',
                 title: 'No Filters Applied',

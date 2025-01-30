@@ -31,6 +31,7 @@ const placeOrder = async (req, res) => {
         const userId = req.session.user._id;
         console.log("payment status : ",paymentStatus);
         const wallet = await Wallet.findOne({ userId });
+       
         if (!wallet) {
             wallet = { balance: 0, transactionHistory: [] };
         }
@@ -82,6 +83,9 @@ const placeOrder = async (req, res) => {
         if (wallet.balance < finalAmount && paymentMethod === 'wallet') {
             return res.json({ success: false, message: "Insufficient wallet balance." });
         }
+
+        
+
        
 
 

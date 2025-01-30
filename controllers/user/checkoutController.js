@@ -18,8 +18,36 @@ const getCheckout = async (req, res) => {
         const user = req.session.user;
         const userData = await User.findOne({ _id: user });
         const address = await Address.find({ userId: user });
+        // const product = await Product.find({_id: });
         const cart = await Cart.findOne({ userId: user }).populate('items.productId');
         const wallet = await Wallet.findOne({userId: user})|| { balance: 0 }; // Default wallet;
+        console.log("cart at checkout : ",cart);
+
+
+
+        // Check stock availability
+        for (const item of cart.items) {
+            const product = await Product.findById( item.productId);
+            if (!product) continue;
+
+            console.log("product : ",product);
+            const availableStock = product.size.get(item.size); // Fetch stock for the selected size
+
+            console.log("availablestock : ",availableStock);
+            console.log("item.quantity : ",item.quantity);
+            if (availableStock < item.quantity) {
+                return res.redirect("/cart");
+                // return res.render("cart", { 
+                //     user: userData, 
+                //     cart: cart.items, 
+                //     errorMessage: `Sorry, ${product.productName} (Size: ${item.size}) is out of stock!`
+                // });
+            }
+        }
+
+
+
+
        
 
         // Calculate the total price

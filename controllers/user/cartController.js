@@ -97,9 +97,19 @@ const getCart = async (req, res) => {
 
 
         // cart.items.forEach(item => {
-        //     totalPrice += item.price * item.quantity; // price * quantity for each item
+        //     item.maxStock =  await Product.findOne({_id:item.productId}); // price * quantity for each item
            
         // });
+
+
+        //update quantity
+        for (const item of cart.items) {
+            const product = await Product.findOne({ _id: item.productId });
+            if (!product) continue;
+            item.maxStock = product.size.get(item.size); // Fetch stock for the selected size
+            await cart.save();
+
+        }
 
         
         //updating total price in cart new code wishlist-cart

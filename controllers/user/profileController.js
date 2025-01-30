@@ -649,7 +649,7 @@ const cancelOrder = async (req, res) => {
 
                 // Add transaction history entry
                 wallet.transactionHistory.push({
-                    transactionType: 'refund',
+                    transactionType: 'credit',
                     transactionAmount: order.finalAmount,
                     description: `Refund for cancelled order ${order.orderId}`
                 });
@@ -661,7 +661,7 @@ const cancelOrder = async (req, res) => {
                     userId: order.userId,
                     balance: order.finalAmount,
                     transactionHistory: [{
-                        transactionType: 'refund',
+                        transactionType: 'credit',
                         transactionAmount: order.finalAmount,
                         description: `Refund for cancelled order ${order.orderId}`
                     }]
@@ -737,7 +737,7 @@ const returnOrder = async (req, res) => {
 
                 // Add transaction history entry
                 wallet.transactionHistory.push({
-                    transactionType: 'refund',
+                    transactionType: 'credit',
                     transactionAmount: order.finalAmount,
                     description: `Refund for returned order ${order.orderId}`
                 });
@@ -748,7 +748,7 @@ const returnOrder = async (req, res) => {
                     userId: order.userId,
                     balance: order.finalAmount,
                     transactionHistory: [{
-                        transactionType: 'refund',
+                        transactionType: 'credit',
                         transactionAmount: order.finalAmount,
                         description: `Refund for returned order ${order.orderId}`
                     }]

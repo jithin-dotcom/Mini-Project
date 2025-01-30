@@ -79,7 +79,7 @@ const updateOrderStatus = async (req, res) => {
       // Increment wallet balance when order is cancelled and payment method is not COD
       wallet.balance += order.finalAmount;
       wallet.transactionHistory.push({
-        transactionType: 'refund',
+        transactionType: 'credit',
         transactionAmount: order.finalAmount,
         description: `Refund for cancelled order ${orderId}`
       });
@@ -103,7 +103,7 @@ const updateOrderStatus = async (req, res) => {
         // Increment wallet balance when order is cancelled and payment method is not COD     && order.paymentMethod==='cashOnDelivery'
         wallet.balance += order.finalAmount;
         wallet.transactionHistory.push({
-          transactionType: 'refund',
+          transactionType: 'credit',
           transactionAmount: order.finalAmount,
           description: `Refund for Returned order ${orderId}`
         });
