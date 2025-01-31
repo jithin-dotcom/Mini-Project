@@ -360,15 +360,26 @@
 
 
 	<style>
+
+
+
+.imageZoom {
+    width: 100%; /* Makes it scale with the parent container */
+    max-width: 512px; /* Prevents it from getting too large */
+    height: auto; /* Adjusts height automatically */
+    aspect-ratio: 1 / 1; /* Maintains square shape */
+    border: 5px solid black;
+    position: relative;
+}
        
 
-		.imageZoom {
+		/* .imageZoom {
             width: 512px;
             height: 512px;
 			border: 5px solid black;
             position: relative;
-            /* margin-bottom: 20px; */
-        }
+          
+        } */
 
         .imageZoom img {
             width: 100%;
@@ -391,6 +402,21 @@
             left: 0;
             top: 0;
         }
+
+
+		/* 🔹 Responsive Adjustments */
+@media (max-width: 768px) { /* Tablets */
+    .imageZoom {
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 480px) { /* Mobile */
+    .imageZoom {
+        max-width: 100%; /* Takes full width */
+        border-width: 3px; /* Smaller border */
+    }
+}
     </style>
     
 
@@ -553,15 +579,49 @@
 										</div>
 										
 									</div>
+
+
+											<!-- <p>TOTAL QUANTITY:  <span id="totalQuantity">0</span></p> Display quantity available for selected size   js-addcart-detail -->
+									<!-- <div>
+										<p class="text-center text-md-start fw-bold">
+											TOTAL QUANTITY: <span id="totalQuantity" class="fw-normal">0</span>
+										</p>
+ 
+									</div> -->
+
+									<div class="d-flex flex-column flex-md-row align-items-center justify-content-md-start text-center text-md-start">
+										<p class="fw-bold mb-0">
+											TOTAL QUANTITY: <span id="totalQuantity" class="fw-normal">0</span>
+										</p>
+									</div>
 									
-									<p>TOTAL QUANTITY:  <span id="totalQuantity">0</span></p> <!-- Display quantity available for selected size   js-addcart-detail -->
-									<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 " onclick="addToCart('<%= product._id %>','<%= product.productName%>','<%= product.salePrice%>',document.getElementById('size-select').value,document.getElementById('productQuantity').value)">   
+							
+									
+									
+
+									<div class="d-flex flex-column flex-md-row gap-2">
+										<button class="btn btn-primary w-100 w-md-auto p-2"
+											onclick="addToCart('<%= product._id %>','<%= product.productName%>','<%= product.salePrice%>',
+											document.getElementById('size-select').value, document.getElementById('productQuantity').value)">
+											Add to Cart
+										</button>
+									
+										<button class="btn w-100 w-md-auto p-2" style="background-color: #046963; color: white;"
+											onclick="addToWishlist('<%= product._id %>','<%= product.productName%>','<%= product.salePrice%>',
+											document.getElementById('size-select').value, document.getElementById('productQuantity').value)">
+											Add to Wishlist
+										</button>
+									</div>
+									
+									
+									
+									<!-- <button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 " onclick="addToCart('<%= product._id %>','<%= product.productName%>','<%= product.salePrice%>',document.getElementById('size-select').value,document.getElementById('productQuantity').value)">   
 										Add to cart
 									</button>
 									
 									<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 " style="margin-top: 15px;background-color: #046963;" onclick="addToWishlist('<%= product._id %>','<%= product.productName%>','<%= product.salePrice%>',document.getElementById('size-select').value,document.getElementById('productQuantity').value)">
 											Add to Wishlist
-									</button>
+									</button> -->
 									
 								</div>
 							</div>	
