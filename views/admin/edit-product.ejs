@@ -317,6 +317,8 @@ function validateForm() {
         });
         isValid = false;
     }
+    console.log("regular price", price);
+    console.log("sale price", saleprice);
     if(price < saleprice){
         Swal.fire({
         icon: 'error',
