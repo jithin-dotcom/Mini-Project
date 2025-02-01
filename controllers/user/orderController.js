@@ -30,7 +30,7 @@ const placeOrder = async (req, res) => {
         const { addressId, cartItems, totalPrice, paymentMethod,paymentStatus } = req.body;
         const userId = req.session.user._id;
         console.log("payment status : ",paymentStatus);
-        const wallet = await Wallet.findOne({ userId });
+        let wallet = await Wallet.findOne({ userId });
        
         if (!wallet) {
             wallet = { balance: 0, transactionHistory: [] };
