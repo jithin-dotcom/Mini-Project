@@ -249,11 +249,11 @@ function validateForm() {
     const images = document.getElementById('input1');
     const quantity = document.getElementsByName('quantity');
     imageDatas = document.getElementById("imageDatas")?.value;
-    const s = document.getElementById('s').value;
-    const m = document.getElementById('m').value;
-    const l = document.getElementById('l').value;
-    const xl = document.getElementById('xl').value;
-    const xxl = document.getElementById('xxl').value;
+    const s = document.getElementById('s').value.trim();
+    const m = document.getElementById('m').value.trim();
+    const l = document.getElementById('l').value.trim();
+    const xl = document.getElementById('xl').value.trim();
+    const xxl = document.getElementById('xxl').value.trim();
     const sizeValues = { s, m, l, xl, xxl };
     const numberRegex = /^[0-9]+$/; // Only allows numbers
     const regex = /^[A-Za-z\s]+$/; // Only allows alphabets and spaces
@@ -317,9 +317,8 @@ function validateForm() {
         });
         isValid = false;
     }
-    console.log("regular price", price);
-    console.log("sale price", saleprice);
-    if(price < saleprice){
+    
+    if(parseFloat(price) < parseFloat(saleprice)){
         Swal.fire({
         icon: 'error',
         title: 'Price Error',

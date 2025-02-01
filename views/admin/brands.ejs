@@ -317,8 +317,7 @@ document.getElementById('cropButton').addEventListener('click', function () {
 function validateAndSubmit() {
     const brandName = document.querySelector('input[name="name"]').value.trim();
     const formData = new FormData(document.forms[0]); // Include the form data with the image
-    console.log("brandName : ",brandName);
-    console.log("formData : ",formData);
+    const regex = /^[A-Za-z\s]+$/;
 
     if (!brandName) {
         Swal.fire({
@@ -327,6 +326,13 @@ function validateAndSubmit() {
             text: 'Brand name cannot be empty!',
         });
         return false;
+    }
+    if(!regex.test(brandName)){
+        Swal.fire({
+            icon: 'warning',
+            title: 'Validation Error',
+            text: 'Brand name can only contain alphabets!',
+        });
     }
 
     // Perform an AJAX request to add the brand
