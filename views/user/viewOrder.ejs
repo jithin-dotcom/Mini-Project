@@ -58,6 +58,12 @@
             <h2>Order Details</h2>
             <p class="text-muted">Detailed view of your order</p>
         </div>
+
+
+         <div class="card-footer text-end">
+                <a href="/userProfile" class="btn btn-outline-primary btn-sm" id="backToOrders">Back to Orders</a>
+         </div>
+
         <div class="card">
             <div class="card-header">
                 Order ID: <%= order.orderId %>
@@ -118,9 +124,9 @@
                 <p><%= address.pincode %></p>
                 <p><%= address.phone %></p>
             </div>
-            <div class="card-footer text-end">
+            <!-- <div class="card-footer text-end">
                 <a href="/userProfile" class="btn btn-outline-primary btn-sm" id="backToOrders">Back to Orders</a>
-            </div>
+            </div> -->
         </div>
     </div>
 

@@ -534,7 +534,7 @@ const deleteAddress = async(req,res)=>{
 
          // Find the document containing the specified address ID
         const findAddress = await Address.findOne({"address._id":addressId});
-        console.log("Find Address Result:", findAddress);
+        // console.log("Find Address Result:", findAddress);
         if(!findAddress){
             return res.status(404).send("Address not found");
         }
@@ -570,7 +570,7 @@ const viewOrders = async(req,res)=>{
         const order = await Order.findById(orderId);
         //  // Find the order by ID and populate the address field
         //  const order = await Order.findById(orderId).populate('address');
-        console.log("order : ",order);
+        // console.log("order : ",order);
         if (!order) {
             return res.status(404).render('error', { message: 'Order not found' });
         }
@@ -579,7 +579,7 @@ const viewOrders = async(req,res)=>{
           const addressDoc = await Address.findOne({ userId }).exec();
           // Find the specific address object in the address array
         const address = addressDoc.address.find(addr => addr._id.equals(order.address));
-        console.log("address : ",address); 
+        // console.log("address : ",address); 
 
         if (!address) {
             return res.status(404).send("Order address not found");

@@ -29,7 +29,7 @@ const placeOrder = async (req, res) => {
     try {
         const { addressId, cartItems, totalPrice, paymentMethod,paymentStatus } = req.body;
         const userId = req.session.user._id;
-        console.log("payment status : ",paymentStatus);
+        // console.log("payment status : ",paymentStatus);
         let wallet = await Wallet.findOne({ userId });
        
         if (!wallet) {
@@ -164,7 +164,7 @@ const placeOrder = async (req, res) => {
         req.session.orderId = order._id;
         // req.session.orderId = savedOrder._id;
 
-        res.json({ success: true, message: "Order placed successfully!", order: savedOrder });
+        res.json({ success: true, message: "Order placed successfully!", order: savedOrder, orderId:order._id });
     } catch (error) {
         console.error("Error placing order:", error);
         res.json({ success: false, message: "Failed to place order. Please try again." });
@@ -180,7 +180,7 @@ const placeOrder = async (req, res) => {
 const createRazorpayOrder = async (req, res) => {
     try {
         const { amount, addressId, paymentMethod } = req.body;
-        console.log("req.body : ",req.body);
+        // console.log("req.body : ",req.body);
         const rzpOrder = await rzp.orders.create({
             amount: amount * 100,
             currency: 'INR',
@@ -216,7 +216,7 @@ const verifyRazorpayPayment = async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature,orderId } = req.body;
 
-        console.log("orderId : ",orderId)
+        // console.log("orderId : ",orderId)
 
         let order;
         if (orderId) {

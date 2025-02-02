@@ -14,7 +14,7 @@ const applyCoupon = async (req, res) => {
         const coupon = await Coupon.findOne({ name: couponCode, isList: true });
         const user = await User.findById(userId);
         const cart = await Cart.findOne({ userId: userId });
-        console.log("user : ",user);
+        // console.log("user : ",user);
 
          
 

@@ -19,7 +19,7 @@ const getCart = async (req, res) => {
          // Fetch all blocked brands new add
          const blockedBrands = await Brand.find({ isBlocked: true }).select('brandName');
          const blockedBrandNames = blockedBrands.map(brand => brand.brandName); // Get an array of blocked brand names
-         console.log("Blocked Brands:",blockedBrandNames);
+        //  console.log("Blocked Brands:",blockedBrandNames);
 
 
         // // Find the cart associated with the user and populate product details

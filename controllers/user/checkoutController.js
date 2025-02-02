@@ -21,7 +21,7 @@ const getCheckout = async (req, res) => {
         // const product = await Product.find({_id: });
         const cart = await Cart.findOne({ userId: user }).populate('items.productId');
         const wallet = await Wallet.findOne({userId: user})|| { balance: 0 }; // Default wallet;
-        console.log("cart at checkout : ",cart);
+        // console.log("cart at checkout : ",cart);
 
 
 
@@ -30,11 +30,11 @@ const getCheckout = async (req, res) => {
             const product = await Product.findById( item.productId);
             if (!product) continue;
 
-            console.log("product : ",product);
+            // console.log("product : ",product);
             const availableStock = product.size.get(item.size); // Fetch stock for the selected size
 
-            console.log("availablestock : ",availableStock);
-            console.log("item.quantity : ",item.quantity);
+            // console.log("availablestock : ",availableStock);
+            // console.log("item.quantity : ",item.quantity);
             if (availableStock < item.quantity) {
                 return res.redirect("/cart");
                 // return res.render("cart", { 

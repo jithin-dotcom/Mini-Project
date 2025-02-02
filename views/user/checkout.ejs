@@ -569,7 +569,13 @@ document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
                                         title: 'Order Saved',
                                         text: 'Order saved with status: notCompleted.'
                                     }).then(() => {
-                                        window.location.href = '/userProfile#orders';
+                                        if (data.success) {
+                                           window.location.href = `/viewOrder/${data.orderId}`;
+                                        } else {
+                                           alert('Error placing order');
+                                           window.location.href = '/shop';
+                                        }
+                                        // window.location.href = '/userProfile#orders';
                                     });
                                 } else {
                                     Swal.fire({
@@ -611,7 +617,13 @@ document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
                     title: 'Order Placed',
                     text: 'Order placed successfully!'
                 }).then(() => {
-                    window.location.href = '/shop';
+                    if (data.success) {
+                         window.location.href = `/viewOrder/${data.orderId}`;
+                    } else {
+                       alert('Error placing order');
+                        window.location.href = '/shop';
+                    }
+                    // window.location.href = '/shop';
                 });
             } else {
                 Swal.fire({
@@ -952,7 +964,14 @@ function verifyPayment(response) {
                             title: 'Order Placed',
                             text: 'Order placed successfully!'
                         }).then(() => {
-                            window.location.href = '/shop';
+
+                            if (data.success) {
+                               window.location.href = `/viewOrder/${data.orderId}`;
+                            } else {
+                               alert('Error placing order');
+                               window.location.href = '/shop';
+                            }
+                            // window.location.href = '/shop';
                         });
                     } else {
                         Swal.fire({
