@@ -251,11 +251,15 @@ const getEditProduct = async(req,res)=>{
         const product = await Product.findOne({_id:id});
         const category = await Category.find({});
         const brand = await Brand.find({});
+        const categoryData = await Category.findOne({_id:product.category});
+        const categoryName = categoryData.name;
         console.log("product : ",product);
         res.render("edit-product",{
             product:product,
             cat:category,
             brand:brand,
+            brandName:product.brand,  //new line
+            categoryName:categoryName,  //new line
         })
 
     } catch (error) {

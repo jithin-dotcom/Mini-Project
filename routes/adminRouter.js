@@ -89,10 +89,10 @@ router.get("/deleteCoupon",adminAuth,couponController.deleteCoupon);
 
  //salesreport management
 
-router.get("/loadDashboard",adminAuth,salesController.loadDashboard);
-router.post("/dashboard",adminAuth,salesController.dashboard);
-router.get("/dashBoard/download/pdf",adminAuth,salesController.generatePdfReport);
-router.get("/dashBoard/download/excel",adminAuth,salesController.generateExcelReport);
+// router.get("/loadDashboard",adminAuth,salesController.loadDashboard);
+// router.post("/dashboard",adminAuth,salesController.dashboard);
+// router.get("/dashBoard/download/pdf",adminAuth,salesController.generatePdfReport);
+// router.get("/dashBoard/download/excel",adminAuth,salesController.generateExcelReport);
 
 router.get("/",adminAuth,dashboardController.loadDashboardMain);
 router.post("/dashboardMain",adminAuth,dashboardController.dashboardMain);
