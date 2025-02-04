@@ -330,6 +330,7 @@
 
         let nameRegex = /^[A-Za-z\s]+$/; // Only alphabets and spaces
         let numberRegex = /^[0-9]+$/; // Only numbers
+        let phoneRegex = /^[1-9][0-9]{9}$/; // Ensures phone number is 10 digits and doesn't start with 0
         
 
         if (!nameRegex.test(name)) {
@@ -348,8 +349,8 @@
             return;
         }
 
-        if (!numberRegex.test(phone) || phone.length !== 10) {
-            swal.fire('Error', 'Phone number must be 10 digits long and contain only numbers.', 'error');
+        if (!phoneRegex.test(phone) || phone.length !== 10) {
+            swal.fire('Error', 'Phone number must be 10 digits long and contain only non repeating numbers.', 'error');
             event.preventDefault();
             return;
         }
@@ -360,8 +361,8 @@
             return;
         }
 
-        if (altPhone && (!numberRegex.test(altPhone) || altPhone.length !== 10)) {
-            swal.fire('Error', 'Alternate phone number must be 10 digits long and contain only numbers.', 'error');
+        if (altPhone && (!phoneRegex.test(altPhone) || altPhone.length !== 10)) {
+            swal.fire('Error', 'Alternate phone number must be 10 digits long and contain only non repeating numbers.', 'error');
             event.preventDefault();
             return;
         }
@@ -371,6 +372,14 @@
            event.preventDefault();
            return;
        }
+       if (phone === altPhone) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Phone number and alternate phone number should be different.',
+                icon: 'error'
+            });
+            return;
+        }
     });
 </script>
 
