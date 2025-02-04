@@ -58,6 +58,16 @@ const logout = async (req, res) => {
 
 
 
+const getLogout = async(req,res)=>{
+    try {
+        return res.redirect("/admin");
+    } catch (error) {
+        console.log("Unexpected error during logout", error);
+    }
+}
+
+
+
 
 
 
@@ -84,5 +94,6 @@ module.exports = {
     loadLogin,
     login,
     pageerror,
-    logout
+    logout,
+    getLogout,
 }

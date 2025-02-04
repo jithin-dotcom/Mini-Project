@@ -565,6 +565,14 @@ const searchProducts = async (req, res) => {
 
 
 
+const getLogout = async(req,res)=>{
+    try {
+        return res.redirect("/");
+    } catch (error) {
+        console.log("Unexpected error during logout", error);
+    }
+}
+
 
 
 
@@ -580,5 +588,6 @@ module.exports = {
     logout,
     loadShoppingPage,
     searchProducts,
+    getLogout,
     
 };
