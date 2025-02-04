@@ -35,7 +35,7 @@ router.get("/auth/google/callback",passport.authenticate("google",{failureRedire
 //login management
 router.get("/login",userController.loadLogin);
 router.post("/login",userController.login);
-router.get("/logout",userController.logout);
+router.post("/logout",userController.logout);
 
 
 //home page and shopping

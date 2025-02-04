@@ -26,7 +26,7 @@ router.post("/login",adminController.login);
 
 
 // user management
-router.get("/logout",adminController.logout);
+router.post("/logout",adminController.logout);
 router.get("/users",adminAuth,customerController.customerInfo);
 router.get("/blockCustomer",adminAuth,customerController.customerBlocked);
 router.get("/unblockCustomer",adminAuth,customerController.customerunBlocked);
@@ -88,11 +88,6 @@ router.get("/deleteCoupon",adminAuth,couponController.deleteCoupon);
 
 
  //salesreport management
-
-// router.get("/loadDashboard",adminAuth,salesController.loadDashboard);
-// router.post("/dashboard",adminAuth,salesController.dashboard);
-// router.get("/dashBoard/download/pdf",adminAuth,salesController.generatePdfReport);
-// router.get("/dashBoard/download/excel",adminAuth,salesController.generateExcelReport);
 
 router.get("/",adminAuth,dashboardController.loadDashboardMain);
 router.post("/dashboardMain",adminAuth,dashboardController.dashboardMain);
