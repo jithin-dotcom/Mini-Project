@@ -318,6 +318,65 @@
 
 
 
+
+<script>
+    document.getElementById('addAddressForm').addEventListener('submit', function(event) {
+        let name = document.getElementById('name').value.trim();
+        let phone = document.getElementById('phone').value.trim();
+        let pincode = document.getElementById('pincode').value.trim();
+        let altPhone = document.getElementById('altPhone').value.trim();
+        let city = document.getElementById('city').value.trim();
+        let state = document.getElementById('state').value.trim();
+
+        let nameRegex = /^[A-Za-z\s]+$/; // Only alphabets and spaces
+        let numberRegex = /^[0-9]+$/; // Only numbers
+        
+
+        if (!nameRegex.test(name)) {
+            swal.fire('Error', 'Name must contain only alphabets.', 'error');
+            event.preventDefault();
+            return;
+        }
+        if (!nameRegex.test(city)) {
+            swal.fire('Error', 'city must contain only alphabets.', 'error');
+            event.preventDefault();
+            return;
+        }
+        if (!nameRegex.test(state)) {
+            swal.fire('Error', 'state must contain only alphabets.', 'error');
+            event.preventDefault();
+            return;
+        }
+
+        if (!numberRegex.test(phone) || phone.length !== 10) {
+            swal.fire('Error', 'Phone number must be 10 digits long and contain only numbers.', 'error');
+            event.preventDefault();
+            return;
+        }
+
+        if (!numberRegex.test(pincode) || pincode.length !== 6) {
+            swal.fire('Error', 'Pincode must be 6 digits long and contain only numbers.', 'error');
+            event.preventDefault();
+            return;
+        }
+
+        if (altPhone && (!numberRegex.test(altPhone) || altPhone.length !== 10)) {
+            swal.fire('Error', 'Alternate phone number must be 10 digits long and contain only numbers.', 'error');
+            event.preventDefault();
+            return;
+        }
+        // Check if phone is a sequence of the same number (like 0000000000, 1111111111, etc.)
+        if (/^(\d)\1{9}$/.test(phone) || (altPhone && /^(\d)\1{9}$/.test(altPhone))) {
+           swal.fire('Error', 'Phone numbers cannot be repetitive like 0000000000 or 1111111111.', 'error');
+           event.preventDefault();
+           return;
+       }
+    });
+</script>
+
+
+
+
 <script>
 
 
