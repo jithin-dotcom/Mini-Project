@@ -22,8 +22,8 @@ const uploads = multer({storage:storage});
 router.get("/pageerror",adminController.pageerror);
 router.get("/login",adminController.loadLogin);
 router.post("/login",adminController.login);
-router.post("/logout",adminController.logout);
-router.get("/logout",adminController.getLogout);
+router.get("/logout",adminController.logout);
+// router.get("/logout",adminController.getLogout);
 
 
 
