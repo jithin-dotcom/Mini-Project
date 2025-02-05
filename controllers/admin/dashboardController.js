@@ -24,7 +24,7 @@ const loadDashboardMain = async (req, res) => {
 
 
 
-          // Fetch total sales using the existing aggregation logic (keeping it as is)
+          // Fetch total sales 
         const Sales = await Order.aggregate([
             { $match: { status: 'Delivered' } },
             { 
@@ -39,7 +39,7 @@ const loadDashboardMain = async (req, res) => {
 
         const totalSales = Sales.length > 0 ? Sales[0].totalSales : 0;
 
-        // Fetch total discounts (no change)
+        // Fetch total discounts 
         const discount = await Order.aggregate([
             { $match: { status: 'Delivered' } },
             { 
