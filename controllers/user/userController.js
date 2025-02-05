@@ -367,26 +367,6 @@ const logout = async (req, res) => {
 };
 
 
-//logout latest
-// const logout = async(req,res)=>{
-//     try {
-        
-//         // Destroy the session to log out the user
-//         req.session.destroy((err)=>{
-//            if(err){
-//             console.log("Session destuction error",err.message);
-//             return res.redirect("/pageNotFound");
-//            }
-//            return res.redirect("/");
-//         })
-       
-//     } catch (error) {
-        
-//         console.log("logout error",error);
-//         res.redirect("/pageNotFound");
-//     }
-// }
-
 
 
 
