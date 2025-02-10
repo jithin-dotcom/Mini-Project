@@ -5,10 +5,10 @@ const customerController = require("../controllers/admin/customerController");
 const categoryController = require("../controllers/admin/categoryController");
 const brandController = require("../controllers/admin/brandController");
 const productController = require("../controllers/admin/productController"); 
-const bannerController = require("../controllers/admin/bannerController");
+// const bannerController = require("../controllers/admin/bannerController");
 const orderController = require("../controllers/admin/orderController");
 const couponController = require("../controllers/admin/couponController");
-const salesController = require("../controllers/admin/salesController");
+// const salesController = require("../controllers/admin/salesController");
 const profileController = require("../controllers/user/profileController");
 const dashboardController = require("../controllers/admin/dashboardController");
 
