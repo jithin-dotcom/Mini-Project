@@ -12,19 +12,19 @@ const Product = require('../../models/productSchema');
 
 const loadDashboardMain = async (req, res) => {
     try {
-        // Get total counts for users, products, and orders
+        
         let totalUsers = await User.countDocuments();
         let totalProducts = await Product.countDocuments();
         let totalOrders = await Order.countDocuments({status:"Delivered"});
 
 
-        const page = parseInt(req.query.page) || 1; // Current page number
-        const limit = 10; // Number of orders per page
+        const page = parseInt(req.query.page) || 1; 
+        const limit = 10; 
         const skip = (page - 1) * limit;
 
 
 
-          // Fetch total sales 
+          
         const Sales = await Order.aggregate([
             { $match: { status: 'Delivered' } },
             { 
@@ -39,7 +39,7 @@ const loadDashboardMain = async (req, res) => {
 
         const totalSales = Sales.length > 0 ? Sales[0].totalSales : 0;
 
-        // Fetch total discounts 
+        
         const discount = await Order.aggregate([
             { $match: { status: 'Delivered' } },
             { 
@@ -52,18 +52,18 @@ const loadDashboardMain = async (req, res) => {
 
         const orders1 = await Order.find({ status: "Delivered" }).sort({ createdOn: -1 });
 
-        // Get recent orders
+        
         const orders = await Order.find({ status: "Delivered" })
                              .sort({ createdOn: -1 })
                              .skip(skip)
                              .limit(limit);
 
-         // Count total pages
+         
          const totalOrdersCount = await Order.countDocuments({ status: "Delivered" });
          const totalPages = Math.ceil(totalOrdersCount / limit)
 
 
-           // Fetch best-selling products
+           
            const bestSellingProducts = await Order.aggregate([
             { $match: { status: 'Delivered' } },
             { $unwind: '$orderedItems' },
@@ -95,21 +95,21 @@ const loadDashboardMain = async (req, res) => {
 
 
         const topBrands = await Order.aggregate([
-            { $match: { status: 'Delivered' } }, // Match only delivered orders
-            { $unwind: '$orderedItems' }, // Break down the orderedItems array
+            { $match: { status: 'Delivered' } }, 
+            { $unwind: '$orderedItems' }, 
             {
-                $lookup: { // Join with the Product collection
-                    from: 'products', // Name of the Product collection
-                    localField: 'orderedItems.product', // Field in the Order collection
-                    foreignField: '_id', // Field in the Product collection
+                $lookup: { 
+                    from: 'products', 
+                    localField: 'orderedItems.product', 
+                    foreignField: '_id', 
                     as: 'productDetails'
                 }
             },
-            { $unwind: '$productDetails' }, // Flatten the joined productDetails array
+            { $unwind: '$productDetails' }, 
             {
-                $group: { // Group by brand
+                $group: { 
                     _id: '$productDetails.brand',
-                    totalQuantity: { $sum: '$orderedItems.quantity' }, // Total products sold
+                    totalQuantity: { $sum: '$orderedItems.quantity' }, 
                     totalRevenue: {
                         $sum: {
                             $multiply: [
@@ -120,8 +120,8 @@ const loadDashboardMain = async (req, res) => {
                     }
                 }
             },
-            { $sort: { totalQuantity: -1 } }, // Sort by quantity sold
-            { $limit: 10 }, // Limit to top 10 brands
+            { $sort: { totalQuantity: -1 } }, 
+            { $limit: 10 }, 
             {
                 $project: {
                     brand: '$_id',
@@ -135,30 +135,30 @@ const loadDashboardMain = async (req, res) => {
    
 
         const topCategories = await Order.aggregate([
-            { $match: { status: 'Delivered' } }, // Match only delivered orders
-            { $unwind: '$orderedItems' }, // Break down the orderedItems array
+            { $match: { status: 'Delivered' } }, 
+            { $unwind: '$orderedItems' }, 
             {
-                $lookup: { // Join with the Product collection
-                    from: 'products', // Name of the Product collection
-                    localField: 'orderedItems.product', // Field in the Order collection
-                    foreignField: '_id', // Field in the Product collection
+                $lookup: { 
+                    from: 'products', 
+                    localField: 'orderedItems.product', 
+                    foreignField: '_id', 
                     as: 'productDetails'
                 }
             },
-            { $unwind: '$productDetails' }, // Flatten the joined productDetails array
+            { $unwind: '$productDetails' },
             {
-                $lookup: { // Join with the Category collection to fetch category name
-                    from: 'categories', // Name of the Category collection
-                    localField: 'productDetails.category', // Category ID in the Product collection
-                    foreignField: '_id', // Field in the Category collection
+                $lookup: { 
+                    from: 'categories', 
+                    localField: 'productDetails.category',
+                    foreignField: '_id', 
                     as: 'categoryDetails'
                 }
             },
-            { $unwind: '$categoryDetails' }, // Flatten the joined categoryDetails array
+            { $unwind: '$categoryDetails' }, 
             {
-                $group: { // Group by category name
-                    _id: '$categoryDetails.name', // Use category name instead of ID
-                    totalQuantity: { $sum: '$orderedItems.quantity' }, // Total products sold
+                $group: { 
+                    _id: '$categoryDetails.name', 
+                    totalQuantity: { $sum: '$orderedItems.quantity' }, 
                     totalRevenue: {
                         $sum: {
                             $multiply: [
@@ -169,11 +169,11 @@ const loadDashboardMain = async (req, res) => {
                     }
                 }
             },
-            { $sort: { totalQuantity: -1 } }, // Sort by quantity sold
-            { $limit: 10 }, // Limit to top 10 categories
+            { $sort: { totalQuantity: -1 } }, 
+            { $limit: 10 }, 
             {
                 $project: {            
-                    category: '$_id', // Use category name as the final field
+                    category: '$_id', 
                     totalQuantity: 1,
                     totalRevenue: 1,
                     _id: 0
@@ -182,9 +182,7 @@ const loadDashboardMain = async (req, res) => {
         ]);
         
 
-    //   console.log("orders dashboard",orders);
-
-        // Render the sales report view with all the data
+        
         res.render('dashboard', {
             totalOrders,
             totalUsers,
@@ -214,16 +212,14 @@ const dashboardMain = async (req, res) => {
         console.log("quickFilter : ",quickFilter);
 
 
-        const page = parseInt(req.query.page) || 1; // Current page number
-        const limit = 10; // Number of orders per page
+        const page = parseInt(req.query.page) || 1; 
+        const limit = 10; 
         const skip = (page - 1) * limit;
 
 
-
-         // Check if either startDate or endDate is missing  new added
          if (!startDate || !endDate) {
             if (!quickFilter || quickFilter === "none") {
-                // If neither quickFilter nor dates are provided, inform the user
+                
                 return res.status(400).json({
                     message: "Please provide both startDate and endDate or select a valid quickFilter.",
                 });
@@ -231,15 +227,15 @@ const dashboardMain = async (req, res) => {
         }
 
         if (startDate && endDate) {
-            // Always filter by date range if both startDate and endDate are provided
+            
             matchCondition.createdOn = {
                 $gte: new Date(startDate),
                 $lt: new Date(endDate),
             };
         } else if (quickFilter && quickFilter !== "none") {
-            // Filter based on quickFilter if startDate and endDate are not provided
+            
             const now = new Date();
-            matchCondition.createdOn = {}; // Initialize `createdOn` filter
+            matchCondition.createdOn = {}; 
 
             switch (quickFilter) {
                 case "today":
@@ -259,17 +255,17 @@ const dashboardMain = async (req, res) => {
                     matchCondition.createdOn.$lte = moment(now).endOf("year").toDate();
                     break;
                 default:
-                    delete matchCondition.createdOn; // Remove `createdOn` filter if no match
+                    delete matchCondition.createdOn; 
                     break;
             }
         }
 
-        // Fetch statistics
+    
         const totalUsers = await User.countDocuments();
         const totalProducts = await Product.countDocuments();
         const totalOrders = await Order.countDocuments(matchCondition);
 
-        // Aggregate total sales
+        
         const Sales = await Order.aggregate([
             { $match: matchCondition },
             {
@@ -292,25 +288,18 @@ const dashboardMain = async (req, res) => {
 
 
 
-          // Fetch total count based on filters
+          
         const totalOrdersCount = await Order.countDocuments(matchCondition);
         const totalPages = Math.ceil(totalOrdersCount / limit);
 
         const orders1 = await Order.find(matchCondition).sort({ createdOn: -1 });
 
-        // Fetch filtered orders
+        
         const orders = await Order.find(matchCondition)
                              .sort({ createdOn: -1 })
                              .skip(skip)
                              .limit(limit);
 
-
-
-        //  // Count total pages
-        //  const totalOrdersCount = await Order.countDocuments({ status: "Delivered" });
-        //  const totalPages = Math.ceil(totalOrdersCount / limit);
-
-        // Send response
         res.json({ totalOrders, totalUsers, totalProducts, totalSales, orders,totalPages, currentPage: page,orders1 });
     } catch (error) {
         console.log("The error is", error);
@@ -328,24 +317,21 @@ const generatePdfReportMain = async (req, res) => {
     try {
         const { quickFilter, startDate, endDate } = req.query;
 
-        // Default match condition
+        
         let matchCondition = { status: "Delivered" };
 
-        // Apply filtering logic
+        
         if (startDate && endDate) {
-            // Filter by date range if both are provided
             matchCondition.createdOn = {
                 $gte: new Date(startDate),
                 $lt: new Date(endDate),
             };
         } else if (!startDate || !endDate) {
             if (quickFilter === "none") {
-                // If quickFilter is "none" and either date is missing, don't filter and inform the user
                 return res.status(400).json({
                     message: "Please provide both startDate and endDate or select a valid quickFilter.",
                 });
             } else {
-                // Apply quickFilter if it's not "none"
                 const now = new Date();
                 switch (quickFilter) {
                     case "today":
@@ -378,7 +364,6 @@ const generatePdfReportMain = async (req, res) => {
             }
         }
 
-        // Fetch filtered orders
         const orders = await Order.find(matchCondition).sort({ createdOn: -1 });
 
         if (!orders || orders.length === 0) {
@@ -387,7 +372,6 @@ const generatePdfReportMain = async (req, res) => {
             });
         }
 
-        // Generate PDF
         const doc = new PDFDocument();
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader(
@@ -397,7 +381,6 @@ const generatePdfReportMain = async (req, res) => {
 
         doc.pipe(res);
 
-        // Title and setup
         doc.fontSize(25).text("Sales Report", { align: "center" });
         doc.moveDown();
 
@@ -410,7 +393,6 @@ const generatePdfReportMain = async (req, res) => {
             status: 80,
         };
 
-        // Table headers
         const tableHeaders = [
             "Order ID",
             "Date",
@@ -463,11 +445,7 @@ const generatePdfReportMain = async (req, res) => {
             { width: columnWidths.status, align: "center" }
         );
         doc.moveDown();
-
-        // Table line
         doc.moveTo(50, headerY + 15).lineTo(600, headerY + 15).stroke();
-
-        // Table content
         orders.forEach((order, index) => {
             const rowY = headerY + 30 + index * 20;
 
@@ -521,7 +499,6 @@ const generatePdfReportMain = async (req, res) => {
                 rowY,
                 { width: columnWidths.status, align: "center" }
             );
-
             doc.moveTo(50, rowY + 10).lineTo(600, rowY + 10).stroke();
         });
 
@@ -548,19 +525,16 @@ const generateExcelReportMain = async (req, res) => {
 
         let matchCondition = { status: "Delivered" };
 
-        // Validate date range
         if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
             return res.status(400).send("Start date must be before end date.");
         }
 
-        // Apply date range filters if both startDate and endDate are provided
         if (startDate && endDate) {
             matchCondition.createdOn = {
                 $gte: new Date(startDate),
                 $lt: new Date(endDate)
             };
         } else if (quickFilter && quickFilter !== 'none') {
-            // Apply quick filter if provided
             const now = new Date();
             switch (quickFilter) {
                 case 'today':
@@ -591,17 +565,10 @@ const generateExcelReportMain = async (req, res) => {
                     break;
             }
         }
-
-        // Fetch filtered orders from database
         const orders = await Order.find(matchCondition).sort({ createdOn: -1 });
-
-      
-
-        // Create a new Excel workbook and worksheet
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Sales Report');
 
-        // Set up columns
         worksheet.columns = [
             { header: 'Order ID', key: 'orderId', width: 25 },
             { header: 'Date', key: 'date', width: 15 },
@@ -611,7 +578,6 @@ const generateExcelReportMain = async (req, res) => {
             { header: 'Status', key: 'status', width: 15 },
         ];
 
-        // Add rows for each order
         orders.forEach(order => {
             worksheet.addRow({
                 orderId: order.orderId,
@@ -622,12 +588,8 @@ const generateExcelReportMain = async (req, res) => {
                 status: order.status,
             });
         });
-
-        // Set headers to force download
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename=sales_report.xlsx');
-
-        // Write the workbook to the response
         await workbook.xlsx.write(res);
         res.end();
     } catch (error) {

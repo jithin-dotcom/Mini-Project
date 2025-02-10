@@ -68,9 +68,9 @@ router.post("/editProduct/:id",adminAuth,uploads.array("images",4),productContro
 router.post("/deleteImage",adminAuth,productController.deleteSingleImage);
 
 //banner management
-router.get("/banner",adminAuth,bannerController.getBannerPage);
-router.get("/addBanner",adminAuth,bannerController.getAddBannerPage);
-router.post("/addBanner",adminAuth,uploads.single("images"),bannerController.addBanner);
+// router.get("/banner",adminAuth,bannerController.getBannerPage);
+// router.get("/addBanner",adminAuth,bannerController.getAddBannerPage);
+// router.post("/addBanner",adminAuth,uploads.single("images"),bannerController.addBanner);
 
 // order management
 router.get("/orderList",adminAuth,orderController.getAllOrders);

@@ -3,35 +3,27 @@ const User = require("../../models/userSchema");
 
 const customerInfo = async(req,res)=>{
     try{
-        let search = "";
-
-         // If there is a `search` query parameter, trim its value and assign it to `search`
+        let search = ""; 
         if(req.query.search){
-            search = req.query.search.trim(); //add
-        }
-
-        //pagination logic
+            search = req.query.search.trim(); 
+        } 
         let page = 1;
         if(req.query.page){
-            page = parseInt(req.query.page); //add
+            page = parseInt(req.query.page);
         }
         const limit = 3;
-        const skip = (page-1)*limit; //add
-
-        // Query the database for customers (non-admin users) matching the search criteria
+        const skip = (page-1)*limit; 
         const data = await User.find({
             isAdmin:false,
             $or:[
-                {name:{$regex:".*"+search+".*"}},   // Case-insensitive search for name
-                {email:{$regex:".*"+search+".*"}},  // Case-insensitive search for email
+                {name:{$regex:".*"+search+".*"}},   
+                {email:{$regex:".*"+search+".*"}},  
             ],
         })
          .limit(limit)
          .skip(skip)
          .exec();
 
- 
-  // counting total matching customer for pagination       
          const count = await User.find({
             isAdmin:false,
             $or:[
@@ -40,9 +32,7 @@ const customerInfo = async(req,res)=>{
             ],
          }).countDocuments();
           
-
-         const totalPages = Math.ceil(count / limit); //add
-        //  const currentPage = req.query.page || 1;
+         const totalPages = Math.ceil(count / limit); 
          res.render("customers",{data,totalPages,currentPage:page});
 
     }catch(error){

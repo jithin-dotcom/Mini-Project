@@ -36,7 +36,6 @@ const addCategory = async(req,res)=>{
     const {name,description} = req.body;
     try{  
 
-        console.log(name);//debug
        const lowercaseCategoryName = name.trim().toLowerCase();
        const existingCategory = await Category.findOne({name:lowercaseCategoryName});
        console.log(existingCategory);
@@ -63,35 +62,22 @@ const addCategoryOffer = async (req, res) => {
     try {
         const percentage = parseInt(req.body.percentage);
         const categoryId = req.body.categoryId;
-
-        // Fetch the category by ID
         const category = await Category.findById(categoryId);
         if (!category) {
             return res.status(404).json({ status: false, message: "Category not found" });
         }
-
-        // Fetch all products in the category
         const Products = await Product.find({ category: category._id });
-
-        // Check if any product has a product offer lower than the new category offer
         const hasLowerProductOffer = Products.some((product) => product.productOffer < percentage);
 
         if (!hasLowerProductOffer) {
-            // If no product has a lower offer, do not apply the category offer
             return res.json({ status: false, message: "None of the products have a lower offer than the category offer. Category offer will not be applied." });
         }
-
-        // Update the category offer
         await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: percentage } });
-
-        // Adjust product offers based on the category offer
         for (const product of Products) {
             if (product.productOffer < percentage) {
-                // Update product offer to match the category offer if it is lower
                 product.productOffer = percentage;
                 product.salePrice = product.regularPrice * (1 - (percentage / 100)); // Adjust salePrice
             }
-            // Retain the existing product offer if it's greater than the category offer
             await product.save();
         }
 
@@ -151,7 +137,10 @@ const getListCategory = async(req,res)=>{
 const getUnlistCategory = async(req,res)=>{
     try{
        let id = req.query.id;
+
+      
        await Category.updateOne({_id:id},{$set:{isListed:true}});
+     
        res.redirect("/admin/category");
 
     }catch(error){
@@ -166,20 +155,17 @@ const getEditCategory = async(req,res) => {
        const id = req.query.id;
       
        const category = await Category.findOne({_id:id});
-       if (!category) { //add
+       if (!category) { 
         return res.status(404).send("Category not found");
        }
 
-       res.render("editCategory", { category });//add
+       res.render("editCategory", { category });
 
     }catch(error){
         res.redirect("/pageerror");
     }
 }
 
-
-
-//accessing id recived
 const editCategory = async(req,res)=>{
     try{
        const id = req.params.id;
@@ -194,7 +180,7 @@ const editCategory = async(req,res)=>{
        const updateCategory = await Category.findByIdAndUpdate(id,{
           name:categoryName,
           description:description,
-       },{new:true});//document immediatly returns
+       },{new:true});
        
        if(updateCategory){
          res.redirect("/admin/category");

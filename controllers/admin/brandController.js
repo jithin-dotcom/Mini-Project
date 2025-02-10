@@ -4,25 +4,15 @@ const Product = require("../../models/productSchema");
 
 
 
-
-//add brand modified
-
 const addBrand = async (req, res) => {
     try {
         const { name: brandName } = req.body;
-
-        // Validate brand name
         if (!brandName || !brandName.trim()) {
             return res.status(400).json({ success: false, message: "Brand name is required." });
         }
-
-
-        // Check if brand name contains only alphabets
         if (!/^[a-zA-Z]+$/.test(brandName.trim())) {
             return res.status(400).json({ success: false, message: "Brand name must contain only alphabets." });
         }
-
-        // Check if brand already exists (case-insensitive)
         const existingBrand = await Brand.findOne({
             brandName: { $regex: new RegExp(`^${brandName.trim()}$`, 'i') }
         });
@@ -30,8 +20,6 @@ const addBrand = async (req, res) => {
         if (existingBrand) {
             return res.status(400).json({ success: false, message: "Brand already exists." });
         }
-
-        // Validate and add brand image
         if (req.file && req.file.filename) {
             const newBrand = new Brand({
                 brandName: brandName.trim(),

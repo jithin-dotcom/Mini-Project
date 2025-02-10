@@ -9,8 +9,7 @@ const sharp = require("sharp");
 
 
 const getProductAddPage = async(req,res)=>{
-    try {
-        
+    try { 
        const category = await Category.find({isListed:true});
        const brand = await Brand.find({isBlocked:false});
        res.render("product-add",{
@@ -32,20 +31,14 @@ const getProductAddPage = async(req,res)=>{
 const addProducts = async(req,res)=>{
     try {
         const products = req.body;
-
-        //checks if product with same name exists
         const productExists = await Product.findOne({
             productName:products.productName,
         });
-
-        //if same name dont exist
       if(!productExists){
         const images = [];
         if(req.files && req.files.length > 0){
             for(let i = 0; i < req.files.length; i++){
-                const originalImagePath = req.files[i].path;
-
-                //crop image using sharp and saves image in product-image 
+                const originalImagePath = req.files[i].path; 
                 const resizedImagePath = path.join('public','upload','product-images',req.files[i].filename);
                 await sharp(originalImagePath).resize({width:440,height:440}).toFile(resizedImagePath);
                 images.push(req.files[i].filename);
@@ -53,21 +46,14 @@ const addProducts = async(req,res)=>{
         }
         
         const categoryId = await Category.findOne({name:products.category});
-
         if(!categoryId){
-            return res.status(400).json("Invalid category name");   //join
+            return res.status(400).json("Invalid category name");   
         }
         console.log("product-size : ",products.size);
-
-
-        // Convert the size object into a Map of Numbers
         const sizeMap = new Map();
         for (let size in products.size) {
-            sizeMap.set(size, Number(products.size[size])); // Ensure the size values are numbers
+            sizeMap.set(size, Number(products.size[size])); 
         }
-
-
-
         const newProduct = new Product({
             productName : products.productName,
             description : products.description,
@@ -77,7 +63,7 @@ const addProducts = async(req,res)=>{
             salePrice : products.salePrice,
             createdOn : new Date(),
             quantity : products.quantity,    
-            size: sizeMap, // Pass the Map
+            size: sizeMap, 
             color : products.color,
             productImage : images,
             status : 'Available',
@@ -125,10 +111,7 @@ const getAllProducts = async(req,res)=>{
          }).countDocuments();
 
          const category = await Category.find({isListed:true});
-         const brand = await Brand.find({isBlocked:false});
-
-
-         
+         const brand = await Brand.find({isBlocked:false});         
          if(category && brand){
             res.render("products",{
                 data:productData,
@@ -153,9 +136,6 @@ const addProductOffer = async(req,res)=>{
     try {
         
         const {productId,percentage} = req.body;
-
-
-        // Find product and category
         const findProduct = await Product.findOne({_id:productId});
         if (!findProduct) {                                                                     //error handling
             return res.status(404).json({ status: false, message: "Product not found." });
@@ -164,21 +144,14 @@ const addProductOffer = async(req,res)=>{
         if (!findCategory) {                                                                   //error handling
             return res.status(404).json({ status: false, message: "Category not found for the given product." });
         }
-        
-        
-         // Check for category-level offer
         if(findCategory.categoryOffer>percentage){
             return res.json({status:false,message:"This product's category already has a higher or equal offer"});
         }
 
-
-
-        // Calculate and update product price
         const discount = Math.floor(findProduct.regularPrice * (percentage / 100));
         findProduct.salePrice = findProduct.regularPrice - discount;
         findProduct.productOffer = parseInt(percentage, 10);
         await findProduct.save();
-
         findCategory.categoryOffer = 0;
         await findCategory.save();
         res.json({status:true,message:"Product offer successfully added"});
@@ -258,8 +231,8 @@ const getEditProduct = async(req,res)=>{
             product:product,
             cat:category,
             brand:brand,
-            brandName:product.brand,  //new line
-            categoryName:categoryName,  //new line
+            brandName:product.brand,  
+            categoryName:categoryName,  
         })
 
     } catch (error) {
@@ -271,8 +244,7 @@ const getEditProduct = async(req,res)=>{
 
 const editProduct = async(req,res)=>{
     try {
-        // console.log(req.files);   //debug point
-
+        
         const id =req.params.id;
         const product = await Product.findOne({_id:id});
         const data = req.body;
@@ -293,14 +265,8 @@ const editProduct = async(req,res)=>{
                 images.push(req.files[i].filename);
             }
         }
-        // console.log("category name new : ",data.category);    // debug point
-
         const category = await Category.findOne({name:data.category}); 
-        const categoryId = category._id;
-        // console.log("categoryId : ",categoryId);     //debug point
-
-       
-
+        const categoryId = category._id;    
         const updateFields = {
             productName:data.productName,
             description:data.description,
@@ -314,7 +280,6 @@ const editProduct = async(req,res)=>{
         }
         if(req.files.length>0){
             updateFields.$push = {productImage:{$each:images}};
-            // updateFields.productImage = images;
         }
         await Product.findByIdAndUpdate(id,updateFields,{new:true});
         res.redirect("/admin/products");

@@ -37,11 +37,7 @@ const getCheckout = async (req, res) => {
             // console.log("item.quantity : ",item.quantity);
             if (availableStock < item.quantity) {
                 return res.redirect("/cart");
-                // return res.render("cart", { 
-                //     user: userData, 
-                //     cart: cart.items, 
-                //     errorMessage: `Sorry, ${product.productName} (Size: ${item.size}) is out of stock!`
-                // });
+               
             }
         }
 
@@ -58,9 +54,7 @@ const getCheckout = async (req, res) => {
         req.session.totalPrice = total;
 
 
-         // Fetch only coupons where:
-        // - The current user's ID is not in the `userId` array
-        // - The `minimumPrice` is less than or equal to the cart total price
+        
         const availableCoupon = await Coupon.find({
             userId: { $nin: [user] },
             minimumPrice: { $lte: total },
@@ -103,7 +97,6 @@ const postAddAddress = async(req,res)=>{
 
         const userAddress = await Address.findOne({userId:userData._id});
 
-         // Check if the user already has an address record in the Address collection
         if(!userAddress){
              
              // If no address record exists, create a new address document

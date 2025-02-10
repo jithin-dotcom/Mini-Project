@@ -9,24 +9,18 @@ const pageerror = async(req,res)=>{
 
 const loadLogin = (req,res)=>{
     if(req.session.admin){
-        return res.redirect("/admin"); //new 
-        // return res.redirect("/admin/dashboard");
+        return res.redirect("/admin"); 
     }
     res.render("admin-login",{message:null})
 }
 
+
 const login = async(req,res)=>{
     try{
        const {email,password} = req.body;
-
-        // Find an admin user with the given email (ensures user is an admin by checking `isAdmin: true`)
        const admin = await User.findOne({email,isAdmin:true});
-
-        // If an admin user is found, proceed to validate the password
        if(admin){
         const passwordMatch = bcrypt.compare(password,admin.password);
-
-      // If the password matches, set a session flag for the admin and redirect to the admin dashboard
         if(passwordMatch){
             req.session.admin = true;
             return res.redirect("/admin");
@@ -34,8 +28,6 @@ const login = async(req,res)=>{
             return res.redirect("/login");
         }
        }
-
-
     }catch(error){
         console.log("login error",error);
         return res.redirect("/pageerror");
@@ -43,12 +35,9 @@ const login = async(req,res)=>{
 }
 
 
-
-
-
 const logout = async (req, res) => {
     try {
-        req.session.admin = null; // Clear only the admin session  new
+        req.session.admin = null; 
         res.redirect("/admin/login");
     } catch (error) {
         console.log("Unexpected error during logout", error);

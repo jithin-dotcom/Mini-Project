@@ -63,11 +63,11 @@ const getCart = async (req, res) => {
         // - The category of the product is not listed
         const updatedItems = cart.items.filter(item => {
             const product = item.productId;
-            if (!product || !product.category) return false; // Ensure product and category exist
+            if (!product || !product.category) return false; 
             
-            const productSizeStock = product.size.get(item.size); // Get stock from the size Map
-            const isCategoryListed = product.category.isListed; // Check if category is listed
-            const isBrandBlocked = blockedBrandNames.includes(product.brand); // Check if brand is blocked new add
+            const productSizeStock = product.size.get(item.size); 
+            const isCategoryListed = product.category.isListed; 
+            const isBrandBlocked = blockedBrandNames.includes(product.brand); 
 
             return !product.isBlocked && isCategoryListed && !isBrandBlocked && productSizeStock >= item.quantity;
         });
@@ -76,10 +76,10 @@ const getCart = async (req, res) => {
 
 
 
-        // If there are items removed (i.e., stock for size is less than quantity), update the cart
+        // If there are items removed  update the cart
         if (updatedItems.length !== cart.items.length) {
-            cart.items = updatedItems;  // Update the cart items list
-            await cart.save();  // Save the updated cart
+            cart.items = updatedItems;  
+            await cart.save();  
         }
 
         // Calculate the total price of the items in the cart
@@ -89,17 +89,14 @@ const getCart = async (req, res) => {
         // Ensure totalPrice is reset if the cart is empty
         if (cart.items.length > 0) {
            cart.items.forEach(item => {
-           totalPrice += item.price * item.quantity; // Calculate price
+           totalPrice += item.price * item.quantity; 
            });
         }else {
-            totalPrice = 0; // Reset total price when no items in cart
+            totalPrice = 0; 
         }
 
 
-        // cart.items.forEach(item => {
-        //     item.maxStock =  await Product.findOne({_id:item.productId}); // price * quantity for each item
-           
-        // });
+        
 
 
         //update quantity
@@ -121,8 +118,8 @@ const getCart = async (req, res) => {
         // If the cart exists, pass the cart data to the view
         res.render("cart", {
             user: await User.findById(userId),
-            cart: cart.items, // Pass the items in the cart
-            totalPrice: totalPrice // Pass the total price to the view
+            cart: cart.items, 
+            totalPrice: totalPrice 
         });
 
     } catch (error) {
@@ -213,9 +210,9 @@ const removeProduct = async (req, res) => {
 
 const updateProductQuantity = async (req, res) => {
     try {
-        const userId = req.session.user; // Get the user ID from the session
-        const productId = req.params.productId; // Get the productId from the URL parameter
-        const { size, quantity } = req.body; // Get the size and quantity from the request body
+        const userId = req.session.user; 
+        const productId = req.params.productId;
+        const { size, quantity } = req.body; 
 
         // Ensure the quantity does not exceed 10
         if (quantity > 10) {
@@ -257,14 +254,14 @@ const updateProductQuantity = async (req, res) => {
                 quantity: quantity,
                 price: product.price,
                 size: size,
-                name: product.name // Assuming you want to store product name as well
+                name: product.name 
             });
         }
 
         // Recalculate the totalPrice
         let totalPrice = 0;
         cart.items.forEach(item => {
-            totalPrice += item.price * item.quantity; // Price is fetched from the cart item itself
+            totalPrice += item.price * item.quantity; 
         });
 
         // Update the totalPrice in the cart
