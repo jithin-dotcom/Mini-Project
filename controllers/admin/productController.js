@@ -98,10 +98,10 @@ const getAllProducts = async(req,res)=>{
               {brand:{$regex:new RegExp(".*"+search+".*","i")}},
             ], 
         })
+        .sort({createdAt:-1})
         .limit(limit*1)
         .skip((page-1)*limit)
         .populate('category')
-        .sort({createdAt:-1})
         .exec();
 
          const count = await Product.find({

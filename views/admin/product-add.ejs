@@ -429,6 +429,25 @@
             });
             isValid = false;
             }
+            if (!category) {
+            //   displayErrorMessage('description-error', 'Product description should contain only alphabetic characters.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'enter a valid category',
+            });
+            isValid = false;
+            }
+            if (!brand) {
+            //   displayErrorMessage('description-error', 'Product description should contain only alphabetic characters.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'enter a valid Brand',
+            });
+            isValid = false;
+            }
+  
   
   
             for (const [size, value] of Object.entries(sizeValues)) {
