@@ -267,6 +267,8 @@ function validateForm() {
     const color = document.getElementsByName('color')[0].value;
     const category = document.getElementsByName('category')[0].value;
     const images = document.getElementById('input1');
+    const images1 = document.getElementById('input2');
+    const images2 = document.getElementById('input3');
     const quantity = document.getElementsByName('quantity');
     imageDatas = document.getElementById("imageDatas")?.value;
     const s = document.getElementById('s').value.trim();
@@ -278,6 +280,7 @@ function validateForm() {
     const numberRegex = /^[0-9]+$/; // Only allows numbers
     const regex = /^[A-Za-z\s]+$/; // Only allows alphabets and spaces
     let isValid = true;    
+    
     if (name.trim() === "" || !regex.test(name.trim())) {
         // displayErrorMessage('productName-error', 'Please enter valid a product name it should only have alphabets.');
         Swal.fire({
@@ -328,12 +331,20 @@ function validateForm() {
         });
         isValid = false;
     }
+    // if (((imageDatas.length || 0)+ images.files.length + images1.files.length + images2.files.length) < 3 ) {
+    //       Swal.fire({
+    //          icon: 'error',
+    //          title: 'Oops...',
+    //          text: 'Minimum 3 images required!',
+    //      });
+    //      isValid = false;
+    // }
     if (!imageDatas && images.files.length === 0) {
         // displayErrorMessage("images-error",'Please select an image.');
         Swal.fire({
         icon: 'error',
         title: 'Image Error',
-        text: 'Please select an image',
+        text: 'minimum 3 images required',
         });
         isValid = false;
     }

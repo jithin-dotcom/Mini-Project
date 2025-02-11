@@ -17,21 +17,13 @@ const loadWishlist = async (req, res) => {
     try {
         const userId = req.session.user;
         console.log(userId);
-
-
-
-          // Fetch all blocked brands
-          const blockedBrands = await Brand.find({ isBlocked: true }).select('brandName');
-          const blockedBrandNames = blockedBrands.map(brand => brand.brandName); // Extract brand names
-
-
-
-        // Find the wishlist associated with the user and populate product details
+        const blockedBrands = await Brand.find({ isBlocked: true }).select('brandName');
+        const blockedBrandNames = blockedBrands.map(brand => brand.brandName); 
         const wishlist = await Wishlist.findOne({ userId }).populate({
-            path: 'items.productId', // Populate the product details                    
-            select: 'productName salePrice description productImage size isBlocked category brand', // Select the fields you want
-            populate: { path: 'category', select: 'isListed' } // Populate category details
-        }).exec(); // Make sure to call exec()
+            path: 'items.productId',                    
+            select: 'productName salePrice description productImage size isBlocked category brand',
+            populate: { path: 'category', select: 'isListed' } 
+        }).exec(); 
 
         console.log(JSON.stringify(wishlist, null, 2));
 
@@ -43,34 +35,25 @@ const loadWishlist = async (req, res) => {
             });
         }
 
-        // Loop through the wishlist items and check for stock
         const updatedItems = wishlist.items.filter(item => {
-            const product = item.productId; // Product details from populate
-            if (!product || !product.category) return false; // Ensure product and category exist
+            const product = item.productId; 
+            if (!product || !product.category) return false; 
 
-            const availableStock = product.size.get(item.size); // Check the stock for the selected size
-            const isCategoryListed = product.category.isListed; // Check if category is listed
-            const isBrandBlocked = blockedBrandNames.includes(product.brand); // Check if brand is blocked
-
-            // If the stock for the selected size is less than the quantity in the wishlist, remove the item
-            // return   availableStock >= item.quantity;
+            const availableStock = product.size.get(item.size); 
+            const isCategoryListed = product.category.isListed; 
+            const isBrandBlocked = blockedBrandNames.includes(product.brand); 
             return !product.isBlocked  && isCategoryListed && !isBrandBlocked && availableStock >= item.quantity;
            
         });
 
-        // If there are items removed (i.e., stock for size is less than quantity), update the wishlist
         if (updatedItems.length !== wishlist.items.length) {
-            wishlist.items = updatedItems;  // Update the wishlist items list
-            await wishlist.save();  // Save the updated wishlist
+            wishlist.items = updatedItems;  
+            await wishlist.save();  
         }
 
-
-
-        // Pass the updated wishlist data to the view
         res.render("wishlist", {
             user: await User.findById(userId),
-            wishlist: wishlist.items, // Pass the updated items in the wishlist
-            // totalPrice: totalPrice // Pass the total price to the view new add
+            wishlist: wishlist.items, 
         });
 
     } catch (error) {
@@ -97,7 +80,6 @@ const addToWishlist = async (req, res) => {
             });
         }
 
-        // Use the helper function to add the item to the wishlist
         wishlist = await addToList(wishlist, productId, quantity, price, size, userId);
 
         const user = await User.findById(userId);
@@ -112,7 +94,6 @@ const addToWishlist = async (req, res) => {
         return res.status(500).json({
             status: false,
             message:  error.message || "Failed to add product to wishlist.",
-            // message: "An error occurred while adding the product to the wishlist.",
         });
     }
 };
@@ -122,26 +103,15 @@ const addToWishlist = async (req, res) => {
 
 const removeProduct = async (req, res) => {
     try {
-        const userId = req.session.user;  // Get the user ID from the session
-        const productId = req.params.productId;  // Get the productId from the URL parameter
-        const size = req.body.size;  // Get the size from the request body
-        // console.log("size",size);
-
-        // Find the user's wishlist
+        const userId = req.session.user;  
+        const productId = req.params.productId;  
+        const size = req.body.size;  
         let wishlist = await Wishlist.findOne({ userId });
-
-
         if (!wishlist) {
             return res.status(404).json({ status: false, message: 'Wishlist not found' });
         }
-
-        // Remove the product from the  wishlist's items array
         wishlist.items = wishlist.items.filter(item => !(item.productId.toString() === productId  && item.size === size));
-
-        // Save the updated cart
         await wishlist.save();
-
-        // Respond with a success message
         res.status(200).json({ status: true, message: 'Product removed from wishlist' })
     } catch (error) {
         console.error('Error removing product from wishlist', error);
@@ -158,10 +128,7 @@ const addToCart = async (req, res) => {
     try {
         const userId = req.session.user;
         const { productId, quantity, price, size } = req.body;
-
         const quantityNum = Number(quantity);
-
-        // Check if the quantity is greater than 0
         if (quantityNum <= 0) {
             return res.status(400).json({
                 status: false,
@@ -225,14 +192,11 @@ const addToCart = async (req, res) => {
         }
 
         await cart.save();
-
         const user = await User.findById(userId);
         if (!user.cart.includes(cart._id)) {
             user.cart.push(cart._id);
             await user.save();
         }
-
-        // Remove the item from the wishlist
         await Wishlist.updateOne(
             { userId: userId },
             {

@@ -6,15 +6,12 @@ const setItemCounts = async (req, res, next) => {
         if (req.session.user) {
             const userId = req.session.user._id;
 
-            // Fetch cart item count
+        
             const cart = await Cart.findOne({ userId });
             res.locals.cartItemCount = cart ? cart.items.length : 0;
 
-            // Fetch wishlist item count
             const wishlist = await Wishlist.findOne({ userId });
             res.locals.wishlistItemCount = wishlist ? wishlist.items.length : 0;
- 
-            // console.log("userId middleware : ",userId);
            
         } else {
             res.locals.cartItemCount = 0;

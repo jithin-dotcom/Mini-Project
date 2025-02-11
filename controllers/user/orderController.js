@@ -29,14 +29,12 @@ const placeOrder = async (req, res) => {
     try {
         const { addressId, cartItems, totalPrice, paymentMethod,paymentStatus } = req.body;
         const userId = req.session.user._id;
-        // console.log("payment status : ",paymentStatus);
         let wallet = await Wallet.findOne({ userId });
        
         if (!wallet) {
             wallet = { balance: 0, transactionHistory: [] };
         }
 
-        // Validate and fetch address
         if (!mongoose.Types.ObjectId.isValid(addressId)) {
             return res.json({ success: false, message: "Invalid address ID format." });
         }
@@ -54,19 +52,15 @@ const placeOrder = async (req, res) => {
         let totalDiscount = 0;
         let finalAmount = totalPrice;
 
-        // Parse and map cart items
         let parsedCartItems = Array.isArray(cartItems) ? cartItems : JSON.parse(cartItems);
         const mappedCartItems = await Promise.all(parsedCartItems.map(async item => {
             const product = await Product.findById(item.productId);
             
-            // Get the offer discount for the product
-            const productOffer = product.productOffer || 0; // Assume product.offer is a percentage
+            const productOffer = product.productOffer || 0; 
 
-            // Calculate the discount for the current product
             const productDiscount = (productOffer / 100) * item.price * item.quantity;
-            totalDiscount += productDiscount; // Add product discount to total discount
+            totalDiscount += productDiscount; 
 
-            // Adjust the final amount by subtracting the discount
             finalAmount = totalPrice - totalDiscount;
 
             return {
@@ -85,11 +79,6 @@ const placeOrder = async (req, res) => {
         }
 
         
-
-       
-
-
-        // Create new order
         const order = new Order({
             orderedItems: mappedCartItems,
             totalPrice,
@@ -99,27 +88,19 @@ const placeOrder = async (req, res) => {
             paymentStatus,
             userId,
             finalAmount,
-            discount: totalDiscount, // Add the calculated discount field
+            discount: totalDiscount, 
         });
 
         const savedOrder = await order.save();
 
 
         if (paymentMethod === "wallet") {
-            // const wallet = await Wallet.findOne({ userId });
-
+            
             if (!wallet) {
                 return res.json({ success: false, message: "Wallet not found." });
             }
 
-            // if (wallet.balance < finalAmount) {
-            //     return res.json({ success: false, message: "Insufficient wallet balance." });
-            // }
-
-            // Deduct the final amount from the wallet balance
             wallet.balance -= finalAmount;
-
-            // Add transaction history entry
             wallet.transactionHistory.push({
                 transactionType: 'debit',
                 transactionAmount: finalAmount,
@@ -129,11 +110,7 @@ const placeOrder = async (req, res) => {
             await wallet.save();
         }
 
-
-        
-
-        // Reduce stock and remove cart items
-        const cart = await Cart.findOne({ userId });           //new added to dele cart item instead of whole cart
+        const cart = await Cart.findOne({ userId });          
         if (!cart) {
             return res.json({ success: false, message: "Cart not found." });
         }
@@ -151,19 +128,12 @@ const placeOrder = async (req, res) => {
                 }
             }
 
-            // Remove the purchased item from the cart   new code  cart item delete
             cart.items = cart.items.filter((cartItem) => cartItem.productId.toString() !== item.product.toString() || cartItem.size !== item.size);
-            cart.totalPrice = 0;   //new add
+            cart.totalPrice = 0;   
         }
 
-        // Clear the cart
-        await cart.save();  //new code cart item delete
-        // await Cart.deleteMany({ userId });
-
-        // Store the order ID in session for reference (optional)
+        await cart.save();  
         req.session.orderId = order._id;
-        // req.session.orderId = savedOrder._id;
-
         res.json({ success: true, message: "Order placed successfully!", order: savedOrder, orderId:order._id });
     } catch (error) {
         console.error("Error placing order:", error);
@@ -180,7 +150,6 @@ const placeOrder = async (req, res) => {
 const createRazorpayOrder = async (req, res) => {
     try {
         const { amount, addressId, paymentMethod } = req.body;
-        // console.log("req.body : ",req.body);
         const rzpOrder = await rzp.orders.create({
             amount: amount * 100,
             currency: 'INR',
@@ -203,46 +172,27 @@ const createRazorpayOrder = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-//verifyRazorPay latest
 const verifyRazorpayPayment = async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature,orderId } = req.body;
-
-        // console.log("orderId : ",orderId)
-
         let order;
         if (orderId) {
-            // Fetch the order from the database only if orderId is provided
             order = await Order.findOne({ _id: orderId });
             if (!order) {
                 return res.json({ success: false, message: "Order not found." });
             }
         }
 
-
-        
         const generatedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_SECRET_KEY)
             .update(razorpay_order_id + "|" + razorpay_payment_id)
             .digest('hex');
-         
-        // console.log("generated signature : ",generatedSignature);
             
         if ( generatedSignature === razorpay_signature) {
-             // Update the paymentStatus to "completed" if it's currently "notCompleted"
              if (order && order.paymentStatus === "notCompleted") {
                 order.paymentStatus = "completed";
-                await order.save(); // Save the updated order to the database
+                await order.save(); 
             }
             
-
             res.json({ success: true, message: "Payment verified successfully." });
         } else {
             
@@ -263,21 +213,15 @@ const orderDetails = async (req, res) => {
     try {
         const orderId = req.session.orderId;
         const userId = req.session.user._id;
-        // console.log("userID:", userId);
         const order = await Order.findOne({ orderId }).populate('orderedItems.product').exec();
         
-       // Find the user's address document
         const addressDoc = await Address.findOne({ userId }).exec();
         
-
         if (!addressDoc) {
             return res.status(404).send("Address not found");
         }
-
-        // Find the specific address object in the address array
         const address = addressDoc.address.find(addr => addr._id.equals(order.address));
-        // console.log("address : ",address); 
-
+    
         if (!address) {
             return res.status(404).send("Order address not found");
         }
@@ -287,7 +231,7 @@ const orderDetails = async (req, res) => {
             return res.status(404).send("Order not found");
         }
 
-        res.render('orderDetails', { order , address}); // render EJS page with order details
+        res.render('orderDetails', { order , address}); 
     } catch (err) {
         console.error("Error fetching order details:", err);
         res.status(500).send("Error fetching order details");

@@ -169,9 +169,8 @@ const postNewPassword = async(req,res)=>{
                 {$set:{password:passwordHash}}
             )
            
-            res.redirect("/login");   //redirect to render and message added
+            res.redirect("/login");  
           
-
         } else{
             res.render("reset-password",{message:'Passwords dont match'});
 
@@ -192,8 +191,6 @@ const userProfile = async (req, res) => {
         const userId = req.session.user;
         const userData = await User.findById(userId);
         const addressData = await Address.findOne({ userId: userId });
-
-        // Order Pagination (unchanged)
         const orderLimit = 6;
         const orderPage = parseInt(req.query.orderPage) || 1;
         const orderSkip = (orderPage - 1) * orderLimit;
@@ -205,20 +202,17 @@ const userProfile = async (req, res) => {
         const totalOrders = await Order.countDocuments({ userId: userId });
         const totalOrderPages = Math.ceil(totalOrders / orderLimit);
 
-        // Wallet Data and Transaction Pagination
         let walletData = await Wallet.findOne({ userId: userId });
         if (!walletData) {
-
-             // Create a new wallet if it doesn't exist
              walletData = await Wallet.create({
                 userId: userId,
                 balance: 0,
                 transactionHistory: []
             });
-            // throw new Error("Wallet not found");
+        
         }
 
-        const walletLimit = 5; // Number of transactions per page
+        const walletLimit = 5; 
         const walletPage = parseInt(req.query.walletPage) || 1;
         const walletSkip = (walletPage - 1) * walletLimit;
 
@@ -236,7 +230,7 @@ const userProfile = async (req, res) => {
             orders: orderData,
             wallet: {
                 ...walletData.toObject(),
-                transactionHistory: walletTransactions, // Only pass paginated transactions
+                transactionHistory: walletTransactions, 
             },
             currentOrderPage: orderPage,
             totalOrderPages: totalOrderPages,
@@ -263,8 +257,6 @@ const changeEmail = async(req,res)=>{
     }
 }
 
-
-//change email from profile first otp
 const changeEmailValid = async(req,res)=>{
     try {
         
@@ -300,7 +292,6 @@ const changeEmailValid = async(req,res)=>{
     }
 }
 
-//verify otp for change in email
 const verifyEmailOtp = async(req,res)=>{
     try {
         
@@ -330,9 +321,7 @@ const updateEmail = async(req,res)=>{
         
         const newEmail = req.body.newEmail;
         const userId = req.session.user;
-       
-        req.session.user.email = newEmail;   //new code ehange email not working from profile
-        
+        req.session.user.email = newEmail;   
         await User.findByIdAndUpdate(userId,{email:newEmail});
         res.redirect("/userProfile");
 
@@ -426,20 +415,14 @@ const postAddAddress = async(req,res)=>{
 
         const userAddress = await Address.findOne({userId:userData._id});
 
-         // Check if the user already has an address record in the Address collection
         if(!userAddress){
-             
-             // If no address record exists, create a new address document
             const newAddress = new Address({
-
                userId : userData._id,
                address : [{addressType,name,city,landMark,state,pincode,phone,altPhone}],              
 
             });
             await newAddress.save();
         }else{
-
-             // If an address record already exists, add the new address to the address array
             userAddress.address.push({addressType,name,city,landMark,state,pincode,phone,altPhone});
             await userAddress.save();
         }
@@ -460,8 +443,6 @@ const editAddress = async(req,res)=>{
     
     const addressId = req.query.id;
     const user = req.session.user;
-
-    // Search for the address document containing the specified address ID
     const currAddress =  await Address.findOne({
         "address._id" : addressId,
     });
@@ -469,15 +450,13 @@ const editAddress = async(req,res)=>{
         return res.redirect("/pageNotFound");
     }
 
-     // Locate the specific address within the `address` array using the address ID
     const addressData = currAddress.address.find((item)=>{
-        return item._id.toString()===addressId.toString();   // Match the address ID as a string
+        return item._id.toString()===addressId.toString();   
     })
     if(!addressData){
         return res.redirect("/pageNotFound");
     }
 
-     // Render the "edit-address" page and pass the found address data and user session data
     res.render("edit-address",{address:addressData,user:user});
 
   } catch (error) {
@@ -493,18 +472,15 @@ const postEditAddress = async(req,res)=>{
         const data = req.body;
         const addressId = req.query.id;
         const user = req.session.user;
-
-        // Find the document containing the specified address ID
         const findAddress = await Address.findOne({"address._id":addressId});
         if(!findAddress){
            return res.redirect("/pageNotFound");
         }
 
-        // Update the specific address in the `address` array with the new data
         await Address.updateOne(
             {"address._id":addressId},
             {$set:{
-                "address.$":{          // Use positional operator `$` to target the specific address
+                "address.$":{         
                     _id:addressId,
                     addressType:data.addressType,
                     name:data.name,
@@ -531,16 +507,10 @@ const deleteAddress = async(req,res)=>{
         
         const addressId = req.query.id;
         console.log("Query Address ID:", addressId);
-
-         // Find the document containing the specified address ID
         const findAddress = await Address.findOne({"address._id":addressId});
-        // console.log("Find Address Result:", findAddress);
         if(!findAddress){
             return res.status(404).send("Address not found");
         }
-
-        
-         // Use the $pull operator to remove the specific address from the `address` array
         await Address.updateOne({
             "address._id":addressId
         },
@@ -568,23 +538,16 @@ const viewOrders = async(req,res)=>{
         const orderId = req.params.id;
         const userId = req.session.user._id;
         const order = await Order.findById(orderId);
-        //  // Find the order by ID and populate the address field
-        //  const order = await Order.findById(orderId).populate('address');
-        // console.log("order : ",order);
         if (!order) {
             return res.status(404).render('error', { message: 'Order not found' });
         }
 
-          // Find the user's address document
-          const addressDoc = await Address.findOne({ userId }).exec();
-          // Find the specific address object in the address array
+        const addressDoc = await Address.findOne({ userId }).exec();
         const address = addressDoc.address.find(addr => addr._id.equals(order.address));
-        // console.log("address : ",address); 
-
+        
         if (!address) {
             return res.status(404).send("Order address not found");
         }
-
 
         res.render('viewOrder', { order,address });
     } catch (error) {
@@ -602,52 +565,36 @@ const cancelOrder = async (req, res) => {
     const orderId = req.params.id;
 
     try {
-        // Find the order by ID
         const order = await Order.findById(orderId);
         
         if (!order) {
             return res.status(404).send("Order not found.");
         }
-
-        // Check if the order is still in a cancellable state
         if (order.status !== "Pending" && order.status !== "Shipped") {
             return res.status(400).send("Order cannot be cancelled.");
         }
 
-        
-
-        // Update the order status to "Cancelled"
         order.status = "Cancelled";
         await order.save();
 
-        // Iterate over the ordered items to update the stock of the products
         for (const item of order.orderedItems) {
             const product = await Product.findById(item.product);
 
             if (product) {
-                // Get the current stock for the specific size
                 const currentStock = product.size.get(item.size);
                 if (currentStock !== undefined) {
-                    // Increase the stock by the quantity of the canceled order
                     product.size.set(item.size, currentStock + item.quantity);
-
-                    // Save the updated product with the new stock
                     await product.save();
                     console.log(`Stock updated for product ${product.productName}, size ${item.size}.`);
                 }
             }
         }
 
-        //add new for razorpay cancel payment bug when cancelling
-        // Check payment method and credit the amount to the wallet if not "Cash on Delivery"
         if (order.paymentMethod !== "cashOnDelivery" && order.paymentStatus !== "notCompleted") {
             const wallet = await Wallet.findOne({ userId: order.userId });
 
             if (wallet) {
-                // Add the refunded amount to the wallet balance
                 wallet.balance += order.finalAmount;
-
-                // Add transaction history entry
                 wallet.transactionHistory.push({
                     transactionType: 'credit',
                     transactionAmount: order.finalAmount,
@@ -656,7 +603,6 @@ const cancelOrder = async (req, res) => {
 
                 await wallet.save();
             } else {
-                // Create a new wallet if none exists
                 const newWallet = new Wallet({
                     userId: order.userId,
                     balance: order.finalAmount,
@@ -670,16 +616,10 @@ const cancelOrder = async (req, res) => {
                 await newWallet.save();
             }
         }
-
-         //add new for razorpay cancel payment bug when cancelling
-        // If paymentStatus is "notCompleted", do not process refund and update paymentStatus to "completed"
         if (order.paymentStatus === "notCompleted") {
-            order.paymentStatus = "completed"; // Update paymentStatus to "completed"
+            order.paymentStatus = "completed"; 
         }
         await order.save();
-
-        // Redirect back to the user profile or order page
-        // res.redirect("/userProfile");
     } catch (err) {
         console.error("Error cancelling order:", err);
         res.status(500).send("Error cancelling order.");
@@ -694,31 +634,20 @@ const returnOrder = async (req, res) => {
     const orderId = req.params.id;
 
     try {
-        // Find the order by ID
-        const order = await Order.findById(orderId);
-        
+        const order = await Order.findById(orderId); 
         if (!order) {
             return res.status(404).send("Order not found.");
         }
-
-        // Check if the order status allows return
         if (order.status !== "Delivered") {
             return res.status(400).send("Order cannot be returned.");
         }
-
-        // Update the order status to "Returned"
         order.status = "Returned";
         await order.save();
-
-        // Process refund or any financial adjustment if applicable
         if (order.paymentMethod === "cashOnDelivery" || order.paymentMethod !== "cashOnDelivery") {                        //change made
             const wallet = await Wallet.findOne({ userId: order.userId });
 
             if (wallet) {
-                // Add the refunded amount to the wallet balance
                 wallet.balance += order.finalAmount;
-
-                // Add transaction history entry
                 wallet.transactionHistory.push({
                     transactionType: 'credit',
                     transactionAmount: order.finalAmount,
@@ -741,16 +670,11 @@ const returnOrder = async (req, res) => {
             }
         }
 
-        // Redirect back to the user profile or order page
-        // res.redirect("/userProfile");
     } catch (err) {
         console.error("Error returning order:", err);
         res.status(500).send("Error returning order.");
     }
 };
-
-
-
 
 
 

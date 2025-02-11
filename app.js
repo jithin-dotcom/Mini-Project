@@ -12,7 +12,7 @@ const userRouter = require("./routes/userRouter");
 const adminRouter = require("./routes/adminRouter");
 const User = require("./models/userSchema");
 
-// Import the combined middleware
+
 const setItemCounts = require("./middlewares/setItemCounts");
 
 
@@ -22,13 +22,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-// Connect to MongoDB
+
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: false,
     useUnifiedTopology: false
 });
 
-// Session management with MongoDB
+
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -40,7 +40,7 @@ app.use(session({
     cookie: {
         secure: false,
         httpOnly: true,
-        maxAge: 72 * 60 * 60 * 1000 // 3 days
+        maxAge: 72 * 60 * 60 * 1000 
     }
 }));
 
@@ -52,11 +52,11 @@ app.use((req, res, next) => {
     next();
 });
 
-// Use the combined middleware globally
+
 app.use(setItemCounts);
 
 
-// View engine setup
+
 app.set("view engine", "ejs");
 app.set("views", [path.join(__dirname, 'views/user'), path.join(__dirname, 'views/admin')]);
 app.use(express.static(path.join(__dirname, "public")));
@@ -66,15 +66,8 @@ app.get('/index', (req, res) => {
 });
 
 
-
-
-
-// User and admin router setup
 app.use("/", userRouter);
 app.use("/admin", adminRouter);
-
-
-
 
 
 app.listen(PORT, () => {

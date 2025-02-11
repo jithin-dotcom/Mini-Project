@@ -49,7 +49,7 @@ const addProducts = async(req,res)=>{
         if(!categoryId){
             return res.status(400).json("Invalid category name");   
         }
-        console.log("product-size : ",products.size);
+        // console.log("product-size : ",products.size);
         const sizeMap = new Map();
         for (let size in products.size) {
             sizeMap.set(size, Number(products.size[size])); 
@@ -101,6 +101,7 @@ const getAllProducts = async(req,res)=>{
         .limit(limit*1)
         .skip((page-1)*limit)
         .populate('category')
+        .sort({createdAt:-1})
         .exec();
 
          const count = await Product.find({
@@ -137,11 +138,11 @@ const addProductOffer = async(req,res)=>{
         
         const {productId,percentage} = req.body;
         const findProduct = await Product.findOne({_id:productId});
-        if (!findProduct) {                                                                     //error handling
+        if (!findProduct) {                                                                     
             return res.status(404).json({ status: false, message: "Product not found." });
         }
         const findCategory = await Category.findOne({_id:findProduct.category});
-        if (!findCategory) {                                                                   //error handling
+        if (!findCategory) {                                                                   
             return res.status(404).json({ status: false, message: "Category not found for the given product." });
         }
         if(findCategory.categoryOffer>percentage){
@@ -226,7 +227,7 @@ const getEditProduct = async(req,res)=>{
         const brand = await Brand.find({});
         const categoryData = await Category.findOne({_id:product.category});
         const categoryName = categoryData.name;
-        console.log("product : ",product);
+        // console.log("product : ",product);
         res.render("edit-product",{
             product:product,
             cat:category,
@@ -246,7 +247,7 @@ const editProduct = async(req,res)=>{
     try {
         
         const id =req.params.id;
-        const product = await Product.findOne({_id:id});
+        // const product = await Product.findOne({_id:id});
         const data = req.body;
         const existingProduct = await Product.findOne({
             productName:data.productName,

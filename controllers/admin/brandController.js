@@ -46,8 +46,15 @@ const getBrandPage = async(req,res)=>{
        const page = parseInt(req.query.page)||1;
        const limit = 4;
        const skip = (page-1)*limit;
-       const brandData = await Brand.find({}).sort({createdAt:-1}).skip(skip).limit(limit);
-       const totalBrands = await Brand.countDocuments();
+       const [brandData, totalBrands] = await Promise.all([
+        Brand.find({})
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit),
+        Brand.countDocuments()
+      ]);
+    
+   
        const totalPages = Math.ceil(totalBrands/limit);
        const reverseBrand = brandData.reverse();
        res.render("brands",{
@@ -291,6 +298,107 @@ module.exports = {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ //    const brandData = await Brand.find({}).sort({createdAt:-1}).skip(skip).limit(limit);
+    //    const totalBrands = await Brand.countDocuments();
 
 
 

@@ -39,11 +39,12 @@
                            <div class="col-lg-4 mb-4">
                                <label class="form-label">Brand</label>
                                <select class="form-select border" name="brand">
+                                <option value="" disabled selected></option> <!-- Placeholder option -->
                                    <%for(let i=0;i<brand.length;i++){%>
                                 
                                        <option value="<%=brand[i].brandName%>">
                                             
-                                            <%=brand[i].brandName%>
+                                        <%=brand[i].brandName%>
 
                                          
                                        </option>
@@ -143,6 +144,7 @@
                                        <div class="col-sm-6 mb-3">
                                            <label class="form-label">Category</label>
                                            <select class="form-select border" style="width: 150px;" name="category">
+                                            <option value="" disabled selected></option> <!-- Placeholder option -->
                                                <%for(let i=0;i<cat.length;i++){%>
 
                                               
@@ -380,8 +382,10 @@
               const saleprice = document.getElementsByName('salePrice')[0].value;
               const color = document.getElementsByName('color')[0].value;
               const category = document.getElementsByName('category')[0].value;
-              const images = document.getElementById('input1')
-              const quantity=document.getElementsByName('quantity')
+              const images = document.getElementById('input1');
+              const images1 = document.getElementById('input2');
+              const images2 = document.getElementById('input3');
+              const quantity=document.getElementsByName('quantity');
               const m = document.getElementById('m').value;
               const s = document.getElementById('s').value;
               const l = document.getElementById('l').value;
@@ -492,17 +496,15 @@
                 });
                   isValid = false;
               }
-  
-  
-              if (images.files.length === 0) {
-                //   displayErrorMessage("images-error",'Please select an image.');
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Please select an image!',
-                });
-                  isValid = false;
+              if (images.files.length === 0 || images1.files.length === 0 || images2.files.length === 0) {
+                    Swal.fire({
+                       icon: 'error',
+                       title: 'Oops...',
+                       text: 'Minimum 3 images required!',
+                    });
+                    isValid = false;
               }
+  
               return isValid;
     }
 

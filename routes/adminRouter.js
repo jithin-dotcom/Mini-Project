@@ -5,10 +5,8 @@ const customerController = require("../controllers/admin/customerController");
 const categoryController = require("../controllers/admin/categoryController");
 const brandController = require("../controllers/admin/brandController");
 const productController = require("../controllers/admin/productController"); 
-// const bannerController = require("../controllers/admin/bannerController");
 const orderController = require("../controllers/admin/orderController");
 const couponController = require("../controllers/admin/couponController");
-// const salesController = require("../controllers/admin/salesController");
 const profileController = require("../controllers/user/profileController");
 const dashboardController = require("../controllers/admin/dashboardController");
 
@@ -49,7 +47,7 @@ router.post("/editCategory/:id",adminAuth,categoryController.editCategory);
 
 //brand management
 router.get("/brands",adminAuth,brandController.getBrandPage);
-router.post("/addBrand",adminAuth,uploads.single("image"),brandController.addBrand); //use array in place of image in case of multiple images
+router.post("/addBrand",adminAuth,uploads.single("image"),brandController.addBrand); 
 router.get("/blockBrand",adminAuth,brandController.blockBrand);
 router.get("/unBlockBrand",adminAuth,brandController.unBlockBrand);
 router.delete("/deleteBrand",adminAuth,brandController.deleteBrand);
@@ -67,10 +65,7 @@ router.get("/editProduct",adminAuth,productController.getEditProduct);
 router.post("/editProduct/:id",adminAuth,uploads.array("images",4),productController.editProduct);
 router.post("/deleteImage",adminAuth,productController.deleteSingleImage);
 
-//banner management
-// router.get("/banner",adminAuth,bannerController.getBannerPage);
-// router.get("/addBanner",adminAuth,bannerController.getAddBannerPage);
-// router.post("/addBanner",adminAuth,uploads.single("images"),bannerController.addBanner);
+
 
 // order management
 router.get("/orderList",adminAuth,orderController.getAllOrders);
@@ -89,7 +84,7 @@ router.get("/deleteCoupon",adminAuth,couponController.deleteCoupon);
 
 
 
- //salesreport management
+ //dashboard management
 
 router.get("/",adminAuth,dashboardController.loadDashboardMain);
 router.post("/dashboardMain",adminAuth,dashboardController.dashboardMain);

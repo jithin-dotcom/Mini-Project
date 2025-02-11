@@ -11,10 +11,13 @@ const loadCoupon = async (req, res) => {
      const page = parseInt(req.query.page) || 1;
      const limit = 4; 
      const skip = (page - 1) * limit;
-     const findCoupons = await Coupon.find({})
-       .skip(skip)
-       .limit(limit);
-     const totalCoupons = await Coupon.countDocuments();
+     const [findCoupons, totalCoupons] = await Promise.all([
+      Coupon.find({})
+          .skip(skip)
+          .limit(limit),
+      Coupon.countDocuments()
+    ]);
+  
      const totalPages = Math.ceil(totalCoupons / limit);
      return res.render("coupon", {
        coupons: findCoupons,
@@ -153,3 +156,190 @@ module.exports = {
     updateCoupon,
     deleteCoupon,
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ //  const findCoupons = await Coupon.find({})
+    //    .skip(skip)
+    //    .limit(limit);
+    //  const totalCoupons = await Coupon.countDocuments();

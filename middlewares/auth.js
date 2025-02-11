@@ -7,19 +7,19 @@ const userAuth = async (req, res, next) => {
             const user = await User.findById(req.session.user);
 
             if (user && !user.isBlocked) {
-                next(); // User is authenticated and not blocked
+                next(); 
             } else {
                 req.session.destroy(err => {
                     if (err) {
                         console.error("Error destroying session:", err);
                     }
 
-                    return res.render("login",{message:"User is blocked by admin"}); //user blocked
+                    return res.render("login",{message:"User is blocked by admin"}); 
 
                 });
             }
         } else {
-            res.redirect("/login"); // No user session, redirect to login
+            res.redirect("/login"); 
         }
     } catch (error) {
         console.error("Error in user auth middleware:", error);

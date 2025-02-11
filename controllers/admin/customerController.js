@@ -13,25 +13,28 @@ const customerInfo = async(req,res)=>{
         }
         const limit = 3;
         const skip = (page-1)*limit; 
-        const data = await User.find({
-            isAdmin:false,
-            $or:[
-                {name:{$regex:".*"+search+".*"}},   
-                {email:{$regex:".*"+search+".*"}},  
-            ],
-        })
-         .limit(limit)
-         .skip(skip)
-         .exec();
-
-         const count = await User.find({
-            isAdmin:false,
-            $or:[
-                {name:{$regex:".*"+search+".*"}},
-                {email:{$regex:".*"+search+".*"}},
-            ],
-         }).countDocuments();
-          
+        const [data, count] = await Promise.all([
+            User.find({
+                isAdmin: false,
+                $or: [
+                    { name: { $regex: search, $options: 'i' } },
+                    { email: { $regex: search, $options: 'i' } }, 
+                ],
+            })
+            .limit(limit)
+            .skip(skip)
+            .exec(),
+        
+            User.countDocuments({
+                isAdmin: false,
+                $or: [
+                    { name: { $regex: search, $options: 'i' } },
+                    { email: { $regex: search, $options: 'i' } },
+                ],
+            })
+        ]);
+        
+                 
          const totalPages = Math.ceil(count / limit); 
          res.render("customers",{data,totalPages,currentPage:page});
 
@@ -71,3 +74,188 @@ module.exports = {
     customerBlocked,
     customerunBlocked,
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+        // const data = await User.find({
+        //     isAdmin:false,
+        //     $or:[
+        //         { name: { $regex: search, $options: 'i' } }, 
+        //         { email: { $regex: search, $options: 'i' } },
+                  
+        //     ],
+        // })
+        //  .limit(limit)
+        //  .skip(skip)
+        //  .exec();
+
+        //  const count = await User.find({
+        //     isAdmin:false,
+        //     $or:[
+        //         { name: { $regex: search, $options: 'i' } },
+        //         { email: { $regex: search, $options: 'i' } },
+                
+        //     ],
+        //  }).countDocuments();

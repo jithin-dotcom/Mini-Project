@@ -47,7 +47,7 @@ const cartSchema = new Schema({
     }
 
 }, {
-    timestamps: true  // Optionally, add timestamps to track creation and update times
+    timestamps: true  
 });
 
 const Cart = mongoose.model("Cart", cartSchema);

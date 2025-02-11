@@ -12,15 +12,19 @@ const getAllOrders = async (req, res) => {
     const page = parseInt(req.query.page) || 1; 
     const pageSize = 10; 
     const skip = (page - 1) * pageSize; 
-    const orders = await Order.find()
-      .populate("userId", "name")
-      .populate("address", "fullAddress")
-      .skip(skip)
-      .limit(pageSize)
-      .sort({ createdOn: -1 }) 
-      .exec();
+    
 
-    const totalOrders = await Order.countDocuments();
+    const [orders,totalOrders] = await Promise.all([
+      Order.find()
+         .populate("userId","name")
+         .populate("address","fullAddress")
+         .skip(skip)
+         .limit(pageSize)
+         .sort({createdOn:-1})
+         .exec(),
+      Order.countDocuments()
+      
+  ]);
     const totalPages = Math.ceil(totalOrders / pageSize); 
     const formattedOrders = orders.map(order => ({
       id: order.orderId,
@@ -131,7 +135,7 @@ const cancelOrder = async (req, res) => {
           return res.status(400).json({ status: false, message: "Order is already cancelled." });
       }
       order.status = 'Cancelled';
-      order.cancellationReason = req.body.cancellationReason || "Admin cancelled"; // Optional reason
+      // order.cancellationReason = req.body.cancellationReason || "Admin cancelled"; 
       await order.save();
       for (const item of order.orderedItems) {
           const product = await Product.findById(item.product);
@@ -233,3 +237,242 @@ module.exports = {
     seeOrders,
     
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const orders = await Order.find()
+    //   .populate("userId", "name")
+    //   .populate("address", "fullAddress")
+    //   .skip(skip)
+    //   .limit(pageSize)
+    //   .sort({ createdOn: -1 }) 
+    //   .exec();
+
+    // const totalOrders = await Order.countDocuments();

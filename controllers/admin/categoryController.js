@@ -8,12 +8,14 @@ const categoryInfo = async(req,res)=>{
        const limit = 4;
        const skip = (page-1)*limit;
 
-       const categoryData = await Category.find({})
-       .sort({createdAt:-1})
-       .skip(skip)
-       .limit(limit);
-
-        const totalCategories = await Category.countDocuments();
+       const [categoryData, totalCategories] = await Promise.all([
+        Category.find({})
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit),
+        Category.countDocuments()
+       ]);
+    
         const totalPages = Math.ceil(totalCategories/limit);
         res.render("category",{
             cat:categoryData,
@@ -38,7 +40,6 @@ const addCategory = async(req,res)=>{
 
        const lowercaseCategoryName = name.trim().toLowerCase();
        const existingCategory = await Category.findOne({name:lowercaseCategoryName});
-       console.log(existingCategory);
        if(existingCategory){
           return res.status(400).json({error:"Category already exists"});
        }
@@ -66,6 +67,9 @@ const addCategoryOffer = async (req, res) => {
         if (!category) {
             return res.status(404).json({ status: false, message: "Category not found" });
         }
+        if (percentage >= 100) {
+            return res.status(404).json({ status: false, message: "percentage should be below 100" });
+        }
         const Products = await Product.find({ category: category._id });
         const hasLowerProductOffer = Products.some((product) => product.productOffer < percentage);
 
@@ -76,7 +80,7 @@ const addCategoryOffer = async (req, res) => {
         for (const product of Products) {
             if (product.productOffer < percentage) {
                 product.productOffer = percentage;
-                product.salePrice = product.regularPrice * (1 - (percentage / 100)); // Adjust salePrice
+                product.salePrice = product.regularPrice * (1 - (percentage / 100)); 
             }
             await product.save();
         }
@@ -171,7 +175,7 @@ const editCategory = async(req,res)=>{
        const id = req.params.id;
        
        const {categoryName,description} = req.body;
-       const existingCategory = await Category.findOne({name:categoryName});
+       const existingCategory = await Category.findOne({name:categoryName,_id:{$ne:id}});
 
        if(existingCategory){
          return res.status(400).json({error:"Category exists, please choose another name"});
@@ -329,39 +333,6 @@ module.exports = {
 
 
 
-//add category offer new 
-
-// const addCategoryOffer = async(req,res)=>{
-//     try{
-     
-//        const percentage = parseInt(req.body.percentage);
-//        const categoryId = req.body.categoryId;
-    
-//        const category = await Category.findById(categoryId);
-//        if(!category){
-//          return res.status(404).json({status:false,message:"Category not found"});
-//        }
-//        const Products = await Product.find({category:category._id});
-//        const hasProductOffer = Products.some((product)=>product.productOffer > percentage);
-//        if(hasProductOffer){    //passing error to frontend
-//          return res.json({status:false , message:"Products within this category already have product offers"});
-//        }
-//        await Category.updateOne({_id:categoryId},{$set:{categoryOffer:percentage}});
-       
-//        // product offer set to zero if category offer is their
-//        for(const product of Products){ //add
-//          product.productOffer = 0;
-//          product.salePrice = product.regularPrice;
-//          await product.save();
-//        }
-//        res.json({status:true});
-
-        
-
-//     }catch(error){
-//        res.status(500).json({status:false, message:"Internal Server Error"});
-//     }
-// };
 
 
 
@@ -371,42 +342,224 @@ module.exports = {
 
 
 
-// const addCategoryOffer = async (req, res) => {
-//     try {
-//         const percentage = parseInt(req.body.percentage);
-//         const categoryId = req.body.categoryId;
 
-//         // Fetch the category by ID
-//         const category = await Category.findById(categoryId);
-//         if (!category) {
-//             return res.status(404).json({ status: false, message: "Category not found" });
-//         }
 
-//         // Fetch all products in the category
-//         const Products = await Product.find({ category: category._id });
 
-//         // Check if any product has a product offer greater than the new category offer
-//         const hasProductOffer = Products.some((product) => product.productOffer > percentage);
-//         if (hasProductOffer) {
-//             return res.json({ status: false, message: "Products within this category already have product offers greater than the category offer" });
-//         }
 
-//         // Update the category offer
-//         await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: percentage } });
 
-//         // Adjust product offers based on the category offer
-//         for (const product of Products) {
-//             if (product.productOffer < percentage) {
-//                 product.productOffer = percentage;
-//                 product.salePrice = product.regularPrice * (1 - (percentage / 100)); // Adjust salePrice based on category offer
-//             }
-//             await product.save();
-//         }
 
-//         res.json({ status: true });
 
-//     } catch (error) {
-//         res.status(500).json({ status: false, message: "Internal Server Error" });
-//     }
-// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    const categoryData = await Category.find({})
+    //    .sort({createdAt:-1})
+    //    .skip(skip)
+    //    .limit(limit);
+
+    //     const totalCategories = await Category.countDocuments();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
