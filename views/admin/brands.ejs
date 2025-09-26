@@ -99,7 +99,7 @@
             </div>
             <div class="image-cropper">
               <img id="croppingImage" src="" alt=""/>
-              <button type="button" id="cropButton" class="btn btn-primary">Crop</button>
+              <!-- <button type="button" id="cropButton" class="btn btn-primary">Crop</button> -->
             </div>
             <div class="d-grid">
               <button class="btn btn-primary mt-20" type="submit">
@@ -262,6 +262,16 @@ function handleImageChange(event) {
     const files = event.target.files;
     if (files && files.length > 0) {
         const file = files[0];
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Image',
+                text: 'Please select a valid image (jpg, jpeg, png, webp).',
+            });
+            event.target.value = ''; // Clear the input
+            return;
+        }
         const imageUrl = URL.createObjectURL(file);
 
         const image = document.getElementById('croppingImage');
@@ -316,7 +326,7 @@ document.getElementById('cropButton').addEventListener('click', function () {
 
 function validateAndSubmit() {
     const brandName = document.querySelector('input[name="name"]').value.trim();
-    const formData = new FormData(document.forms[0]); // Include the form data with the image
+    const formData = new FormData(document.forms[0]); 
     const regex = /^[A-Za-z\s]+$/;
 
     if (!brandName) {
@@ -335,10 +345,10 @@ function validateAndSubmit() {
         });
     }
 
-    // Perform an AJAX request to add the brand
+   
     fetch('/admin/addBrand', {
         method: 'POST',
-        body: formData, // Send the form data including the image
+        body: formData, 
     })
     .then(response => {
         if (!response.ok) {

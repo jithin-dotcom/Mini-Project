@@ -10,23 +10,21 @@ const Product = require('../../models/productSchema');
 
 
 
+
+
+
 const loadDashboardMain = async (req, res) => {
     try {
         
         let totalUsers = await User.countDocuments();
         let totalProducts = await Product.countDocuments();
-        let totalOrders = await Order.countDocuments({status:"Delivered"});
-
+        let totalOrders = await Order.countDocuments(); // all orders
 
         const page = parseInt(req.query.page) || 1; 
         const limit = 10; 
         const skip = (page - 1) * limit;
 
-
-
-          
         const Sales = await Order.aggregate([
-            { $match: { status: 'Delivered' } },
             { 
                 $group: {
                     _id: null,
@@ -36,36 +34,27 @@ const loadDashboardMain = async (req, res) => {
                 }
             }
         ]);
-
         const totalSales = Sales.length > 0 ? Sales[0].totalSales : 0;
 
-        
+      
         const discount = await Order.aggregate([
-            { $match: { status: 'Delivered' } },
             { 
                 $group: {
                     _id: null,
                     discount: { $sum: '$discount' }
                 }
-    }]);
+            }
+        ]);
         const totalDiscount = discount.length > 0 ? discount[0].discount : 0;
 
-        const orders1 = await Order.find({ status: "Delivered" }).sort({ createdOn: -1 });
+      
+        const orders1 = await Order.find().sort({ createdOn: -1 });
+        const orders = await Order.find().sort({ createdOn: -1 }).skip(skip).limit(limit);
+        const totalOrdersCount = await Order.countDocuments();
+        const totalPages = Math.ceil(totalOrdersCount / limit);
 
-        
-        const orders = await Order.find({ status: "Delivered" })
-                             .sort({ createdOn: -1 })
-                             .skip(skip)
-                             .limit(limit);
-
-         
-         const totalOrdersCount = await Order.countDocuments({ status: "Delivered" });
-         const totalPages = Math.ceil(totalOrdersCount / limit)
-
-
-           
-           const bestSellingProducts = await Order.aggregate([
-            { $match: { status: 'Delivered' } },
+     
+        const bestSellingProducts = await Order.aggregate([
             { $unwind: '$orderedItems' },
             { 
                 $group: {
@@ -84,105 +73,46 @@ const loadDashboardMain = async (req, res) => {
             },
             { $sort: { totalQuantity: -1 } },
             { $limit: 10 },
-            { $project: {
-                productName: 1,
-                totalQuantity: 1,
-                totalRevenue: 1
-            }}
+            { $project: { productName: 1, totalQuantity: 1, totalRevenue: 1 } }
         ]);
 
-
-
-
+     
         const topBrands = await Order.aggregate([
-            { $match: { status: 'Delivered' } }, 
             { $unwind: '$orderedItems' }, 
-            {
-                $lookup: { 
-                    from: 'products', 
-                    localField: 'orderedItems.product', 
-                    foreignField: '_id', 
-                    as: 'productDetails'
-                }
-            },
+            { $lookup: { from: 'products', localField: 'orderedItems.product', foreignField: '_id', as: 'productDetails' } },
             { $unwind: '$productDetails' }, 
-            {
+            { 
                 $group: { 
                     _id: '$productDetails.brand',
                     totalQuantity: { $sum: '$orderedItems.quantity' }, 
-                    totalRevenue: {
-                        $sum: {
-                            $multiply: [
-                                { $toDouble: '$orderedItems.quantity' },
-                                { $toDouble: '$orderedItems.price' }
-                            ]
-                        }
-                    }
-                }
+                    totalRevenue: { $sum: { $multiply: [{ $toDouble: '$orderedItems.quantity' }, { $toDouble: '$orderedItems.price' }] } }
+                } 
             },
             { $sort: { totalQuantity: -1 } }, 
             { $limit: 10 }, 
-            {
-                $project: {
-                    brand: '$_id',
-                    totalQuantity: 1,
-                    totalRevenue: 1,
-                    _id: 0
-                }
-            }
+            { $project: { brand: '$_id', totalQuantity: 1, totalRevenue: 1, _id: 0 } }
         ]);
-        
-   
 
+     
         const topCategories = await Order.aggregate([
-            { $match: { status: 'Delivered' } }, 
             { $unwind: '$orderedItems' }, 
-            {
-                $lookup: { 
-                    from: 'products', 
-                    localField: 'orderedItems.product', 
-                    foreignField: '_id', 
-                    as: 'productDetails'
-                }
-            },
+            { $lookup: { from: 'products', localField: 'orderedItems.product', foreignField: '_id', as: 'productDetails' } },
             { $unwind: '$productDetails' },
-            {
-                $lookup: { 
-                    from: 'categories', 
-                    localField: 'productDetails.category',
-                    foreignField: '_id', 
-                    as: 'categoryDetails'
-                }
-            },
-            { $unwind: '$categoryDetails' }, 
-            {
+            { $lookup: { from: 'categories', localField: 'productDetails.category', foreignField: '_id', as: 'categoryDetails' } },
+            { $unwind: '$categoryDetails' },
+            { 
                 $group: { 
                     _id: '$categoryDetails.name', 
                     totalQuantity: { $sum: '$orderedItems.quantity' }, 
-                    totalRevenue: {
-                        $sum: {
-                            $multiply: [
-                                { $toDouble: '$orderedItems.quantity' },
-                                { $toDouble: '$orderedItems.price' }
-                            ]
-                        }
-                    }
-                }
+                    totalRevenue: { $sum: { $multiply: [{ $toDouble: '$orderedItems.quantity' }, { $toDouble: '$orderedItems.price' }] } }
+                } 
             },
-            { $sort: { totalQuantity: -1 } }, 
-            { $limit: 10 }, 
-            {
-                $project: {            
-                    category: '$_id', 
-                    totalQuantity: 1,
-                    totalRevenue: 1,
-                    _id: 0
-                }
-            }
+            { $sort: { totalQuantity: -1 } },
+            { $limit: 10 },
+            { $project: { category: '$_id', totalQuantity: 1, totalRevenue: 1, _id: 0 } }
         ]);
-        
 
-        
+      
         res.render('dashboard', {
             totalOrders,
             totalUsers,
@@ -197,6 +127,7 @@ const loadDashboardMain = async (req, res) => {
             totalPages,
             currentPage: page
         });
+
     } catch (error) {
         console.log("The error is", error);
     }
@@ -205,13 +136,12 @@ const loadDashboardMain = async (req, res) => {
 
 
 
+
 const dashboardMain = async (req, res) => {
     try {
         const { quickFilter, startDate, endDate } = req.body;
         let matchCondition = { status: "Delivered" };
-        console.log("quickFilter : ",quickFilter);
-
-
+       
         const page = parseInt(req.query.page) || 1; 
         const limit = 10; 
         const skip = (page - 1) * limit;

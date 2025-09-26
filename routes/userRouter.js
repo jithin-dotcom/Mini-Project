@@ -18,7 +18,7 @@ const walletController = require("../controllers/user/walletController");
 router.get("/pageNotFound",userController.pageNotFound);
 
 
-//signup management
+
 router.get("/signup",userController.loadSignup);
 router.post("/signup",userController.signup);
 router.post("/verify-otp",userController.verifyOtp);
@@ -32,14 +32,14 @@ router.get("/auth/google/callback",passport.authenticate("google",{failureRedire
 
 
 
-//login management
+
 router.get("/login",userController.loadLogin);
 router.post("/login",userController.login);
 router.post("/logout",userController.logout);
 router.get("/logout",userController.getLogout);
 
 
-//home page and shopping
+
 router.get("/",userController.loadHomepage);
 router.get("/shop",userAuth,userController.loadShoppingPage);
 router.post("/search",userAuth,userController.searchProducts);
@@ -47,7 +47,7 @@ router.post("/search",userAuth,userController.searchProducts);
 
 
 
-//profile password and email management
+
 router.get("/forgot-password",profileController.getForgotPassPage);
 router.post("/forgot-email-valid",profileController.forgotEmailValid);
 router.post("/verify-passForgot-otp",profileController.verifyForgotPassOtp);
@@ -65,7 +65,7 @@ router.post("/verify-changepassword-otp",userAuth,profileController.verifyChange
 
 
 
-//address management
+
 router.get("/addAddress",userAuth,profileController.addAddress);
 router.post("/addAddress",userAuth,profileController.postAddAddress);
 router.get("/editAddress",userAuth,profileController.editAddress);
@@ -75,11 +75,11 @@ router.get("/deleteAddress",userAuth,profileController.deleteAddress);
 
 
 
-//product management
+
 router.get("/productDetails",userAuth,productController.productDetails);
 
 
-//cart management
+
 router.get("/cart",userAuth,cartController.getCart);
 router.post("/addToCart",userAuth,cartController.addToCart);
 router.delete("/removeFromCart/:productId", userAuth,cartController.removeProduct);
@@ -87,12 +87,12 @@ router.post('/updateCartQuantity/:productId',userAuth,cartController.updateProdu
 
 
 
-//checkout management
+
 router.get("/checkout",userAuth,checkoutController.getCheckout);
 router.post("/addAddressForOrder",userAuth,checkoutController.postAddAddress);
 
 
-//order management
+
 router.post("/placeOrder",userAuth,orderController.placeOrder);
 router.post('/createRazorpayOrder',userAuth,orderController.createRazorpayOrder);
 router.post('/verifyRazorpayPayment',userAuth,orderController.verifyRazorpayPayment);
@@ -103,7 +103,7 @@ router.post("/returnOrder/:id", userAuth, profileController.returnOrder);
 
 
 
-//wishlist management
+
 router.get("/wishlist",userAuth,wishlistController.loadWishlist);
 router.post("/addToWishlist",userAuth,wishlistController.addToWishlist);
 router.delete("/removeFromWishlist/:productId", userAuth, wishlistController.removeProduct);
@@ -111,12 +111,12 @@ router.post("/addToCartFromWishlist",userAuth,wishlistController.addToCart);
 
 
 
-//coupon management
+
 router.post("/applyCoupon",userAuth,couponController.applyCoupon);
 router.delete("/deleteCoupon",userAuth,couponController.deleteCoupon)
 
 
-//wallet management
+
 router.post('/add',userAuth,walletController.addMoney);
 router.get('/history',userAuth,walletController.getWalletHistory);
 

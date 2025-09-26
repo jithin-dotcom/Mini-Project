@@ -18,7 +18,7 @@ const productDetails = async(req,res)=>{
          });
 
         if (!product || product.isBlocked||totalSizeQuantity===0|| (brand && brand.isBlocked) || (product.category && !product.category.isListed)) {
-            console.log("Product is blocked, brand is blocked, or category is not listed. Redirecting to shop page.");
+            // console.log("Product is blocked, brand is blocked, or category is not listed. Redirecting to shop page.");
             return res.redirect("/shop"); 
         }
 

@@ -16,7 +16,7 @@ const Brand = require("../../models/brandSchema");
 const loadWishlist = async (req, res) => {
     try {
         const userId = req.session.user;
-        console.log(userId);
+        // console.log(userId);
         const blockedBrands = await Brand.find({ isBlocked: true }).select('brandName');
         const blockedBrandNames = blockedBrands.map(brand => brand.brandName); 
         const wishlist = await Wishlist.findOne({ userId }).populate({
@@ -25,7 +25,7 @@ const loadWishlist = async (req, res) => {
             populate: { path: 'category', select: 'isListed' } 
         }).exec(); 
 
-        console.log(JSON.stringify(wishlist, null, 2));
+        // console.log(JSON.stringify(wishlist, null, 2));
 
         if (!wishlist) {
             return res.render("wishlist", {

@@ -138,7 +138,7 @@ const removeProduct = async (req, res) => {
 
         cart.items = cart.items.filter(item => !(item.productId.toString() === productId  && item.size === size));
 
-         cart.totalPrice = Math.abs(cart.items.reduce((total, item) => total - item.price * item.quantity, 0));
+        cart.totalPrice = Math.abs(cart.items.reduce((total, item) => total - item.price * item.quantity, 0));
 
         await cart.save();
 

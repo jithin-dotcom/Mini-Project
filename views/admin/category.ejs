@@ -101,10 +101,10 @@
   
     <header class="card-header text-center mb-4">
       <form action="/admin/category/" method="get" class="d-inline">
-        <div class="input-group input-group-sm border border-1 border-grey rounded-pill mx-auto" style="max-width: 100%; width: 500px;">
+        <!-- <div class="input-group input-group-sm border border-1 border-grey rounded-pill mx-auto" style="max-width: 100%; width: 500px;">
           <input type="text" class="form-control border-0 rounded-pill" placeholder="Search categories" name="search" />
           <button class="btn btn-primary" type="submit">Search</button>
-        </div>
+        </div> -->
       </form>
     </header>
   
@@ -146,7 +146,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <% cat.reverse().forEach((category, index) => { %>
+                  <% cat.forEach((category, index) => { %>
                   <tr>
                     <td class="text-start"><%= category.name %></td>
                     <td class="text-start"><%= category.description %></td>
@@ -235,14 +235,14 @@
        function handleFormSubmit(event){
 
           event.preventDefault();
-          console.log("Form submitted"); // Debugging point
+          console.log("Form submitted"); 
           if((!validateForm())){
-            console.log("Form validation failed"); // Debugging point
+            console.log("Form validation failed"); 
              return
           }
           const name = document.getElementsByName("name")[0].value;
           const description = document.getElementById("descriptionId").value;
-          console.log("Submitting:", { name, description }); // Debugging point
+          console.log("Submitting:", { name, description }); 
           fetch('/admin/addCategory',{
             method:'POST',
             headers:{
@@ -276,7 +276,7 @@
                     Swal.fire({
                         icon:"error",
                         title:"oops",
-                        text:"An error occured while adding the category"
+                        text:"Category already exists"
                     });
                  }
             });

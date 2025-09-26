@@ -103,7 +103,7 @@
    <div class="card-body">
      <div class="row">
        <div class="col-md-3">
-         <form method="post" action="/admin/createCoupon">
+         <form method="post" action="/admin/createCoupon" novalidate>
            <body onload="setDefaultStartDate()"></body>
              <div class="mb-4">
                <label for="coupon-name" class="form-label">Coupon Name</label>
@@ -251,6 +251,14 @@
     minimumPrice: formData.get("minimumPrice"),
   };
 
+      if (!data.startDate || !data.endDate) {
+      Swal.fire({
+        icon: "error",
+        title: "Date Missing",
+        text: "Both Start Date and End Date are required.",
+      });
+      return; 
+    }
    
   // Validation for start date and end date
   const startDateObj = new Date(data.startDate);
@@ -264,6 +272,9 @@
     });
     return; // Stop execution if validation fails
   }
+
+
+  
 
 
 

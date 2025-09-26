@@ -188,7 +188,7 @@ const deleteOrder = async (req, res) => {
       if (!order) {
         return res.status(404).send('Order not found');
       }
-      console.log("Deleted Order:", order);
+      // console.log("Deleted Order:", order);
       res.redirect('/admin/orderList');
     } catch (error) {
       console.error('Error deleting order:', error);

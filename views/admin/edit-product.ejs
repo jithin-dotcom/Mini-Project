@@ -322,32 +322,49 @@ function validateForm() {
         });
         isValid = false;
     }
-    if (color.trim() === "") {
+    if (color.trim() === "" || !/^[a-zA-Z\s]+$/.test(color.trim())) {
         // displayErrorMessage('color-error', 'Please enter a color.');
         Swal.fire({
         icon: 'error',
         title: 'Color Error',
-        text: 'Please enter a color',
+        text: 'Please enter a valid color',
         });
         isValid = false;
     }
-    // if (((imageDatas.length || 0)+ images.files.length + images1.files.length + images2.files.length) < 3 ) {
-    //       Swal.fire({
-    //          icon: 'error',
-    //          title: 'Oops...',
-    //          text: 'Minimum 3 images required!',
-    //      });
-    //      isValid = false;
+
+    // if (!imageDatas && images.files.length === 0) {
+    //     // displayErrorMessage("images-error",'Please select an image.');
+    //     Swal.fire({
+    //     icon: 'error',
+    //     title: 'Image Error',
+    //     text: 'minimum 3 images required',
+    //     });
+    //     isValid = false;
     // }
-    if (!imageDatas && images.files.length === 0) {
-        // displayErrorMessage("images-error",'Please select an image.');
-        Swal.fire({
-        icon: 'error',
-        title: 'Image Error',
-        text: 'minimum 3 images required',
-        });
-        isValid = false;
+
+
+
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const imageInputs = [images, images1, images2];
+
+
+    for (const imgInput of imageInputs) {
+        if (!imageDatas && (!imgInput.files || imgInput.files.length === 0)) {
+            Swal.fire({ icon: 'error', title: 'Image Error', text: 'Minimum 3 images are required.' });
+            isValid = false;
+            break;
+        }
+        if (imgInput.files.length > 0) {
+            const file = imgInput.files[0];
+            if (!allowedTypes.includes(file.type)) {
+                Swal.fire({ icon: 'error', title: 'Invalid Image', text: 'Images must be in JPG, PNG, or WEBP format.' });
+                isValid = false;
+                break;
+            }
+        }
     }
+
+    
     
     if(parseFloat(price) < parseFloat(saleprice)){
         Swal.fire({

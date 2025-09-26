@@ -19,18 +19,22 @@ const login = async(req,res)=>{
     try{
        const {email,password} = req.body;
        const admin = await User.findOne({email,isAdmin:true});
+      
+       if(!admin){
+          return res.render("admin-login",{message:"Invalid Credentials"});
+       }
        if(admin){
         const passwordMatch = bcrypt.compare(password,admin.password);
         if(passwordMatch){
             req.session.admin = true;
             return res.redirect("/admin");
         }else{
-            return res.redirect("/login");
+            return res.render("admin-login", { message: "Invalid Credentials" });
         }
        }
     }catch(error){
         console.log("login error",error);
-        return res.redirect("/pageerror");
+        return res.render("admin-login", { message: "An error occurred. Please try again." });
     }
 }
 
@@ -41,7 +45,7 @@ const logout = async (req, res) => {
         res.redirect("/admin/login");
     } catch (error) {
         console.log("Unexpected error during logout", error);
-        res.redirect("/pageerror");
+        res.render("admin-login", { message: "An error occurred during logout. Please try again." })
     }
 };
 

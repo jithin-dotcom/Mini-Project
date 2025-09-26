@@ -7,6 +7,7 @@ const categoryInfo = async(req,res)=>{
        const page = parseInt(req.query.page)||1;
        const limit = 4;
        const skip = (page-1)*limit;
+       
 
        const [categoryData, totalCategories] = await Promise.all([
         Category.find({})
@@ -15,7 +16,8 @@ const categoryInfo = async(req,res)=>{
             .limit(limit),
         Category.countDocuments()
        ]);
-    
+
+       
         const totalPages = Math.ceil(totalCategories/limit);
         res.render("category",{
             cat:categoryData,
@@ -67,13 +69,13 @@ const addCategoryOffer = async (req, res) => {
         if (!category) {
             return res.status(404).json({ status: false, message: "Category not found" });
         }
-        if (percentage >= 100) {
-            return res.status(404).json({ status: false, message: "percentage should be below 100" });
+        if (percentage >= 100 || percentage < 0) {
+            return res.status(404).json({ status: false, message: "percentage should be between 0 and 100" });
         }
         const Products = await Product.find({ category: category._id });
         const hasLowerProductOffer = Products.some((product) => product.productOffer < percentage);
-
-        if (!hasLowerProductOffer) {
+        
+        if (Products.length > 0 && !hasLowerProductOffer) {
             return res.json({ status: false, message: "None of the products have a lower offer than the category offer. Category offer will not be applied." });
         }
         await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: percentage } });

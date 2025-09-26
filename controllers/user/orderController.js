@@ -78,7 +78,7 @@ const placeOrder = async (req, res) => {
             return res.json({ success: false, message: "Insufficient wallet balance." });
         }
 
-        
+               
         const order = new Order({
             orderedItems: mappedCartItems,
             totalPrice,

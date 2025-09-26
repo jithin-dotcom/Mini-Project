@@ -36,6 +36,9 @@ const addProducts = async(req,res)=>{
         });
       if(!productExists){
         const images = [];
+        if(req.files.length < 3){
+            return res.status(400).json("Minimum three image required");
+        }
         if(req.files && req.files.length > 0){
             for(let i = 0; i < req.files.length; i++){
                 const originalImagePath = req.files[i].path; 
@@ -49,7 +52,7 @@ const addProducts = async(req,res)=>{
         if(!categoryId){
             return res.status(400).json("Invalid category name");   
         }
-        // console.log("product-size : ",products.size);
+        
         const sizeMap = new Map();
         for (let size in products.size) {
             sizeMap.set(size, Number(products.size[size])); 
@@ -227,7 +230,7 @@ const getEditProduct = async(req,res)=>{
         const brand = await Brand.find({});
         const categoryData = await Category.findOne({_id:product.category});
         const categoryName = categoryData.name;
-        // console.log("product : ",product);
+        
         res.render("edit-product",{
             product:product,
             cat:category,
@@ -247,7 +250,7 @@ const editProduct = async(req,res)=>{
     try {
         
         const id =req.params.id;
-        // const product = await Product.findOne({_id:id});
+       
         const data = req.body;
         const existingProduct = await Product.findOne({
             productName:data.productName,

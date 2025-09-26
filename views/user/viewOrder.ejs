@@ -29,22 +29,18 @@
             font-size: 0.9rem;
             padding: 0.4em 0.7em;
         }
-        /* .download-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        } */
+      
         .download-btn {
     padding: 10px 20px;
     font-size: 16px;
     text-align: center;
-    border-radius: 8px; /* Rounded corners */
+    border-radius: 8px; 
 }
 
-/* Responsive adjustments */
+
 @media (max-width: 576px) {
     .download-btn {
-        font-size: 14px; /* Slightly smaller font on small screens */
+        font-size: 14px; 
         padding: 8px 15px;
     }
 }
@@ -76,7 +72,7 @@
                 <p> <strong>Payment Status:</strong>   <%= order.paymentStatus%></p>
                 <p><strong>Invoice Date:</strong> <%= new Date(order.createdOn).toLocaleDateString() %></p>
                 <p><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
-                <!-- <p><strong>Coupon Applied:</strong> <%= order.couponApplied ? 'Yes' : 'No' %></p> -->
+               
 
                 <h5 class="mt-4">Pricing</h5>
                 <ul class="list-group">
@@ -124,9 +120,7 @@
                 <p><%= address.pincode %></p>
                 <p><%= address.phone %></p>
             </div>
-            <!-- <div class="card-footer text-end">
-                <a href="/userProfile" class="btn btn-outline-primary btn-sm" id="backToOrders">Back to Orders</a>
-            </div> -->
+           
         </div>
     </div>
 
@@ -141,19 +135,19 @@
             document.getElementById('downloadPDF').addEventListener('click', () => {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                const rupeeSymbol = String.fromCharCode(8377); // ₹ symbol
+                const rupeeSymbol = String.fromCharCode(8377); 
     
-                let yPos = 20; // Start position
+                let yPos = 20; 
     
-                // Title
+               
                 doc.setFontSize(18);
                 doc.text("Order Invoice", 80, yPos);
                 doc.setLineWidth(.5); 
-                const textWidth = doc.getTextWidth("Order Invoice"); // Get text width dynamically
-                doc.line(80, yPos + 2, 80 + textWidth, yPos + 2);   // Draw line under tex
-                yPos += 30;     //10
+                const textWidth = doc.getTextWidth("Order Invoice"); 
+                doc.line(80, yPos + 2, 80 + textWidth, yPos + 2);   
+                yPos += 30;    
     
-                // Order Details
+               
                 doc.setFontSize(12);
                 doc.text(`Order ID: <%= order.orderId %>`, 10, yPos);
                 doc.text(`Status: <%= order.status %>`, 10, yPos + 5);   //10
@@ -164,10 +158,10 @@
     
                 yPos += 60;
     
-                // Ordered Items Table
+               
                 doc.setFontSize(14);
                 doc.text("Ordered Items", 10, yPos);
-                yPos += 5; //10
+                yPos += 5; 
                 doc.setFontSize(12);
     
                 const orderTableColumn = ["Product Name", "Size", "Quantity", "Price"];
@@ -190,12 +184,12 @@
                     margin: { top: 10 },
                 });
     
-                yPos = doc.lastAutoTable.finalY + 10;  //15
+                yPos = doc.lastAutoTable.finalY + 10;  
     
-                // Pricing Details Table (Same Format as Order Items)
+               
                 doc.setFontSize(14);
                 doc.text("Pricing Details", 10, yPos);
-                yPos += 5;  //10
+                yPos += 5;  
                 doc.setFontSize(12);
     
                 const pricingTableColumn = ["Description", "Amount"];
@@ -212,173 +206,56 @@
                     theme: 'grid',
                     margin: { top: 10 },
                     columnStyles: {
-                        1: { halign: 'left' } // Align amounts to the right
+                        1: { halign: 'left' } 
                     }
                 });
     
-                yPos = doc.lastAutoTable.finalY + 30;   //15
+                yPos = doc.lastAutoTable.finalY + 30;   
     
-                // Delivery Address
+               
                 doc.setFontSize(14);
                 doc.text("Delivery Address", 10, yPos);
-                yPos += 10;  //10
+                yPos += 10;  
                 doc.setFontSize(12);
     
                 doc.text(`<%= address.name %>`, 10, yPos);
-                doc.text(`<%= address.city %>, <%= address.state %>`, 10, yPos + 5); //10
-                doc.text(`Landmark: <%= address.landMark %>`, 10, yPos + 10); //20
-                doc.text(`Pincode: <%= address.pincode %>`, 10, yPos + 15); //30
-                doc.text(`Phone: <%= address.phone %>`, 10, yPos + 20); //40
+                doc.text(`<%= address.city %>, <%= address.state %>`, 10, yPos + 5); 
+                doc.text(`Landmark: <%= address.landMark %>`, 10, yPos + 10); 
+                doc.text(`Pincode: <%= address.pincode %>`, 10, yPos + 15); 
+                doc.text(`Phone: <%= address.phone %>`, 10, yPos + 20); 
                 yPos += 50;
     
-                // Save PDF
+            
                 doc.save(`Invoice_<%= order.orderId %>.pdf`);
             });
         });
     </script>
     
-
-
-
-
-    <!-- <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('downloadPDF').addEventListener('click', () => {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-    
-                let yPos = 20; // Start position
-    
-                // Title
-                doc.setFontSize(18);
-                doc.text("Order Invoice", 80, yPos);
-                yPos += 10;
-    
-                // Order Details
-                doc.setFontSize(12);
-                doc.text(`Order ID: <%= order.orderId %>`, 10, yPos);
-                doc.text(`Status: <%= order.status %>`, 10, yPos + 10);
-                doc.text(`Payment Status: <%= order.paymentStatus %>`, 10, yPos + 20);
-                doc.text(`Invoice Date: <%= new Date(order.createdOn).toLocaleDateString() %>`, 10, yPos + 30);
-                doc.text(`Payment Method: <%= order.paymentMethod %>`, 10, yPos + 40);
-                doc.text(`Coupon Applied: <%= order.couponApplied ? 'Yes' : 'No' %>`, 10, yPos + 50);
-    
-                yPos += 60;
-    
-                // Pricing Details
-                doc.setFontSize(14);
-                doc.text("Pricing Details", 10, yPos);
-                yPos += 10;
-                doc.setFontSize(12);
-    
-                doc.text(`Total Price: ₹<%= order.totalPrice %>`, 10, yPos);
-                doc.text(`Discount: ₹<%= order.discount %>`, 10, yPos + 10);
-                doc.text(`Final Amount: ₹<%= order.finalAmount %>`, 10, yPos + 20);
-                yPos += 40;
-    
-                // Ordered Items Table
-                doc.setFontSize(14);
-                doc.text("Ordered Items", 10, yPos);
-                yPos += 10;
-                doc.setFontSize(12);
-    
-                const tableColumn = ["Product Name", "Size", "Quantity", "Price (₹)"];
-                const tableRows = [];
-    
-                '<% order.orderedItems.forEach(item => { %>'
-                    tableRows.push([
-                        "<%= item.name %>",
-                        "<%= item.size %>",
-                        "<%= item.quantity %>",
-                        "₹<%= item.price %>",
-                    ]);
-               ' <% }) %>'
-    
-                doc.autoTable({
-                    startY: yPos,
-                    head: [tableColumn],
-                    body: tableRows,
-                    theme: 'grid',
-                    margin: { top: 10 },
-                });
-    
-                yPos = doc.lastAutoTable.finalY + 15;
-    
-                // Delivery Address
-                doc.setFontSize(14);
-                doc.text("Delivery Address", 10, yPos);
-                yPos += 10;
-                doc.setFontSize(12);
-    
-                doc.text(`<%= address.name %>`, 10, yPos);
-                doc.text(`<%= address.city %>, <%= address.state %>`, 10, yPos + 10);
-                doc.text(`Landmark: <%= address.landMark %>`, 10, yPos + 20);
-                doc.text(`Pincode: <%= address.pincode %>`, 10, yPos + 30);
-                doc.text(`Phone: <%= address.phone %>`, 10, yPos + 40);
-                yPos += 50;
-    
-                // Save PDF
-                doc.save(`Invoice_<%= order.orderId %>.pdf`);
-            });
-        });
-    </script>
-     -->
-
-
-
-
-
-    <!-- <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('downloadPDF').addEventListener('click', () => {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-    
-                // Temporarily hide the buttons (Download PDF and Back to Orders)
-                const downloadButton = document.getElementById('downloadPDF');
-                const backToOrdersButton = document.getElementById('backToOrders');
-                downloadButton.style.display = 'none';
-                backToOrdersButton.style.display = 'none';
-    
-                // Get the element
-                const elementHTML = document.getElementById('orders');
-    
-                // Use html2canvas to get the element dimensions
-                html2canvas(elementHTML).then((canvas) => {
-                    const imgData = canvas.toDataURL('image/png');
-                    const imgWidth = 150; // Image width in mm
-                    const pageWidth = 210; // A4 width in mm
-                    const pageHeight = 420; // A4 height in mm
-                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                    let heightLeft = imgHeight;
-    
-                    // Calculate the x-coordinate to center the image
-                    const xOffset = (pageWidth - imgWidth) / 2;
-    
-                    // Add the image to the PDF at the calculated position
-                    doc.addImage(imgData, 'PNG', xOffset, 30, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-    
-                    // Add more pages if needed
-                    while (heightLeft >= 0) {
-                        const position = heightLeft - imgHeight;
-                        doc.addPage();
-                        doc.addImage(imgData, 'PNG', xOffset, position, imgWidth, imgHeight);
-                        heightLeft -= pageHeight;
-                    }
-    
-                    // Save the PDF
-                    doc.save('order-details.pdf');
-    
-                    // Restore the buttons
-                    downloadButton.style.display = 'inline-block';
-                    backToOrdersButton.style.display = 'inline-block';
-                });
-            });
-        });
-    </script>
-     -->
 
     
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

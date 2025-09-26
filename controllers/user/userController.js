@@ -155,8 +155,7 @@ const signup = async (req, res) => {
         );
 
         req.session.userData = { name, phone, email, password };
-        console.log("req body signup : ",req.body)
-
+       
         res.render("verify-otp");
         console.log("OTP Sent", otp);
 
@@ -187,7 +186,7 @@ const verifyOtp = async (req, res) => {
     try {
         const { otp } = req.body;
         const userData = req.session.userData;
-        console.log("verify otp req.body",req.body)
+       
 
         if (!userData) {
             return res.status(400).json({ success: false, message: "Session expired. Please sign up again." });
@@ -225,7 +224,7 @@ const resendOtp = async (req, res) => {
     try {
        
         const { email } = req.session.userData;
-        console.log("email to send : ",email);
+      
         const otp = generateOtp();
         req.session.userOtp = otp; 
         const emailSend = await sendVerificationEmail(email, otp);
@@ -237,7 +236,7 @@ const resendOtp = async (req, res) => {
             { otp, createdAt: Date.now() },
             { new: true, upsert: true } 
         );
-        console.log("this is resendOtp");
+      
         console.log("OTP Sent:", otp);
         res.json({ success: true, message: "OTP resent successfully" });
 
@@ -377,6 +376,7 @@ const loadShoppingPage = async (req, res) => {
             }
         }
         const products = await Product.find(filter)
+            .collation({ locale: "en", strength: 2 })
             .sort(sortOption)
             .skip(skip)
             .limit(limit)

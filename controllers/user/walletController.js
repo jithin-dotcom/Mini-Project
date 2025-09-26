@@ -6,7 +6,7 @@ const Wallet = require("../../models/walletSchema");
 const addMoney = async (req, res) => {
     try {
       const userId = req.session.user._id;
-      const { amount } = req.body;
+      
       let wallet = await Wallet.findOne({ userId });
       if (!wallet) {
         wallet = new Wallet({ userId, balance: 0, transactionHistory: [] });
@@ -42,7 +42,6 @@ const getWalletHistory = async (req, res) => {
       const dateA = new Date(a.transactionDate);
       const dateB = new Date(b.transactionDate);
       
-      console.log(`dateA: ${dateA}, dateB: ${dateB}`); 
       
       return dateB - dateA;
     });

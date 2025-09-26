@@ -42,8 +42,7 @@ const sendVerificationEmail = async(email,otp)=>{
         }
          
         const info = await transporter.sendMail(mailOptions);
-        console.log("this is from sendVerificationEmail");
-        console.log("Email sent:",info.messageId);
+       
         return true;
 
     } catch (error) {
@@ -82,11 +81,11 @@ const forgotEmailValid = async(req,res)=>{
         
         const {email} = req.body;
         const findUser = await User.findOne({email:email});
-        // console.log("req.body : ",req.body);
+       
         if(findUser){
             const otp = generateOtp();
             const emailSend = await sendVerificationEmail(email,otp);
-            console.log("send email : ",emailSend);
+          
             if(emailSend){
                 req.session.userOtp = otp;
                 req.session.email = email;
@@ -143,8 +142,7 @@ const resendOtp = async(req,res)=>{
         const otp = generateOtp();
         req.session.userOtp = otp;
         const email = req.session.email;
-        console.log("this is resendOtp");
-        console.log("Resending OTP to email:",email);
+       
         const  emailSend = await sendVerificationEmail(email,otp);
         if(emailSend){
             console.log("Resend OTP:",otp);
@@ -261,10 +259,9 @@ const changeEmailValid = async(req,res)=>{
     try {
         
         const {email} = req.body;
-        console.log("req.body : ",req.body);
+      
         const userExists = await User.findOne({email});
-        console.log("req.session.user.email : ",req.session.user.email);
-        
+     
         if(userExists && email == req.session.user.email){
             
             const otp = generateOtp();
@@ -274,8 +271,7 @@ const changeEmailValid = async(req,res)=>{
                 req.session.userData = req.body;
                 req.session.email = email;
                 res.render("change-email-otp");
-                console.log("this is changeEmailValid");
-                console.log("Email send: ",email);
+                
                 console.log("OTP: ",otp);
             }else{
                 res.json("email-error");
@@ -283,7 +279,7 @@ const changeEmailValid = async(req,res)=>{
 
         }else{
             res.render("change-email",{
-                message : "User with this email does not exist "
+                message : "Please Enter a valid Email "
             })
         }
 
@@ -353,7 +349,7 @@ const changePasswordValid = async(req,res)=>{
                 req.session.userData = req.body;
                 req.session.email = email;
                 res.render("change-password-otp");
-                console.log("this is changePasswordValid");
+                // console.log("this is changePasswordValid");
                 console.log("OTP: ",otp);
             }else{
                 res.json({
@@ -377,9 +373,7 @@ const verifyChangePassOtp = async(req,res)=>{
     try {
         
         const enteredOtp = req.body.otp.trim();
-        console.log("this is verifyChangePassOtp");
-        console.log("Stored OTP:", req.session.userOtp);
-        console.log("Entered OTP:", enteredOtp);
+       
         if(enteredOtp===req.session.userOtp){
             res.json({success:true,redirectUrl:"/reset-password"});
         }else{
@@ -506,7 +500,7 @@ const deleteAddress = async(req,res)=>{
     try {
         
         const addressId = req.query.id;
-        console.log("Query Address ID:", addressId);
+        // console.log("Query Address ID:", addressId);
         const findAddress = await Address.findOne({"address._id":addressId});
         if(!findAddress){
             return res.status(404).send("Address not found");
@@ -585,7 +579,7 @@ const cancelOrder = async (req, res) => {
                 if (currentStock !== undefined) {
                     product.size.set(item.size, currentStock + item.quantity);
                     await product.save();
-                    console.log(`Stock updated for product ${product.productName}, size ${item.size}.`);
+                    // console.log(`Stock updated for product ${product.productName}, size ${item.size}.`);
                 }
             }
         }

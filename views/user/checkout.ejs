@@ -103,7 +103,7 @@
 
                              <!-- Form to add a new address -->
 <h4 class="mt-5">Add a New Address</h4>
-<form id="addAddressForm" action="/addAddressForOrder" method="POST" name="selectedAddress" >
+<form id="addAddressForm" action="/addAddressForOrder" method="POST" name="selectedAddress" novalidate>
     <div class="mb-3">
         <label for="addressType" class="form-label">Address Type</label>
         <input type="text" class="form-control" id="addressType" name="addressType" required>
@@ -321,6 +321,7 @@
 
 <script>
     document.getElementById('addAddressForm').addEventListener('submit', function(event) {
+        let addressType = document.getElementById('addressType').value.trim();
         let name = document.getElementById('name').value.trim();
         let phone = document.getElementById('phone').value.trim();
         let pincode = document.getElementById('pincode').value.trim();
@@ -328,22 +329,28 @@
         let city = document.getElementById('city').value.trim();
         let state = document.getElementById('state').value.trim();
 
-        let nameRegex = /^[A-Za-z\s]+$/; // Only alphabets and spaces
-        let numberRegex = /^[0-9]+$/; // Only numbers
-        let phoneRegex = /^[1-9][0-9]{9}$/; // Ensures phone number is 10 digits and doesn't start with 0
+        let nameRegex = /^[A-Za-z\s]+$/; 
+        let numberRegex = /^[0-9]+$/; 
+        let phoneRegex = /^[1-9][0-9]{9}$/; 
         
 
-        if (!nameRegex.test(name)) {
+        if (!nameRegex.test(addressType) || !addressType.trim()) {
+            swal.fire('Error', 'Address type must contain only alphabets.', 'error');
+            event.preventDefault();
+            return;
+        }
+
+        if (!nameRegex.test(name) || !name.trim()) {
             swal.fire('Error', 'Name must contain only alphabets.', 'error');
             event.preventDefault();
             return;
         }
-        if (!nameRegex.test(city)) {
+        if (!nameRegex.test(city) || !city.trim()) {
             swal.fire('Error', 'city must contain only alphabets.', 'error');
             event.preventDefault();
             return;
         }
-        if (!nameRegex.test(state)) {
+        if (!nameRegex.test(state) || !state.trim()) {
             swal.fire('Error', 'state must contain only alphabets.', 'error');
             event.preventDefault();
             return;
@@ -366,7 +373,7 @@
             event.preventDefault();
             return;
         }
-        // Check if phone is a sequence of the same number (like 0000000000, 1111111111, etc.)
+        
         if (/^(\d)\1{9}$/.test(phone) || (altPhone && /^(\d)\1{9}$/.test(altPhone))) {
            swal.fire('Error', 'Phone numbers cannot be repetitive like 0000000000 or 1111111111.', 'error');
            event.preventDefault();

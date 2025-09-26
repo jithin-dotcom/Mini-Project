@@ -392,8 +392,10 @@
               const xl = document.getElementById('xl').value;
               const xxl = document.getElementById('xxl').value;
               const sizeValues = { s, m, l, xl, xxl };
-              const numberRegex = /^[0-9]+$/; // Only allows numbers
-              let isValid = true
+              const numberRegex = /^[0-9]+$/; 
+              let isValid = true;
+              
+              
               if (name.trim() === "") {
               //   displayErrorMessage('productName-error', 'Please enter a product name.');
                  Swal.fire({
@@ -506,23 +508,39 @@
               }
   
   
-              if (color.trim() === "") {
+              if (color.trim() === "" || !/^[a-zA-Z\s]+$/.test(color.trim())) {
                 //   displayErrorMessage('color-error', 'Please enter a color.');
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
-                    text: 'Please enter a color!',
+                    text: 'Please enter a valid color!',
                 });
                   isValid = false;
               }
-              if (images.files.length === 0 || images1.files.length === 0 || images2.files.length === 0) {
-                    Swal.fire({
-                       icon: 'error',
-                       title: 'Oops...',
-                       text: 'Minimum 3 images required!',
-                    });
-                    isValid = false;
-              }
+            //   if (images.files.length === 0 || images1.files.length === 0 || images2.files.length === 0) {
+            //         Swal.fire({
+            //            icon: 'error',
+            //            title: 'Oops...',
+            //            text: 'Minimum 3 images required!',
+            //         });
+            //         isValid = false;
+            //   }
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const imageInputs = [images, images1, images2];
+
+    for (const imgInput of imageInputs) {
+        if (!imgInput.files || imgInput.files.length === 0) {
+            Swal.fire({ icon: 'error', title: 'Oops...', text: 'All three images are required!' });
+            isValid = false;
+            break;
+        }
+        const file = imgInput.files[0];
+        if (!allowedTypes.includes(file.type)) {
+            Swal.fire({ icon: 'error', title: 'Invalid Image', text: 'Images must be JPG, PNG, or WEBP format!' });
+            isValid = false;
+            break;
+        }
+    }
   
               return isValid;
     }
