@@ -109,21 +109,21 @@
 
 <script>
 async function loadWishlist() {
-    console.log('loadWishlist called'); // Debug
+    console.log('loadWishlist called'); 
     try {
         const response = await fetch('/wishlist/data', {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
         const data = await response.json();
-        console.log('loadWishlist response:', data); // Debug
+        console.log('loadWishlist response:', data); 
         if (data.status) {
             const tbody = document.getElementById('wishlistTableBody');
             if (data.wishlist && data.wishlist.length > 0) {
                 tbody.innerHTML = data.wishlist.map(item => `
                     <tr data-product-id="${item.productId._id}" data-size="${item.size}">
                         <td class="image product-thumbnail">
-                            <img src="/Uploads/re-image/${item.productId.productImage[0]}" alt="${item.productId.productName}"/>
+                            <img src="/uploads/re-image/${item.productId.productImage[0]}" alt="${item.productId.productName}"/>
                         </td>
                         <td class="product-des product-name">
                             <h5 class="product-name">

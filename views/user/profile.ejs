@@ -732,7 +732,7 @@ function updateOrdersTable(orders, currentOrderPage, totalOrderPages, orderLimit
         ${order.orderedItems.map((item, index) => `
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
             <span>${item.name}</span>
-            <img src="/Uploads/re-image/${item.image}" alt="${item.name}" style="height: 50px; width: 50px; object-fit: cover;">
+            <img src="/uploads/re-image/${item.image}" alt="${item.name}" style="height: 50px; width: 50px; object-fit: cover;">
           </div>
           ${index < order.orderedItems.length - 1 ? '<br>' : ''}
         `).join('')}
