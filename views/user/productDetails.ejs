@@ -1549,10 +1549,10 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 					});
 
 					
-				   // Refresh the page to update cart count and other changes
-					  setTimeout(() => {
-                           location.reload();  // Refresh the page
-                      }, 500);  // Wait for 2 seconds before reloading the page
+				  
+					//   setTimeout(() => {
+                    //        location.reload();  
+                    //   }, 500);  
 
 				}else{
 						Swal.fire({
@@ -1567,9 +1567,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 			 },
 			 error:(error)=>{
 
-				console.error("Server Response (error):", error); // Debugging error
+				console.error("Server Response (error):", error); 
 
-				 // Check if the error contains a server message
+				 
 				const errorMessage = error.responseJSON?.message || 'Error while adding product to cart';
 				Swal.fire({
 					title : 'Error ',
@@ -1601,7 +1601,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 		 success: (response)=>{
 
-// console.log("Server Response (success):", response); // Debugging response
+
 
             if(response.status){
 	           Swal.fire({
@@ -1610,10 +1610,10 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 		       icon : 'success',
 		       timer : 2000
         	   });
-			   // Refresh the page to update cart count and other changes
-			   setTimeout(() => {
-                     location.reload();  // Refresh the page
-               }, 500);  // Wait for 2 seconds before reloading the page
+			   
+			//    setTimeout(() => {
+            //          location.reload();  
+            //    }, 500);  
 
 
            }else{

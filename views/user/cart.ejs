@@ -1,11 +1,30 @@
+
+
+
 <%- include("../../views/partials/user/header") %>
 
 <link rel="stylesheet" type="text/css" href="css/util.css">
 <link rel="stylesheet" type="text/css" href="css/main.css">
 <link rel="stylesheet" href="./user-assets/css/maind134.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-<!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+  .btn-loading::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
 
 <main class="main" style="margin-top: 150px;">
     <h2 style="margin-left: 45vw;">CART</h2>
@@ -35,12 +54,12 @@
                                     <th scope="col">Delete</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="cartTableBody">
                                 <% if (cart && cart.length > 0) { %>
                                     <% cart.forEach((item) => { %>
-                                        <tr>
+                                        <tr data-product-id="<%= item.productId._id %>" data-size="<%= item.size %>">
                                             <td class="image product-thumbnail">
-                                                <img src="/uploads/re-image/<%= item.productId.productImage[0] %>" alt="<%= item.productId.productName %>" width="50" height="50">
+                                                <img src="/Uploads/re-image/<%= item.productId.productImage[0] %>" alt="<%= item.productId.productName %>" width="50" height="50">
                                             </td>
                                             <td class="product-des product-name">
                                                 <h5 class="product-name">
@@ -49,56 +68,31 @@
                                                     </a>
                                                 </h5>
                                                 <p class="font-xs" style="color: #088178;">
-                                                    <strong>Size: <%= item.size %> </strong>
+                                                    <strong>Size: <%= item.size %></strong>
                                                 </p>
-                                                <p class="font-xs"  style="color: #088178;">
-                                                    <strong>Max Stock: <%= item.maxStock %> </strong>
+                                                <p class="font-xs" style="color: #088178;">
+                                                    <strong>Max Stock: <%= item.maxStock %></strong>
                                                 </p>
                                             </td>
-                                            <td class="price" data-title="Price">₹<span>
-                                                <%= item.productId.salePrice %>
-                                            </span></td>
- 
-
-
-                                          
-
-
-                                             <td class="text-center" data-title="quantity">
+                                            <td class="price" data-title="Price">₹<span><%= item.productId.salePrice %></span></td>
+                                            <td class="text-center" data-title="Quantity">
                                                 <div class="input-group quantity-group">
                                                     <button class="btn btn-sm btn-decrement" onclick="changeQuantity('<%= item.productId._id %>', '<%= item.size %>', -1)">-</button>
                                                     <input type="number" min="1" max="<%= Math.min(10, item.maxStock) %>" class="form-control quantity-input" data-product-id="<%= item.productId._id %>" data-size="<%= item.size %>" value="<%= item.quantity %>" readonly>
                                                     <button class="btn btn-sm btn-increment" onclick="changeQuantity('<%= item.productId._id %>', '<%= item.size %>', 1)">+</button>
                                                 </div>
-                                            </td> 
-                                             
-
-                                          
-                                            <!-- <td class="text-center" data-title="quantity">
-                                                <input type="number" min="1" max="10" class="form-control" value="<%= item.quantity %>" onchange="updateQuantity('<%= item.productId._id %>', '<%= item.size %>', this.value)">
-                                            </td> -->
-                                            <!-- <td class="text-center" data-title="Total" data-product-id="<%= item.productId._id %>" data-size="<%= item.size %>">
-                                                ₹<span><%= item.quantity * item.productId.salePrice %></span>
-                                            </td> -->
-                                            
-                                            <!-- <td class="text-center price" data-title="Total" data-product-id="<%= item.productId._id %>" data-size="<%= item.size %>" data-total="<%= item.quantity * item.productId.salePrice %>">
-                                                ₹<span class="item-total-price"><%= item.quantity * item.productId.salePrice %></span>
-                                            </td> -->
-                                            
-
-                                             <td class="text-center" data-title="Total">
-                                                ₹<span> <%= item.quantity * item.productId.salePrice %> </span>
-                                            </td> 
+                                            </td>
+                                            <td class="text-center" data-title="Total">₹<span class="item-total"><%= item.quantity * item.productId.salePrice %></span></td>
                                             <td class="action" data-title="Remove">
-                                                <a class="btn btn-sm" href="#" onclick="confirmRemove('<%= item.productId._id %>', '<%= item.size %>')">
+                                                <a class="btn btn-sm delete-product" href="#" data-product-id="<%= item.productId._id %>" data-size="<%= item.size %>" onclick="confirmRemove('<%= item.productId._id %>', '<%= item.size %>')">
                                                     <i class="fi-rs-trash"></i>
                                                 </a>
                                             </td>
                                         </tr>
-                                    <% }); %>
+                                    <% }) %>
                                 <% } else { %>
                                     <tr>
-                                        <td colspan="5" class="text-center">
+                                        <td colspan="6" class="text-center">
                                             <p class="lead mb-4">No items found in Cart</p>
                                         </td>
                                     </tr>
@@ -109,95 +103,96 @@
                 </div>
             </div>
 
-
-
             <% if (cart && cart.length > 0) { %>
-                <!-- Beautify Total Price -->
                 <div class="total-price-container text-right mt-4">
                     <div class="d-flex justify-content-between align-items-center">
-
-                        <!-- <h4 class="font-weight-bold">Total Price: ₹<span><%= totalPrice.toFixed(2) %></span></h4> -->
-                        
                         <h4 class="font-weight-bold">Total Price:</h4>
-                        <!-- <h4 class="font-weight-bold" style="font-size: 24px;color: #088178;" id="cart-total" data-cart-total="<%= totalPrice.toFixed(2) %>">
-                            ₹<%= totalPrice.toFixed(2) %>
-                        </h4> -->
-                        
-                        <h4 class="font-weight-bold " style="font-size: 24px;color: #088178;">₹<%= totalPrice.toFixed(2) %></h4>
+                        <h4 class="font-weight-bold" style="font-size: 24px; color: #088178;" id="cartTotalPrice">₹<%= totalPrice.toFixed(2) %></h4>
                     </div>
                     <hr>
                     <a class="btn btn-success btn-lg" href="/checkout" style="width: 200px;">
                         <i class="bi bi-credit-card"></i> Proceed to Checkout
                     </a>
-
-                    <!-- <button id="checkout-btn" class="btn btn-success btn-lg" style="width: 200px;">
-                        <i class="bi bi-credit-card"></i> Proceed to Checkout
-                    </button> -->
                 </div>
             <% } %>
-
-             
-
-                    
-            <!-- <% if (cart && cart.length > 0) { %>
-                <div class="total-price-container" style="text-align: right; margin-top: 20px;">
-                    <h4>Total Price: ₹<%= totalPrice %></h4>
-                </div>
-            <% } %>
-            <a class="btn btn-sm" href="/checkout" style="margin-left: 920px;">
-                Proceed to Checkout
-            </a> -->
         </div>
     </section>
 </main>
 
-<%- include("../../views/partials/user/footer") %>
-
-<!-- 
-<% if (cart && cart.length > 0) { %>
-    <div class="total-price-container text-right mt-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <h4 class="font-weight-bold">Total Price:</h4>
-            <h4 class="font-weight-bold" style="font-size: 24px;color: #088178;">₹<%= totalPrice.toFixed(2) %></h4>
-        </div>
-        <hr>
-        <button id="checkout-btn" class="btn btn-success btn-lg" style="width: 200px;">
-            <i class="bi bi-credit-card"></i> Proceed to Checkout
-        </button>
-    </div>
-<% } %> -->
-
-<!-- <script>
-    document.getElementById("checkout-btn").addEventListener("click", async function () {
-        try {
-            const response = await fetch("/checkout", { method: "POST" });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "An unknown error occurred");
-            }
-
-            // If success, let the backend handle the checkout page rendering
-            window.location.href = "/checkout";
-
-        } catch (error) {
-            Swal.fire({
-                icon: "error",
-                title: "Checkout Failed",
-                text: error.message,
-                confirmButtonText: "Go to Cart"
-            }).then(() => {
-                window.location.href = "/cart";
-            });
-        }
-    });
-</script> -->
-
-
 <script>
-    // Confirm product removal with SweetAlert
+async function loadCart() {
+    console.log('loadCart called'); // Debug
+    try {
+        const response = await fetch('/cart/data', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        console.log('loadCart response:', data); // Debug
+        if (data.status) {
+            const tbody = document.getElementById('cartTableBody');
+            const totalPriceElement = document.getElementById('cartTotalPrice');
+            const totalPriceContainer = document.querySelector('.total-price-container');
+
+            if (data.cart && data.cart.length > 0) {
+                tbody.innerHTML = data.cart.map(item => `
+                    <tr data-product-id="${item.productId._id}" data-size="${item.size}">
+                        <td class="image product-thumbnail">
+                            <img src="/Uploads/re-image/${item.productId.productImage[0]}" alt="${item.productId.productName}" width="50" height="50">
+                        </td>
+                        <td class="product-des product-name">
+                            <h5 class="product-name">
+                                <a href="#">${item.productId.productName}</a>
+                            </h5>
+                            <p class="font-xs" style="color: #088178;">
+                                <strong>Size: ${item.size}</strong>
+                            </p>
+                            <p class="font-xs" style="color: #088178;">
+                                <strong>Max Stock: ${item.maxStock}</strong>
+                            </p>
+                        </td>
+                        <td class="price" data-title="Price">₹<span>${item.productId.salePrice}</span></td>
+                        <td class="text-center" data-title="Quantity">
+                            <div class="input-group quantity-group">
+                                <button class="btn btn-sm btn-decrement" onclick="changeQuantity('${item.productId._id}', '${item.size}', -1)">-</button>
+                                <input type="number" min="1" max="${Math.min(10, item.maxStock)}" class="form-control quantity-input" data-product-id="${item.productId._id}" data-size="${item.size}" value="${item.quantity}" readonly>
+                                <button class="btn btn-sm btn-increment" onclick="changeQuantity('${item.productId._id}', '${item.size}', 1)">+</button>
+                            </div>
+                        </td>
+                        <td class="text-center" data-title="Total">₹<span class="item-total">${item.quantity * item.productId.salePrice}</span></td>
+                        <td class="action" data-title="Remove">
+                            <a class="btn btn-sm delete-product" href="#" data-product-id="${item.productId._id}" data-size="${item.size}" onclick="confirmRemove('${item.productId._id}', '${item.size}')">
+                                <i class="fi-rs-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `).join('');
+                if (totalPriceContainer) {
+                    totalPriceContainer.style.display = 'block';
+                    totalPriceElement.textContent = `₹${data.totalPrice.toFixed(2)}`;
+                }
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <p class="lead mb-4">No items found in Cart</p>
+                        </td>
+                    </tr>`;
+                if (totalPriceContainer) {
+                    totalPriceContainer.style.display = 'none';
+                }
+            }
+        } else {
+            Swal.fire('Error', data.message || 'Error loading cart', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading cart:', error);
+        Swal.fire('Error', `Error loading cart: ${error.message}`, 'error');
+    }
+}
+
 function confirmRemove(productId, size) {
+    console.log(`confirmRemove called with productId: ${productId}, size: ${size}`); // Debug
     Swal.fire({
         title: 'Are you sure?',
         text: 'Do you want to remove this product from your cart?',
@@ -207,89 +202,99 @@ function confirmRemove(productId, size) {
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Send an AJAX request to the server to remove the product from the cart
+            const deleteButton = document.querySelector(`.delete-product[data-product-id="${productId}"][data-size="${size}"]`);
+            if (!deleteButton) {
+                console.error('Delete button not found for productId:', productId, 'size:', size);
+                Swal.fire('Error', 'Delete button not found. Please try again.', 'error');
+                return;
+            }
+            deleteButton.classList.add('btn-loading');
+            deleteButton.style.pointerEvents = 'none';
+
             fetch(`/removeFromCart/${productId}`, {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ size: size })  // Ensure you send the size
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ size: size })
             })
             .then(response => response.json())
             .then(data => {
+                console.log('Remove product response:', data); // Debug
                 if (data.status) {
-                    // If the product was successfully removed, reload the page or update the UI
-                    Swal.fire('Removed!', 'Product removed from cart', 'success');
-                    location.reload(); // Reload the page to reflect the changes
+                    Swal.fire('Removed!', 'Product removed from cart', 'success').then(() => {
+                        loadCart();
+                    });
                 } else {
-                    Swal.fire('Error', 'Failed to remove product', 'error');
+                    Swal.fire('Error', data.message || 'Failed to remove product', 'error');
                 }
             })
             .catch(error => {
                 console.error('Error removing product:', error);
-                Swal.fire('Error', 'An error occurred. Please try again.', 'error');
+                Swal.fire('Error', `An error occurred: ${error.message}`, 'error');
+            })
+            .finally(() => {
+                deleteButton.classList.remove('btn-loading');
+                deleteButton.style.pointerEvents = 'auto';
             });
         }
     });
 }
 
-
-
-
-
-
-
-
-
-
-// Change quantity with SweetAlert
 function changeQuantity(productId, size, change) {
-    // Construct a unique selector for the input field based on productId and size
-    const quantityInput = document.querySelector(`.quantity-input[data-product-id='${productId}'][data-size='${size}']`);
+    console.log(`changeQuantity called with productId: ${productId}, size: ${size}, change: ${change}`); // Debug
+    const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"][data-size="${size}"]`);
     let currentQuantity = parseInt(quantityInput.value);
     const maxStock = parseInt(quantityInput.getAttribute('max'));
-    
+
     let newQuantity = currentQuantity + change;
 
     if (newQuantity < 1) {
         Swal.fire('Error', 'Quantity cannot be less than 1', 'error');
-        newQuantity = 1;
+        return;
     } else if (newQuantity > 10 || newQuantity > maxStock) {
         Swal.fire('Error', `Quantity cannot exceed ${Math.min(10, maxStock)}`, 'error');
-        newQuantity = Math.min(10, maxStock);
         return;
     }
 
-    // Update the input field with the new quantity
-    quantityInput.value = newQuantity;
+    const decrementBtn = document.querySelector(`.btn-decrement[onclick*="changeQuantity('${productId}', '${size}', -1)"]`);
+    const incrementBtn = document.querySelector(`.btn-increment[onclick*="changeQuantity('${productId}', '${size}', 1)"]`);
+    decrementBtn.classList.add('btn-loading');
+    incrementBtn.classList.add('btn-loading');
+    decrementBtn.disabled = true;
+    incrementBtn.disabled = true;
 
-    // Make an AJAX request to update the quantity on the server
     fetch(`/updateCartQuantity/${productId}`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ size: size, quantity: newQuantity })
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Update quantity response:', data); 
         if (data.status) {
-            Swal.fire('Updated!', 'Quantity updated', 'success');
-            // Optionally update the total price without reloading
-            location.reload(); // Reload the page to reflect changes
+            Swal.fire('Updated!', 'Quantity updated', 'success').then(() => {
+                loadCart();
+            });
         } else {
-            Swal.fire('Error', data.message, 'error');
+            Swal.fire('Error', data.message || 'Failed to update quantity', 'error');
+            quantityInput.value = currentQuantity; 
         }
     })
     .catch(error => {
         console.error('Error updating quantity:', error);
-        Swal.fire('Error', 'An error occurred. Please try again.', 'error');
+        Swal.fire('Error', `An error occurred: ${error.message}`, 'error');
+        quantityInput.value = currentQuantity; 
+    })
+    .finally(() => {
+        decrementBtn.classList.remove('btn-loading');
+        incrementBtn.classList.remove('btn-loading');
+        decrementBtn.disabled = false;
+        incrementBtn.disabled = false;
     });
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    loadCart(); 
+});
 </script>
 
-
-
-
-
+<%- include("../../views/partials/user/footer") %>

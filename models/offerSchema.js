@@ -1,6 +1,5 @@
-const mongoose = require("mongoose");
-const {Schema} = mongoose;
 
+import mongoose, { Schema } from "mongoose";
 
 const offerSchema = new Schema({
     discount : {
@@ -32,4 +31,4 @@ const offerSchema = new Schema({
 
 
 const Offer = mongoose.model("Offer",offerSchema);
-module.exports = Offer;
+export default Offer;

@@ -1,8 +1,8 @@
-const Order = require('../../models/orderSchema');
-const Address = require('../../models/addressSchema');
-const Product = require('../../models/productSchema');
-const User = require('../../models/userSchema');
-const Wallet = require('../../models/walletSchema');
+import Order from '../../models/orderSchema.js';
+import Address from '../../models/addressSchema.js';
+import Product from '../../models/productSchema.js';
+import User from '../../models/userSchema.js';
+import Wallet from '../../models/walletSchema.js';
 
 
 
@@ -50,45 +50,90 @@ const getAllOrders = async (req, res) => {
 
 
 
+
+const getOrdersData = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = 10;
+    const skip = (page - 1) * pageSize;
+
+    const [orders, totalOrders] = await Promise.all([
+      Order.find()
+        .populate("userId", "name")
+        .populate("address", "fullAddress")
+        .skip(skip)
+        .limit(pageSize)
+        .sort({ createdOn: -1 })
+        .exec(),
+      Order.countDocuments()
+    ]);
+
+    const totalPages = Math.ceil(totalOrders / pageSize);
+    const formattedOrders = orders.map(order => ({
+      id: order.orderId,
+      customer: order.userId?.name || "N/A",
+      address: order.address ? order.address.fullAddress : "N/A",
+      date: order.createdOn ? order.createdOn.toDateString() : "N/A",
+      total: order.finalAmount.toFixed(2),
+      status: order.status,
+    }));
+
+    res.json({
+      status: true,
+      orders: formattedOrders,
+      currentPage: page,
+      totalPages: totalPages
+    });
+  } catch (error) {
+    console.error("Error fetching orders for AJAX:", error);
+    res.status(500).json({ status: false, message: "Error fetching orders" });
+  }
+};
+
+
+
+
 const updateOrderStatus = async (req, res) => {
   try {
     const orderId = req.params.id;
     const newStatus = req.body.status;
     const order = await Order.findOne({ orderId: orderId }).populate('orderedItems.product');
     if (!order) {
-      return res.status(404).send('Order not found');
+      return res.status(404).json({ status: false, message: 'Order not found', currentStatus: order.status });
     }
     const wallet = await Wallet.findOne({ userId: order.userId });
     if (!wallet) {
-      return res.status(404).send('Wallet not found');
+      return res.status(404).json({ status: false, message: 'Wallet not found', currentStatus: order.status });
     }
-    if (order.status !== 'Cancelled'  && newStatus === 'Cancelled' && order.paymentMethod !== 'cashOnDelivery'&& order.paymentStatus !== "notCompleted") {
+    if (order.status !== 'Cancelled' && newStatus === 'Cancelled' && order.paymentMethod !== 'cashOnDelivery' && order.paymentStatus !== "notCompleted") {
       wallet.balance += order.finalAmount;
       wallet.transactionHistory.push({
         transactionType: 'credit',
         transactionAmount: order.finalAmount,
         description: `Refund for cancelled order ${orderId}`
       });
-    } else if (order.status === 'Cancelled' && ['Pending', 'Shipped', 'Delivered'].includes(newStatus)&& order.paymentMethod !== 'cashOnDelivery') {
+    } else if (order.status === 'Cancelled' && ['Pending', 'Shipped', 'Delivered'].includes(newStatus) && order.paymentMethod !== 'cashOnDelivery') {
+      if (wallet.balance < order.finalAmount) {
+        return res.status(400).json({ status: false, message: 'Insufficient wallet balance to reactivate order', currentStatus: order.status });
+      }
       wallet.balance -= order.finalAmount;
       wallet.transactionHistory.push({
         transactionType: 'debit',
         transactionAmount: order.finalAmount,
         description: `Debit for reactivated order from canceling ${orderId}`
       });
-    }else if(order.status !== 'Cancelled'  && newStatus === 'Cancelled' && order.paymentMethod !== 'cashOnDelivery'&& order.paymentStatus === "notCompleted"){
-          order.paymentStatus = "completed";   
-          await order.save();
+    } else if (order.status !== 'Cancelled' && newStatus === 'Cancelled' && order.paymentMethod !== 'cashOnDelivery' && order.paymentStatus === "notCompleted") {
+      order.paymentStatus = "completed";
     }
 
-    if (order.status === 'Delivered' && newStatus === 'Returned' ) {
-        wallet.balance += order.finalAmount;
-        wallet.transactionHistory.push({
-          transactionType: 'credit',
-          transactionAmount: order.finalAmount,
-          description: `Refund for Returned order ${orderId}`
-        });
-      }
+    if (order.status === 'Delivered' && newStatus === 'Returned') {
+      wallet.balance += order.finalAmount;
+      wallet.transactionHistory.push({
+        transactionType: 'credit',
+        transactionAmount: order.finalAmount,
+        description: `Refund for Returned order ${orderId}`
+      });
+    }
     if (newStatus === 'Delivered' && order.paymentStatus === 'notCompleted') {
       order.paymentStatus = 'completed';
       order.paymentMethod = 'cashOnDelivery';
@@ -98,7 +143,6 @@ const updateOrderStatus = async (req, res) => {
 
     for (const item of order.orderedItems) {
       const product = item.product;
-
       if (!product) continue;
 
       const size = item.size;
@@ -114,13 +158,13 @@ const updateOrderStatus = async (req, res) => {
     }
     order.status = newStatus;
     await order.save();
-    res.redirect('/admin/orderList');
+    res.json({ status: true, message: `Order status updated to ${newStatus}` });
   } catch (error) {
     console.error('Error updating order status:', error);
-    res.status(500).send('Internal Server Error');
+    const order = await Order.findOne({ orderId: req.params.id });
+    res.status(500).json({ status: false, message: 'Internal Server Error', currentStatus: order ? order.status : null });
   }
 };
-
 
 
 
@@ -227,252 +271,13 @@ const seeOrders = async(req,res)=>{
 
 
 
-
-
-module.exports = {
+const orderController ={
     getAllOrders,
     updateOrderStatus,
     cancelOrder,
     deleteOrder,
     seeOrders,
-    
-}
+    getOrdersData,
+};
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const orders = await Order.find()
-    //   .populate("userId", "name")
-    //   .populate("address", "fullAddress")
-    //   .skip(skip)
-    //   .limit(pageSize)
-    //   .sort({ createdOn: -1 }) 
-    //   .exec();
-
-    // const totalOrders = await Order.countDocuments();
+export default orderController;

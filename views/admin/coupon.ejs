@@ -1,6 +1,10 @@
+
+
+
+
 <%- include("../../views/partials/admin/header") %>
- <!-- SweetAlert2 CDN -->
- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
  .col-md-3 {
    padding: 20px;
@@ -44,55 +48,65 @@
    background-color: #0056b3;
    border-color: #0056b3;
  }
- /* Pagination Container */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
 
-/* Pagination Links */
-.pagination a {
-  text-decoration: none;
-  padding: 10px 15px;
-  margin: 0 5px;
-  color: #007bff;
-  font-size: 16px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
+ .pagination {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   margin-top: 20px;
+   margin-bottom: 20px;
+ }
 
-/* Hover Effect */
-.pagination a:hover {
-  background-color: #007bff;
-  color: white;
-}
+ .pagination a {
+   text-decoration: none;
+   padding: 10px 15px;
+   margin: 0 5px;
+   color: #007bff;
+   font-size: 16px;
+   border: 1px solid #ddd;
+   border-radius: 5px;
+   transition: background-color 0.3s ease, color 0.3s ease;
+ }
 
-/* Active Page Link */
-.pagination a.active {
-  background-color: #007bff;
-  color: white;
-  font-weight: bold;
-  border: 1px solid #007bff;
-}
+ .pagination a:hover {
+   background-color: #007bff;
+   color: white;
+ }
 
-/* Disabled Links (for the first and last page) */
-.pagination a:disabled {
-  color: #ccc;
-  cursor: not-allowed;
-  border: 1px solid #ddd;
-}
+ .pagination a.active {
+   background-color: #007bff;
+   color: white;
+   font-weight: bold;
+   border: 1px solid #007bff;
+ }
 
-/* Optional: Adding a Previous/Next button */
-.pagination a:first-child,
-.pagination a:last-child {
-  font-weight: bold;
-}
+ .pagination a:disabled {
+   color: #ccc;
+   cursor: not-allowed;
+   border: 1px solid #ddd;
+ }
 
- </style>
+ .pagination a:first-child,
+ .pagination a:last-child {
+   font-weight: bold;
+ }
+
+ .btn-loading::after {
+   content: '';
+   display: inline-block;
+   width: 16px;
+   height: 16px;
+   border: 2px solid #fff;
+   border-radius: 50%;
+   border-top-color: transparent;
+   animation: spin 1s linear infinite;
+   margin-left: 8px;
+ }
+
+ @keyframes spin {
+   to { transform: rotate(360deg); }
+ }
+</style>
 <section class="content-main">
  <div class="content-header">
    <div>
@@ -103,7 +117,7 @@
    <div class="card-body">
      <div class="row">
        <div class="col-md-3">
-         <form method="post" action="/admin/createCoupon" novalidate>
+         <form method="post" id="couponForm" novalidate>
            <body onload="setDefaultStartDate()"></body>
              <div class="mb-4">
                <label for="coupon-name" class="form-label">Coupon Name</label>
@@ -153,9 +167,7 @@
              </div>
 
              <div>
-               <label for="minimum-price" class="form-label"
-                 >Minimum Price</label
-               >
+               <label for="minimum-price" class="form-label">Minimum Price</label>
                <input
                  type="text"
                  name="minimumPrice"
@@ -166,11 +178,7 @@
              </div>
 
              <div class="d-grid">
-               <button
-                 class="btn btn-primary mt-20"
-                 onclick="return validateForm(event)"
-                 type="submit"
-               >
+               <button class="btn btn-primary mt-20" type="submit" id="addCouponButton">
                  Add Coupon
                </button>
              </div>
@@ -192,55 +200,59 @@
                          <th>Edit/Delete</th>
                      </tr>
                  </thead>
-                 <tbody>
-
-                    <%for(let i = 0; i < coupons.length; i++){%>
-                    
+                 <tbody id="couponTableBody">
+                    <% for(let i = 0; i < coupons.length; i++) { %>
                      <tr>
-                         <td class="text-start"><%= coupons[i].name%></td>
-                         <td class="text-start"><%= new Date(coupons[i].createdOn).toLocaleDateString('en-US')%></td>
-                         <td class="text-start"><%= new Date(coupons[i].expireOn).toLocaleDateString('en-US')%></td>
-                         <td class="text-start"><%= coupons[i].offerPrice%></td>
-                         <td class="text-start"><%= coupons[i].minimumPrice%></td>
-                         <td class="text-start"><%= coupons[i].isList%></td>
+                         <td class="text-start"><%= coupons[i].name %></td>
+                         <td class="text-start"><%= new Date(coupons[i].createdOn).toLocaleDateString('en-US') %></td>
+                         <td class="text-start"><%= new Date(coupons[i].expireOn).toLocaleDateString('en-US') %></td>
+                         <td class="text-start"><%= coupons[i].offerPrice %></td>
+                         <td class="text-start"><%= coupons[i].minimumPrice %></td>
+                         <td class="text-start"><%= coupons[i].isList ? 'Active' : 'Inactive' %></td>
                          <td class="text-start">
-                             <a href="/admin/editCoupon?id=<%=coupons[i]._id%>" class="btn btn-primary btn-sm" >Edit</a>
-
-                             <a href="#" onclick="confirmDelete('<%=coupons[i]._id%>')" class="btn btn-danger btn-sm" style="height: 35px;width: 105px;">Delete</a>
+                             <a href="/admin/editCoupon?id=<%= coupons[i]._id %>" class="btn btn-primary btn-sm">Edit</a>
+                             <button onclick="confirmDelete('<%= coupons[i]._id %>')" class="btn btn-danger btn-sm" style="height: 35px; width: 105px;">Delete</button>
                          </td>
                      </tr>
-                     <%}%>
+                     <% } %>
                  </tbody>
              </table>
          </div>
-         <div class="pagination">
-          <% if (currentPage > 1) { %>
-            <a href="?page=<%= currentPage - 1 %>">Previous</a>
-          <% } %>
-        
-          <% for (let i = 1; i <= totalPages; i++) { %>
-            <a href="?page=<%= i %>" 
-               class="<%= currentPage === i ? 'active' : '' %>">
-               <%= i %>
-            </a>
-          <% } %>
-        
-          <% if (currentPage < totalPages) { %>
-            <a href="?page=<%= currentPage + 1 %>">Next</a>
-          <% } %>
-        </div>
-
-     </div>
-     <td class="text-start">
-      <a href="" class="btn btn-primary btn-sm" style="width: 50px;height: 30px;padding: 5px;">reset</a>
-    </td>
+         <div class="pagination" id="pagination">
+           <% if (currentPage > 1) { %>
+             <a href="#" data-page="<%= currentPage - 1 %>">Previous</a>
+           <% } else { %>
+             <a href="#" class="disabled">Previous</a>
+           <% } %>
+           <% for (let i = 1; i <= totalPages; i++) { %>
+             <a href="#" data-page="<%= i %>" class="<%= currentPage === i ? 'active' : '' %>"><%= i %></a>
+           <% } %>
+           <% if (currentPage < totalPages) { %>
+             <a href="#" data-page="<%= currentPage + 1 %>">Next</a>
+           <% } else { %>
+             <a href="#" class="disabled">Next</a>
+           <% } %>
+         </div>
+         <td class="text-start">
+           <a href="/admin/coupon" class="btn btn-primary btn-sm" style="width: 50px; height: 30px; padding: 5px;">reset</a>
+         </td>
+       </div>
      </div>
    </div>
  </div>
 </section>
 <script>
-  document.querySelector("form").addEventListener("submit", async function (event) {
-  event.preventDefault(); // Prevent form submission
+function setDefaultStartDate() {
+   const today = new Date();
+   const year = today.getFullYear();
+   let month = (today.getMonth() + 1).toString().padStart(2, "0");
+   let day = today.getDate().toString().padStart(2, "0");
+   document.getElementById("startingDate").value = `${year}-${month}-${day}`;
+   document.getElementById("startingDate").min = `${year}-${month}-${day}`;
+}
+
+document.getElementById("couponForm").addEventListener("submit", async function (event) {
+  event.preventDefault();
 
   const formData = new FormData(event.target);
   const data = {
@@ -251,16 +263,15 @@
     minimumPrice: formData.get("minimumPrice"),
   };
 
-      if (!data.startDate || !data.endDate) {
-      Swal.fire({
-        icon: "error",
-        title: "Date Missing",
-        text: "Both Start Date and End Date are required.",
-      });
-      return; 
-    }
-   
-  // Validation for start date and end date
+  if (!data.startDate || !data.endDate) {
+    Swal.fire({
+      icon: "error",
+      title: "Date Missing",
+      text: "Both Start Date and End Date are required.",
+    });
+    return;
+  }
+
   const startDateObj = new Date(data.startDate);
   const endDateObj = new Date(data.endDate);
 
@@ -270,58 +281,61 @@
       title: "Invalid Dates",
       text: "Start Date must be less than or equal to End Date.",
     });
-    return; // Stop execution if validation fails
+    return;
   }
 
-
-  
-
-
-
-
-  let name = document.getElementsByName("couponName")[0].value;
-   const nameRegex = /^[A-Za-z0-9]{1,50}$/;
-
-   if (!nameRegex.test(name)) {
-      Swal.fire({
-        icon : "error",
-        title : "Coupon Name Error",
-        text : "Coupon name should only contain alphabets and numbers"
-      })
-
-    //  document.getElementById("error-coupon-name").innerHTML =
-    //    "Coupon Name error";
-     return false;
-   }
-
-
-     const offerPriceInput = document.getElementsByName("offerPrice")[0];
-   const minimumPriceInput = document.getElementsByName("minimumPrice")[0];
-
-   const offerPrice = offerPriceInput.value.trim() !== ""? parseInt(offerPriceInput.value): NaN;
-   const minimumPrice = minimumPriceInput.value.trim() !== ""? parseInt(minimumPriceInput.value): NaN;
-
-   if (isNaN(offerPrice) || isNaN(minimumPrice) || offerPrice >= minimumPrice) {
-      Swal.fire({
-        icon : "error",
-        title : "Price Error",
-        text : "Offer price must be Less than Minimum price"
-      })
-
-    //  document.getElementById("error-offer-price").innerHTML = "Offer Price must be greater than Minimum Price";
-     return false;
-   }
-
-   if (isNaN(offerPrice) || isNaN(minimumPrice)) {
+  const nameRegex = /^[A-Za-z0-9]{1,50}$/;
+  if (!nameRegex.test(data.couponName)) {
     Swal.fire({
-      icon : "error",
-      title : "Price Validation Error",
-      text : "Please enter numeric values for Offer Price and Minimum Price"
-    })
-    //  document.getElementById("error-offer-price").innerHTML ="Please enter numeric values for Offer Price and Minimum Price";
-     return false;
-   }
+      icon: "error",
+      title: "Coupon Name Error",
+      text: "Coupon name should only contain alphabets and numbers",
+    });
+    return;
+  }
+  if (data.couponName.toString().trim().length > 20) {
+    Swal.fire({
+      icon: "error",
+      title: "Coupon Name Error",
+      text: "Coupon name length should be less than 20",
+    });
+    return;
+  }
 
+  const offerPrice = data.offerPrice.trim() !== "" ? parseInt(data.offerPrice) : NaN;
+  const minimumPrice = data.minimumPrice.trim() !== "" ? parseInt(data.minimumPrice) : NaN;
+
+  if (isNaN(offerPrice) || isNaN(minimumPrice)) {
+    Swal.fire({
+      icon: "error",
+      title: "Price Validation Error",
+      text: "Please enter numeric values for Offer Price and Minimum Price",
+    });
+    return;
+  }
+
+  if (offerPrice >= minimumPrice) {
+    Swal.fire({
+      icon: "error",
+      title: "Price Error",
+      text: "Offer price must be less than Minimum price",
+    });
+    return;
+  }
+
+   if (parseInt(minimumPrice) > 100000) {
+    Swal.fire({
+      icon: "error",
+      title: "Price Error",
+      text: "Minimum price should be less than 100000",
+    });
+    return;
+  }
+
+  const button = document.getElementById("addCouponButton");
+  button.disabled = true;
+  button.textContent = 'Adding...';
+  button.classList.add('btn-loading');
 
   try {
     const response = await fetch("/admin/createCoupon", {
@@ -343,8 +357,12 @@
         title: "Coupon Created",
         text: "Coupon has been successfully created!",
       }).then(() => {
-        window.location.href = "/admin/coupon"; // Redirect after success
+        document.getElementById("couponForm").reset();
+        setDefaultStartDate();
+        loadCoupons();
       });
+    } else {
+      throw new Error("Unexpected response status");
     }
   } catch (error) {
     console.error("Error creating coupon:", error);
@@ -353,147 +371,137 @@
       title: "Server Error",
       text: "Something went wrong. Please try again later.",
     });
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Add Coupon';
+    button.classList.remove('btn-loading');
   }
 });
 
-</script>
-
-<script>
-//  function validateForm() {
-//    document.querySelectorAll(".error-message").forEach((element) => (element.innerHTML = ""));
-//    const sDate = document.getElementsByName("startDate")[0].value;
-//    const eDate = document.getElementsByName("endDate")[0].value;
-//    const sDateObj = new Date(sDate);
-//    const eDateObj = new Date(eDate);
-//    const todayDateObj = new Date();
-//    todayDateObj.setHours(0, 0, 0, 0);
-
-//    if (sDateObj > eDateObj) {
-//     Swal.fire({
-//             icon: "error",
-//             title: "Invalid Date",
-//             text: "End date should be after the start date.",
-//           });
-//     //  document.getElementById("error-end-date").innerHTML ="End date should be after the start date";
-//      return false;
-//    }
-
-//   //  if (sDateObj <= todayDateObj) {
-//   //     Swal.fire({
-//   //       icon : "error"
-//   //     })
-
-//   //   //  document.getElementById("error-start-date").innerHTML ="Starting date should be greater than or equal to today's date";
-//   //    return false;
-//   //  }
-
-//    let name = document.getElementsByName("couponName")[0].value;
-//    const nameRegex = /^[A-Za-z0-9]{1,50}$/;
-
-//    if (!nameRegex.test(name)) {
-//       Swal.fire({
-//         icon : "error",
-//         title : "Coupon Name Error",
-//         text : "Coupon name should only contain alphabets and numbers"
-//       })
-
-//     //  document.getElementById("error-coupon-name").innerHTML =
-//     //    "Coupon Name error";
-//      return false;
-//    }
-
-//    const offerPriceInput = document.getElementsByName("offerPrice")[0];
-//    const minimumPriceInput = document.getElementsByName("minimumPrice")[0];
-
-//    const offerPrice = offerPriceInput.value.trim() !== ""? parseInt(offerPriceInput.value): NaN;
-//    const minimumPrice = minimumPriceInput.value.trim() !== ""? parseInt(minimumPriceInput.value): NaN;
-
-//    if (isNaN(offerPrice) || isNaN(minimumPrice) || offerPrice >= minimumPrice) {
-//       Swal.fire({
-//         icon : "error",
-//         title : "Price Error",
-//         text : "Offer price must be greater than Minimum price"
-//       })
-
-//     //  document.getElementById("error-offer-price").innerHTML = "Offer Price must be greater than Minimum Price";
-//      return false;
-//    }
-
-//    if (isNaN(offerPrice) || isNaN(minimumPrice)) {
-//     Swal.fire({
-//       icon : "error",
-//       title : "Price Validation Error",
-//       text : "Please enter numeric values for Offer Price and Minimum Price"
-//     })
-//     //  document.getElementById("error-offer-price").innerHTML ="Please enter numeric values for Offer Price and Minimum Price";
-//      return false;
-//    }
-
-//        const formData = {
-//        couponName: name,
-//        startDate: sDateObj,
-//        endDate: eDateObj,
-//        offerPrice: offerPrice,
-//        minimumPrice: minimumPrice
-//    };
-//    return true;
-//  }
-
-
-function setDefaultStartDate(){
-
-   const today = new Date();
-   const year = today.getFullYear();
-   let month = (today.getMonth()+1).toString().padStart(2,"0");
-   let day = today.getDate().toString().padStart(2,"0");
-   document.getElementById("startingDate").value = `${year}-${month}-${day}`;
-   document.getElementById("startingDate").min = `${year}-${month}-${day}`;
-
-
+function confirmDelete(couponId) {
+  Swal.fire({
+    title: "Are you sure?",
+    text: "You won't be able to revert this!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      deleteCoupon(couponId);
+    }
+  });
 }
 
+async function deleteCoupon(couponId) {
+  const button = document.querySelector(`button[onclick="confirmDelete('${couponId}')"]`);
+  button.disabled = true;
+  button.textContent = 'Deleting...';
+  button.classList.add('btn-loading');
 
+  try {
+    const response = await fetch(`/admin/deleteCoupon?id=${couponId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+    const data = await response.json();
+    if (data.status) {
+      Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: data.message,
+      }).then(() => {
+        loadCoupons();
+      });
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error!",
+        text: data.message || "Failed to delete the coupon. Please try again.",
+      });
+    }
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Error!",
+      text: `Failed to delete the coupon: ${error.message}`,
+    });
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Delete';
+    button.classList.remove('btn-loading');
+  }
+}
 
+async function loadCoupons(page = 1) {
+  try {
+    const response = await fetch(`/admin/coupon/data?page=${page}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await response.json();
+    if (data.status) {
+      const tbody = document.getElementById('couponTableBody');
+      tbody.innerHTML = data.coupons.map(coupon => `
+        <tr>
+          <td class="text-start">${coupon.name}</td>
+          <td class="text-start">${new Date(coupon.createdOn).toLocaleDateString('en-US')}</td>
+          <td class="text-start">${new Date(coupon.expireOn).toLocaleDateString('en-US')}</td>
+          <td class="text-start">${coupon.offerPrice}</td>
+          <td class="text-start">${coupon.minimumPrice}</td>
+          <td class="text-start">${coupon.isList ? 'Active' : 'Inactive'}</td>
+          <td class="text-start">
+            <a href="/admin/editCoupon?id=${coupon._id}" class="btn btn-primary btn-sm">Edit</a>
+            <button onclick="confirmDelete('${coupon._id}')" class="btn btn-danger btn-sm" style="height: 35px; width: 105px;">Delete</button>
+          </td>
+        </tr>
+      `).join('');
 
-function confirmDelete(couponId) {
-   Swal.fire({
-     title: "Are you sure?",
-     text: "You won't be able to revert this!",
-     icon: "warning",
-     showCancelButton: true,
-     confirmButtonColor: "#d33",
-     cancelButtonColor: "#3085d6",
-     confirmButtonText: "Yes, delete it!",
-   }).then((result) => {
-     if (result.isConfirmed) {
-       deleteCoupon(couponId);
-     }
-   });
- }
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
+      if (data.currentPage > 1) {
+        pagination.innerHTML += `<a href="#" data-page="${data.currentPage - 1}">Previous</a>`;
+      } else {
+        pagination.innerHTML += `<a href="#" class="disabled">Previous</a>`;
+      }
+      for (let i = 1; i <= data.totalPages; i++) {
+        pagination.innerHTML += `
+          <a href="#" data-page="${i}" class="${i === data.currentPage ? 'active' : ''}">${i}</a>`;
+      }
+      if (data.currentPage < data.totalPages) {
+        pagination.innerHTML += `<a href="#" data-page="${data.currentPage + 1}">Next</a>`;
+      } else {
+        pagination.innerHTML += `<a href="#" class="disabled">Next</a>`;
+      }
 
- function deleteCoupon(couponId) {
-   $.ajax({
-     url: `/admin/deleteCoupon?id=${couponId}`,
-     method: "GET",
-     success: function () {
-       Swal.fire({
-         icon: "success",
-         title: "Deleted!",
-         text: "The coupon has been deleted.",
-         confirmButtonText: "OK",
-       }).then(() => {
-         window.location.reload();
-       });
-     },
-     error: function () {
-       Swal.fire({
-         icon: "error",
-         title: "Error!",
-         text: "Failed to delete the coupon. Please try again.",
-       });
-     },
-   });
- }
+      attachPaginationListeners();
+    } else {
+      Swal.fire('Error', data.message || 'Error loading coupons', 'error');
+    }
+  } catch (error) {
+    Swal.fire('Error', `Error loading coupons: ${error.message}`, 'error');
+  }
+}
+
+function attachPaginationListeners() {
+  document.querySelectorAll('.pagination a').forEach(link => {
+    link.removeEventListener('click', handlePaginationClick);
+    link.addEventListener('click', handlePaginationClick);
+  });
+}
+
+function handlePaginationClick(e) {
+  e.preventDefault();
+  if (!e.target.classList.contains('disabled')) {
+    const page = parseInt(e.target.dataset.page);
+    loadCoupons(page);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  attachPaginationListeners();
+});
 </script>
 <%- include("../../views/partials/admin/footer") %>
 

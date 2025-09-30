@@ -1,16 +1,19 @@
-const express = require("express");
+
+import express from "express";
+import userController from "../controllers/user/userController.js";
+import passport from "passport";
+import profileController from "../controllers/user/profileController.js";
+import { userAuth } from "../middlewares/auth.js";
+import productController from "../controllers/user/productController.js";
+import cartController from "../controllers/user/cartController.js";
+import checkoutController from "../controllers/user/checkoutController.js";
+import orderController from "../controllers/user/orderController.js";
+import wishlistController from "../controllers/user/wishlistController.js";
+import couponController from "../controllers/user/couponController.js";
+import walletController from "../controllers/user/walletController.js";
+
+
 const router = express.Router();
-const userController = require("../controllers/user/userController");
-const passport = require("passport");
-const profileController = require("../controllers/user/profileController");
-const { userAuth } = require("../middlewares/auth");
-const productController = require("../controllers/user/productController");
-const cartController = require("../controllers/user/cartController");
-const checkoutController = require("../controllers/user/checkoutController");
-const orderController = require("../controllers/user/orderController");
-const wishlistController = require("../controllers/user/wishlistController");
-const couponController = require("../controllers/user/couponController");
-const walletController = require("../controllers/user/walletController");
 
 
 
@@ -43,6 +46,7 @@ router.get("/logout",userController.getLogout);
 router.get("/",userController.loadHomepage);
 router.get("/shop",userAuth,userController.loadShoppingPage);
 router.post("/search",userAuth,userController.searchProducts);
+router.get("/filter", userAuth, userController.filterProducts);
 
 
 
@@ -70,7 +74,7 @@ router.get("/addAddress",userAuth,profileController.addAddress);
 router.post("/addAddress",userAuth,profileController.postAddAddress);
 router.get("/editAddress",userAuth,profileController.editAddress);
 router.post("/editAddress",userAuth,profileController.postEditAddress);
-router.get("/deleteAddress",userAuth,profileController.deleteAddress);
+router.delete("/deleteAddress",userAuth,profileController.deleteAddress);
 
 
 
@@ -84,7 +88,7 @@ router.get("/cart",userAuth,cartController.getCart);
 router.post("/addToCart",userAuth,cartController.addToCart);
 router.delete("/removeFromCart/:productId", userAuth,cartController.removeProduct);
 router.post('/updateCartQuantity/:productId',userAuth,cartController.updateProductQuantity);
-
+router.get("/cart/data", userAuth, cartController.getCartData);
 
 
 
@@ -101,6 +105,9 @@ router.get ("/viewOrder/:id",userAuth,profileController.viewOrders);
 router.post("/cancelOrder/:id",userAuth,profileController.cancelOrder);
 router.post("/returnOrder/:id", userAuth, profileController.returnOrder);
 
+router.get("/getOrders", userAuth, profileController.getOrders);
+router.get("/getWalletHistory", userAuth, profileController.getWalletHistory);
+
 
 
 
@@ -109,6 +116,7 @@ router.post("/addToWishlist",userAuth,wishlistController.addToWishlist);
 router.delete("/removeFromWishlist/:productId", userAuth, wishlistController.removeProduct);
 router.post("/addToCartFromWishlist",userAuth,wishlistController.addToCart);
 
+router.get("/wishlist/data", userAuth, wishlistController.getWishlistData);
 
 
 
@@ -121,5 +129,4 @@ router.post('/add',userAuth,walletController.addMoney);
 router.get('/history',userAuth,walletController.getWalletHistory);
 
 
-
-module.exports  = router;
+export default router;

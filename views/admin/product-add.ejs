@@ -396,16 +396,15 @@
               let isValid = true;
               
               
-              if (name.trim() === "") {
-              //   displayErrorMessage('productName-error', 'Please enter a product name.');
+            if (name.trim() === "" || name.trim().length > 30) {
+              
                  Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
-                    text: 'Please enter a product name!',
+                    text: 'Product name should be greater than 1 and less than 30 letter long',
             });
              isValid = false;
             } else if (!/^[a-zA-Z\s]+$/.test(name.trim())) {
-             //   displayErrorMessage('productName-error', 'Product name should contain only alphabetic characters.');
                 Swal.fire({
                    icon: 'error',
                    title: 'Oops...',
@@ -414,16 +413,14 @@
                 isValid = false;
             }
             
-            if (description.trim() === "") {
-             //   displayErrorMessage('description-error', 'Please enter a product description.');
+            if (description.trim() === "" || description.trim().length > 100) {
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
-                text: 'Please enter a product description!',
+                text: 'Product description should be greater than 1 and less than 100 letters long',
             });
             isValid = false;
             } else if (!/^[a-zA-Z\s.,']+$/.test(description.trim())) {
-            //   displayErrorMessage('description-error', 'Product description should contain only alphabetic characters.');
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
@@ -432,7 +429,6 @@
             isValid = false;
             }
             if (!category) {
-            //   displayErrorMessage('description-error', 'Product description should contain only alphabetic characters.');
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
@@ -441,7 +437,6 @@
             isValid = false;
             }
             if (!brand) {
-            //   displayErrorMessage('description-error', 'Product description should contain only alphabetic characters.');
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
@@ -461,7 +456,7 @@
                       button: "OK",
                    });
                 isValid = false;
-                break; // Stop validation after first invalid entry
+                break; 
                 }
             }
            
@@ -472,15 +467,29 @@
                   isValid = false;
               }
   
+              if ( parseInt(quantity) > 1000) {
+                  displayErrorMessage('quantity-error', 'Quantity should be less than 1,000.');
+                  isValid = false;
+              }
   
   
   
               if (!/^\d+(\.\d{1,2})?$/.test(price) || parseFloat(price) < 0) {
-                //   displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
+               
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
                     text: 'Please enter a valid non-negative price!',
+                });
+                  isValid = false;
+              }
+
+               if ( parseFloat(price) > 50000) {
+               
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Price should be less than 50000',
                 });
                   isValid = false;
               }
@@ -489,7 +498,7 @@
   
   
               if (!/^\d+(\.\d{1,2})?$/.test(saleprice) || parseFloat(saleprice) < 0) {
-                //   displayErrorMessage('salePrice-error', 'Please enter a valid non-negative price.');
+               
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
@@ -498,7 +507,7 @@
                   isValid = false;
               }
               if (parseFloat(price) <= parseFloat(saleprice)) {
-              //   displayErrorMessage('regularPrice-error', 'Regular price must be greater than sale price.');
+            
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
@@ -509,7 +518,7 @@
   
   
               if (color.trim() === "" || !/^[a-zA-Z\s]+$/.test(color.trim())) {
-                //   displayErrorMessage('color-error', 'Please enter a color.');
+                
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
@@ -517,32 +526,35 @@
                 });
                   isValid = false;
               }
-            //   if (images.files.length === 0 || images1.files.length === 0 || images2.files.length === 0) {
-            //         Swal.fire({
-            //            icon: 'error',
-            //            title: 'Oops...',
-            //            text: 'Minimum 3 images required!',
-            //         });
-            //         isValid = false;
-            //   }
-                const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    const imageInputs = [images, images1, images2];
 
-    for (const imgInput of imageInputs) {
-        if (!imgInput.files || imgInput.files.length === 0) {
-            Swal.fire({ icon: 'error', title: 'Oops...', text: 'All three images are required!' });
-            isValid = false;
-            break;
+                if (color.trim().length <= 1  || color.trim().length > 20) {
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Color length should be greater than 1 and less than 20',
+                });
+                  isValid = false;
+              }
+           
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            const imageInputs = [images, images1, images2];
+
+            for (const imgInput of imageInputs) {
+               if (!imgInput.files || imgInput.files.length === 0) {
+               Swal.fire({ icon: 'error', title: 'Oops...', text: 'All three images are required!' });
+               isValid = false;
+               break;
+            }
+            const file = imgInput.files[0];
+            if (!allowedTypes.includes(file.type)) {
+               Swal.fire({ icon: 'error', title: 'Invalid Image', text: 'Images must be JPG, PNG, or WEBP format!' });
+               isValid = false;
+               break;
+            }
         }
-        const file = imgInput.files[0];
-        if (!allowedTypes.includes(file.type)) {
-            Swal.fire({ icon: 'error', title: 'Invalid Image', text: 'Images must be JPG, PNG, or WEBP format!' });
-            isValid = false;
-            break;
-        }
-    }
   
-              return isValid;
+        return isValid;
     }
 
 

@@ -1,20 +1,14 @@
-const mongoose = require("mongoose");
-const {Schema} = mongoose;
-// const {v4:uuidv4} = require("uuid");
-const Size = require("./sizeSchema");
 
-// Custom function to generate a 6-digit UUID
+import mongoose, { Schema } from "mongoose";
+
+
 const generate6DigitUUID = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
   };
 
 
 const orderSchema = new Schema({
-    // orderId : {
-    //     type : String,
-    //     default : ()=>uuidv4(),
-    //     unique : true
-    // },
+   
     orderId: {
         type: String,
         default: generate6DigitUUID,
@@ -44,8 +38,8 @@ const orderSchema = new Schema({
         
         },
         image: {
-            type: String, // URL for the product image
-            // required: true
+            type: String, 
+          
         }
     }],
     totalPrice : {
@@ -61,11 +55,11 @@ const orderSchema = new Schema({
     },
     finalAmount : {
         type : Number,
-        // required : true
+       
     },
     paymentMethod : {
         type : String,
-        // required : true,
+       
     },
     paymentStatus : {
         type : String,
@@ -75,12 +69,12 @@ const orderSchema = new Schema({
     userId : {
         type : Schema.Types.ObjectId,
         ref : "User",
-        // required : true
+       
     },
 
     address: {
         type: Schema.Types.ObjectId,
-        ref: "Address", // Reference to the Address collection
+        ref: "Address", 
         required: true
     },
 
@@ -110,4 +104,5 @@ const orderSchema = new Schema({
 })
 
 const Order = mongoose.model("Order",orderSchema);
-module.exports = Order;
+
+export default Order;

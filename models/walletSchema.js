@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
 
+import mongoose, { Schema } from "mongoose";
 
 const walletSchema = new mongoose.Schema({
     userId: {
@@ -11,7 +11,7 @@ const walletSchema = new mongoose.Schema({
       type: Number,
       default: 0
     },
-    // wallet id needed
+   
     transactionHistory: [
       {
         transactionType: {
@@ -36,4 +36,4 @@ const walletSchema = new mongoose.Schema({
   },{timestamps:true});
   
   
-  module.exports = mongoose.model('Wallets', walletSchema);
+ export default mongoose.model('Wallets', walletSchema);

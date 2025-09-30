@@ -1,19 +1,22 @@
-const express = require("express");
+import express from "express";
+import adminController from "../controllers/admin/adminController.js";
+import customerController from "../controllers/admin/customerController.js";
+import categoryController from "../controllers/admin/categoryController.js";
+import brandController from "../controllers/admin/brandController.js";
+import productController from "../controllers/admin/productController.js";
+import orderController from "../controllers/admin/orderController.js";
+import couponController from "../controllers/admin/couponController.js";
+import profileController from "../controllers/user/profileController.js";
+import dashboardController from "../controllers/admin/dashboardController.js";
+
+import { userAuth, adminAuth } from "../middlewares/auth.js";
+
 const router = express.Router();
-const adminController = require("../controllers/admin/adminController");
-const customerController = require("../controllers/admin/customerController");
-const categoryController = require("../controllers/admin/categoryController");
-const brandController = require("../controllers/admin/brandController");
-const productController = require("../controllers/admin/productController"); 
-const orderController = require("../controllers/admin/orderController");
-const couponController = require("../controllers/admin/couponController");
-const profileController = require("../controllers/user/profileController");
-const dashboardController = require("../controllers/admin/dashboardController");
 
 
-const {userAuth,adminAuth} = require("../middlewares/auth");
-const multer = require("multer");
-const storage = require("../helpers/multer");
+
+import multer from "multer";
+import storage from "../helpers/multer.js";
 const uploads = multer({storage:storage});
 
 
@@ -28,8 +31,11 @@ router.get("/logout",adminController.logout);
 
 
 router.get("/users",adminAuth,customerController.customerInfo);
-router.get("/blockCustomer",adminAuth,customerController.customerBlocked);
-router.get("/unblockCustomer",adminAuth,customerController.customerunBlocked);
+router.post("/blockCustomer",adminAuth,customerController.customerBlocked);
+router.post("/unblockCustomer",adminAuth,customerController.customerunBlocked);
+router.get("/users/data", adminAuth, customerController.customerInfoAjax);
+
+
 
 
 
@@ -38,31 +44,40 @@ router.get("/category",adminAuth,categoryController.categoryInfo);
 router.post("/addCategory",adminAuth,categoryController.addCategory);
 router.post("/addCategoryOffer",adminAuth,categoryController.addCategoryOffer);
 router.post("/removeCategoryOffer",adminAuth,categoryController.removeCategoryOffer);
-router.get("/listCategory",adminAuth,categoryController.getListCategory);
-router.get("/unlistCategory",adminAuth,categoryController.getUnlistCategory);
 router.get("/editCategory",adminAuth,categoryController.getEditCategory);
 router.post("/editCategory/:id",adminAuth,categoryController.editCategory);
+
+
+router.get("/category/data", adminAuth, categoryController.categoryInfoAjax);
+router.post("/listCategory", adminAuth, categoryController.listCategory);
+router.post("/unlistCategory", adminAuth, categoryController.unlistCategory);
 
 
 
 router.get("/brands",adminAuth,brandController.getBrandPage);
 router.post("/addBrand",adminAuth,uploads.single("image"),brandController.addBrand); 
-router.get("/blockBrand",adminAuth,brandController.blockBrand);
-router.get("/unBlockBrand",adminAuth,brandController.unBlockBrand);
-router.delete("/deleteBrand",adminAuth,brandController.deleteBrand);
+router.post("/deleteBrand", adminAuth, brandController.deleteBrand);
+router.get("/brands/data", adminAuth, brandController.getBrandPageAjax);
+router.post("/blockBrand", adminAuth, brandController.blockBrand);
+router.post("/unBlockBrand", adminAuth, brandController.unBlockBrand);
+
+
+
 
 
 
 router.get("/addProducts",adminAuth,productController.getProductAddPage);
 router.post("/addProducts",adminAuth,uploads.array("images",4),productController.addProducts);
 router.get("/products",adminAuth,productController.getAllProducts);
-router.post("/addProductOffer",adminAuth,productController.addProductOffer);
-router.post("/removeProductOffer",adminAuth,productController.removeProductOffer);
-router.get("/blockProduct",adminAuth,productController.blockProduct);
-router.get("/unblockProduct",adminAuth,productController.unblockProduct);
 router.get("/editProduct",adminAuth,productController.getEditProduct);
 router.post("/editProduct/:id",adminAuth,uploads.array("images",4),productController.editProduct);
 router.post("/deleteImage",adminAuth,productController.deleteSingleImage);
+router.get("/products/data", adminAuth, productController.getProductsData);
+router.post("/addProductOffer", adminAuth, productController.addProductOffer);
+router.post("/removeProductOffer", adminAuth, productController.removeProductOffer);
+router.post("/blockProduct", adminAuth, productController.blockProduct);
+router.post("/unblockProduct", adminAuth, productController.unblockProduct);
+
 
 
 
@@ -72,6 +87,7 @@ router.post("/orders/:id/status",adminAuth,orderController.updateOrderStatus);
 router.post("/orders/:id/cancel",adminAuth,orderController.cancelOrder);
 router.post("/orders/:id/delete",adminAuth,orderController.deleteOrder);
 router.get ("/seeOrder/:id",adminAuth,orderController.seeOrders);
+router.get("/orders/data", adminAuth, orderController.getOrdersData);
 
 
 
@@ -79,8 +95,8 @@ router.get("/coupon",adminAuth,couponController.loadCoupon);
 router.post("/createCoupon",adminAuth,couponController.createCoupon);
 router.get("/editCoupon",adminAuth,couponController.editCoupon);
 router.post("/updateCoupon",adminAuth,couponController.updateCoupon);
-router.get("/deleteCoupon",adminAuth,couponController.deleteCoupon);
-
+router.delete("/deleteCoupon", adminAuth, couponController.deleteCoupon);
+router.get("/coupon/data", adminAuth, couponController.getCouponsData);
 
 
  
@@ -91,4 +107,4 @@ router.get("/dashBoardMain/download/pdf",adminAuth,dashboardController.generateP
 router.get("/dashBoardMain/download/excel",adminAuth,dashboardController.generateExcelReportMain);
 
 
-module.exports = router;
+export default router;

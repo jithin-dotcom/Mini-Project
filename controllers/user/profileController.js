@@ -1,13 +1,14 @@
-const User = require("../../models/userSchema");
-const nodemailer = require("nodemailer");
-const Address = require("../../models/addressSchema");
-const bcrypt = require("bcrypt");
-const env = require("dotenv").config();
-const session = require("express-session");
-const Order = require("../../models/orderSchema");
-const Product = require("../../models/productSchema");  
-const Wallet = require("../../models/walletSchema");
+import User from "../../models/userSchema.js";
+import nodemailer from "nodemailer";
+import Address from "../../models/addressSchema.js";
+import bcrypt from "bcrypt";
+import dotenv from "dotenv";
+import session from "express-session";
+import Order from "../../models/orderSchema.js";
+import Product from "../../models/productSchema.js";
+import Wallet from "../../models/walletSchema.js";
 
+dotenv.config();
 
 
 function generateOtp(){
@@ -496,33 +497,53 @@ const postEditAddress = async(req,res)=>{
 }
 
 
-const deleteAddress = async(req,res)=>{
-    try {
+// const deleteAddress = async(req,res)=>{
+//     try {
         
-        const addressId = req.query.id;
-        // console.log("Query Address ID:", addressId);
-        const findAddress = await Address.findOne({"address._id":addressId});
-        if(!findAddress){
-            return res.status(404).send("Address not found");
-        }
-        await Address.updateOne({
-            "address._id":addressId
-        },
-        {
-            $pull : {
-                address : {
-                    _id:addressId,
-                }
-            }
-        }
-    )
-    res.redirect("/userProfile");
+//         const addressId = req.query.id;
+//         // console.log("Query Address ID:", addressId);
+//         const findAddress = await Address.findOne({"address._id":addressId});
+//         if(!findAddress){
+//             return res.status(404).send("Address not found");
+//         }
+//         await Address.updateOne({
+//             "address._id":addressId
+//         },
+//         {
+//             $pull : {
+//                 address : {
+//                     _id:addressId,
+//                 }
+//             }
+//         }
+//     )
+//     res.redirect("/userProfile");
 
+//     } catch (error) {
+//         console.error("Error in deleting address",error);
+//         res.redirect("/pageNotFound");
+//     }
+// }
+
+
+
+const deleteAddress = async (req, res) => {
+    try {
+        const addressId = req.query.id;
+        const findAddress = await Address.findOne({ "address._id": addressId });
+        if (!findAddress) {
+            return res.status(404).json({ success: false, message: "Address not found" });
+        }
+        await Address.updateOne(
+            { "address._id": addressId },
+            { $pull: { address: { _id: addressId } } }
+        );
+        return res.status(200).json({ success: true, message: "Address deleted successfully" });
     } catch (error) {
-        console.error("Error in deleting address",error);
-        res.redirect("/pageNotFound");
+        console.error("Error in deleting address:", error);
+        return res.status(500).json({ success: false, message: "Error deleting the address" });
     }
-}
+};
 
 
 
@@ -554,131 +575,178 @@ const viewOrders = async(req,res)=>{
 
 
 
-
 const cancelOrder = async (req, res) => {
-    const orderId = req.params.id;
-
-    try {
-        const order = await Order.findById(orderId);
-        
-        if (!order) {
-            return res.status(404).send("Order not found.");
-        }
-        if (order.status !== "Pending" && order.status !== "Shipped") {
-            return res.status(400).send("Order cannot be cancelled.");
-        }
-
-        order.status = "Cancelled";
-        await order.save();
-
-        for (const item of order.orderedItems) {
-            const product = await Product.findById(item.product);
-
-            if (product) {
-                const currentStock = product.size.get(item.size);
-                if (currentStock !== undefined) {
-                    product.size.set(item.size, currentStock + item.quantity);
-                    await product.save();
-                    // console.log(`Stock updated for product ${product.productName}, size ${item.size}.`);
-                }
-            }
-        }
-
-        if (order.paymentMethod !== "cashOnDelivery" && order.paymentStatus !== "notCompleted") {
-            const wallet = await Wallet.findOne({ userId: order.userId });
-
-            if (wallet) {
-                wallet.balance += order.finalAmount;
-                wallet.transactionHistory.push({
-                    transactionType: 'credit',
-                    transactionAmount: order.finalAmount,
-                    description: `Refund for cancelled order ${order.orderId}`
-                });
-
-                await wallet.save();
-            } else {
-                const newWallet = new Wallet({
-                    userId: order.userId,
-                    balance: order.finalAmount,
-                    transactionHistory: [{
-                        transactionType: 'credit',
-                        transactionAmount: order.finalAmount,
-                        description: `Refund for cancelled order ${order.orderId}`
-                    }]
-                });
-
-                await newWallet.save();
-            }
-        }
-        if (order.paymentStatus === "notCompleted") {
-            order.paymentStatus = "completed"; 
-        }
-        await order.save();
-    } catch (err) {
-        console.error("Error cancelling order:", err);
-        res.status(500).send("Error cancelling order.");
+  const orderId = req.params.id;
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found." });
     }
+    if (order.status !== "Pending" && order.status !== "Shipped") {
+      return res.status(400).json({ success: false, message: "Order cannot be cancelled." });
+    }
+    order.status = "Cancelled";
+    await order.save();
+    for (const item of order.orderedItems) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        const currentStock = product.size.get(item.size);
+        if (currentStock !== undefined) {
+          product.size.set(item.size, currentStock + item.quantity);
+          await product.save();
+        }
+      }
+    }
+    if (order.paymentMethod !== "cashOnDelivery" && order.paymentStatus !== "notCompleted") {
+      const wallet = await Wallet.findOne({ userId: order.userId });
+      if (wallet) {
+        wallet.balance += order.finalAmount;
+        wallet.transactionHistory.push({
+          transactionType: 'credit',
+          transactionAmount: order.finalAmount,
+          description: `Refund for cancelled order ${order.orderId}`
+        });
+        await wallet.save();
+      } else {
+        const newWallet = new Wallet({
+          userId: order.userId,
+          balance: order.finalAmount,
+          transactionHistory: [{
+            transactionType: 'credit',
+            transactionAmount: order.finalAmount,
+            description: `Refund for cancelled order ${order.orderId}`
+          }]
+        });
+        await newWallet.save();
+      }
+    }
+    if (order.paymentStatus === "notCompleted") {
+      order.paymentStatus = "completed";
+    }
+    await order.save();
+    return res.json({ success: true, message: "Order cancelled successfully." });
+  } catch (err) {
+    console.error("Error cancelling order:", err);
+    return res.status(500).json({ success: false, message: "Error cancelling order." });
+  }
 };
-
-
 
 
 
 const returnOrder = async (req, res) => {
-    const orderId = req.params.id;
-
-    try {
-        const order = await Order.findById(orderId); 
-        if (!order) {
-            return res.status(404).send("Order not found.");
-        }
-        if (order.status !== "Delivered") {
-            return res.status(400).send("Order cannot be returned.");
-        }
-        order.status = "Returned";
-        await order.save();
-        if (order.paymentMethod === "cashOnDelivery" || order.paymentMethod !== "cashOnDelivery") {                        //change made
-            const wallet = await Wallet.findOne({ userId: order.userId });
-
-            if (wallet) {
-                wallet.balance += order.finalAmount;
-                wallet.transactionHistory.push({
-                    transactionType: 'credit',
-                    transactionAmount: order.finalAmount,
-                    description: `Refund for returned order ${order.orderId}`
-                });
-
-                await wallet.save();
-            } else {
-                const newWallet = new Wallet({
-                    userId: order.userId,
-                    balance: order.finalAmount,
-                    transactionHistory: [{
-                        transactionType: 'credit',
-                        transactionAmount: order.finalAmount,
-                        description: `Refund for returned order ${order.orderId}`
-                    }]
-                });
-
-                await newWallet.save();
-            }
-        }
-
-    } catch (err) {
-        console.error("Error returning order:", err);
-        res.status(500).send("Error returning order.");
+  const orderId = req.params.id;
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found." });
     }
+    if (order.status !== "Delivered") {
+      return res.status(400).json({ success: false, message: "Order cannot be returned." });
+    }
+    order.status = "Returned";
+    await order.save();
+    if (order.paymentMethod === "cashOnDelivery" || order.paymentMethod !== "cashOnDelivery") {
+      const wallet = await Wallet.findOne({ userId: order.userId });
+      if (wallet) {
+        wallet.balance += order.finalAmount;
+        wallet.transactionHistory.push({
+          transactionType: 'credit',
+          transactionAmount: order.finalAmount,
+          description: `Refund for returned order ${order.orderId}`
+        });
+        await wallet.save();
+      } else {
+        const newWallet = new Wallet({
+          userId: order.userId,
+          balance: order.finalAmount,
+          transactionHistory: [{
+            transactionType: 'credit',
+            transactionAmount: order.finalAmount,
+            description: `Refund for returned order ${order.orderId}`
+          }]
+        });
+        await newWallet.save();
+      }
+    }
+    return res.json({ success: true, message: "Order returned successfully." });
+  } catch (err) {
+    console.error("Error returning order:", err);
+    return res.status(500).json({ success: false, message: "Error returning order." });
+  }
 };
 
 
 
 
+const getOrders = async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const page = parseInt(req.query.orderPage) || 1;
+    const limit = 6; 
+    const skip = (page - 1) * limit;
+    const orders = await Order.find({ userId })
+      .sort({ createdOn: -1 }) 
+      .skip(skip)
+      .limit(limit)
+      .lean();
+    const totalOrders = await Order.countDocuments({ userId });
+    const totalOrderPages = Math.ceil(totalOrders / limit);
+   
+    return res.json({
+      success: true,
+      orders,
+      currentOrderPage: page,
+      totalOrderPages,
+      orderLimit: limit
+    });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return res.status(500).json({ success: false, message: "Error fetching orders." });
+  }
+};
+
+
+
+const getWalletHistory = async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const page = parseInt(req.query.walletPage) || 1;
+    const limit = 5; 
+    const skip = (page - 1) * limit;
+    const wallet = await Wallet.findOne({ userId }).lean();
+    if (!wallet) {
+      return res.json({
+        success: true,
+        transactions: [],
+        currentWalletPage: page,
+        totalWalletPages: 0,
+        walletLimit: limit
+      });
+    }
+    const totalWalletTransactions = wallet.transactionHistory.length;
+    const transactions = wallet.transactionHistory
+      .slice()
+      .reverse()
+      .slice(skip, skip + limit);
+    const totalWalletPages = Math.ceil(totalWalletTransactions / limit);
+    
+    return res.json({
+      success: true,
+      transactions,
+      currentWalletPage: page,
+      totalWalletPages,
+      walletLimit: limit
+    });
+  } catch (error) {
+    console.error("Error fetching wallet history:", error);
+    return res.status(500).json({ success: false, message: "Error fetching wallet history." });
+  }
+};
 
 
 
 
-
-module.exports = {
+const profileController ={
     getForgotPassPage,
     forgotEmailValid,
     verifyForgotPassOtp,
@@ -701,4 +769,9 @@ module.exports = {
     viewOrders,
     cancelOrder,
     returnOrder,
+    getOrders,
+    getWalletHistory,
 };
+
+
+export default profileController;

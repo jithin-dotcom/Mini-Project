@@ -1,6 +1,5 @@
-const mongoose = require("mongoose");
-const {Schema} = mongoose;
 
+import mongoose, { Schema } from "mongoose";
 
 const userSchema = new Schema({
      name : {
@@ -61,7 +60,7 @@ const userSchema = new Schema({
         type : String
      },
      usedCoupons: {
-      type: [String], // Array of strings to store used coupon codes
+      type: [String], 
       default: []
      },
      
@@ -90,4 +89,4 @@ const userSchema = new Schema({
 
 
 const User = mongoose.model("User",userSchema);
-module.exports = User;
+export default User;

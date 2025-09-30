@@ -1,5 +1,5 @@
-const Cart = require('../models/cartSchema'); 
-const Wishlist = require("../models/wishlistSchema");
+import Cart from '../models/cartSchema.js';
+import Wishlist from '../models/wishlistSchema.js';
 
 const setItemCounts = async (req, res, next) => {
     try {
@@ -26,4 +26,4 @@ const setItemCounts = async (req, res, next) => {
     next();
 };
 
-module.exports = setItemCounts;
+export default setItemCounts;

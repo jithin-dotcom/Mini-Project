@@ -277,12 +277,12 @@ function validateForm() {
     const xl = document.getElementById('xl').value.trim();
     const xxl = document.getElementById('xxl').value.trim();
     const sizeValues = { s, m, l, xl, xxl };
-    const numberRegex = /^[0-9]+$/; // Only allows numbers
-    const regex = /^[A-Za-z\s]+$/; // Only allows alphabets and spaces
+    const numberRegex = /^[0-9]+$/; 
+    const regex = /^[A-Za-z\s]+$/; 
     let isValid = true;    
     
     if (name.trim() === "" || !regex.test(name.trim())) {
-        // displayErrorMessage('productName-error', 'Please enter valid a product name it should only have alphabets.');
+       
         Swal.fire({
         icon: 'error',
         title: 'Invalid Product Name',
@@ -290,8 +290,17 @@ function validateForm() {
         });
         isValid = false;
     }
+    if (name.trim().length <= 1 || name.trim().length > 20) {
+       
+        Swal.fire({
+        icon: 'error',
+        title: 'Invalid Product Name',
+        text: 'Name Length should be greater than 1 and less than 20',
+        });
+        isValid = false;
+    }
     if (description === '') {
-        // displayErrorMessage('description-error', 'Please enter a product description.');
+        
         Swal.fire({
         icon: 'error',
         title: 'Product Discription',
@@ -299,12 +308,22 @@ function validateForm() {
         });
         isValid = false;
     } 
-    if (parseInt(quantity) < 0) {
-        displayErrorMessage('quantity-error', 'Please enter a valid non-negative quantity.');
+     if (description.trim().length <= 1 || description.trim().length > 100) {
+       
+        Swal.fire({
+        icon: 'error',
+        title: 'Invalid Product Name',
+        text: 'Description Length should be greater than 1 and less than 100',
+        });
         isValid = false;
     }
+    if (parseInt(quantity) < 0 || parseInt(quantity) > 1000) {
+        displayErrorMessage('quantity-error', 'Quantity should be between 1 and 1000');
+        isValid = false;
+    }
+    
     if (!/^\d+(\.\d{1,2})?$/.test(price) || parseFloat(price) < 0) {
-        // displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
+       
         Swal.fire({
         icon: 'error',
         title: 'Price Error',
@@ -313,8 +332,12 @@ function validateForm() {
         
         isValid = false;
     }
+     if (parseFloat(price) > 100000) {
+        displayErrorMessage('quantity-error', 'Prize should be less than 100000');
+        isValid = false;
+    }
     if (!/^\d+(\.\d{1,2})?$/.test(saleprice) || parseFloat(saleprice) < 0) {
-        // displayErrorMessage('salePrice-error', 'Please enter a valid non-negative price.');
+        
         Swal.fire({
         icon: 'error',
         title: 'Price Error',
@@ -323,7 +346,7 @@ function validateForm() {
         isValid = false;
     }
     if (color.trim() === "" || !/^[a-zA-Z\s]+$/.test(color.trim())) {
-        // displayErrorMessage('color-error', 'Please enter a color.');
+       
         Swal.fire({
         icon: 'error',
         title: 'Color Error',
@@ -332,19 +355,11 @@ function validateForm() {
         isValid = false;
     }
 
-    // if (!imageDatas && images.files.length === 0) {
-    //     // displayErrorMessage("images-error",'Please select an image.');
-    //     Swal.fire({
-    //     icon: 'error',
-    //     title: 'Image Error',
-    //     text: 'minimum 3 images required',
-    //     });
-    //     isValid = false;
-    // }
+   
 
 
 
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     const imageInputs = [images, images1, images2];
 
 
@@ -384,7 +399,7 @@ function validateForm() {
             button: "OK",
         });
         isValid = false;
-        break; // Stop validation after first invalid entry
+        break; 
     }
    }
       

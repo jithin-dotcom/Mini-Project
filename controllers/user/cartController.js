@@ -1,11 +1,10 @@
-const User = require("../../models/userSchema");
-const Product = require("../../models/productSchema");
-const Category = require("../../models/categorySchema");
-const Cart = require("../../models/cartSchema");
-const { addToList } = require("../../helpers/listController");
-const Brand = require("../../models/brandSchema");
 
-
+import User from "../../models/userSchema.js";
+import Product from "../../models/productSchema.js";
+import Category from "../../models/categorySchema.js";
+import Cart from "../../models/cartSchema.js";
+import { addToList } from "../../helpers/listController.js";
+import Brand from "../../models/brandSchema.js";
 
 
 
@@ -85,6 +84,74 @@ const getCart = async (req, res) => {
     }
 };
 
+
+
+
+
+const getCartData = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        
+        const blockedBrands = await Brand.find({ isBlocked: true }).select('brandName');
+        const blockedBrandNames = blockedBrands.map(brand => brand.brandName);
+
+        const cart = await Cart.findOne({ userId }).populate({
+            path: 'items.productId',
+            select: 'productName salePrice description productImage size isBlocked category brand',
+            populate: {
+                path: 'category',
+                select: 'isListed'
+            }
+        }).exec();
+
+        if (!cart) {
+            return res.json({ status: true, cart: [], totalPrice: 0 });
+        }
+
+        const updatedItems = cart.items.filter(item => {
+            const product = item.productId;
+            if (!product || !product.category) return false;
+            
+            const productSizeStock = product.size.get(item.size);
+            const isCategoryListed = product.category.isListed;
+            const isBrandBlocked = blockedBrandNames.includes(product.brand);
+
+            return !product.isBlocked && isCategoryListed && !isBrandBlocked && productSizeStock >= item.quantity;
+        });
+
+        if (updatedItems.length !== cart.items.length) {
+            cart.items = updatedItems;
+            await cart.save();
+        }
+
+        let totalPrice = 0;
+        if (cart.items.length > 0) {
+            cart.items.forEach(item => {
+                totalPrice += item.price * item.quantity;
+            });
+        } else {
+            totalPrice = 0;
+        }
+
+        for (const item of cart.items) {
+            const product = await Product.findOne({ _id: item.productId });
+            if (!product) continue;
+            item.maxStock = product.size.get(item.size);
+        }
+
+        cart.totalPrice = totalPrice;
+        await cart.save();
+
+        res.json({
+            status: true,
+            cart: cart.items,
+            totalPrice: totalPrice
+        });
+    } catch (error) {
+        console.error('Error fetching cart data for AJAX:', error);
+        res.status(500).json({ status: false, message: 'Error fetching cart data' });
+    }
+};
 
 
 
@@ -220,151 +287,12 @@ const updateProductQuantity = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-module.exports = {
+const cartController = {
     getCart,
     addToCart,
     removeProduct,
     updateProductQuantity,
-    
-}
+    getCartData,
+};
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export default cartController;

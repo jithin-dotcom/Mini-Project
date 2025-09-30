@@ -1,7 +1,7 @@
-const Product = require("../../models/productSchema");
-const Category = require("../../models/categorySchema");
-const User = require("../../models/userSchema");
-const Brand = require("../../models/brandSchema");
+import Product from "../../models/productSchema.js";
+import Category from "../../models/categorySchema.js";
+import User from "../../models/userSchema.js";
+import Brand from "../../models/brandSchema.js";
 
 
 const productDetails = async(req,res)=>{
@@ -40,6 +40,9 @@ const productDetails = async(req,res)=>{
     }
 }
 
-module.exports = {
+
+const productController = {
     productDetails,
-}
+};
+
+export default productController;

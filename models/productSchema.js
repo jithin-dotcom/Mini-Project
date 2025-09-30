@@ -1,6 +1,5 @@
-const mongoose = require("mongoose");
-const {Schema} = mongoose;
 
+import mongoose, { Schema } from "mongoose";
 
 const productSchema = new Schema({
     productName : {
@@ -36,7 +35,7 @@ const productSchema = new Schema({
 
     size: {
         type: Map,
-        of: Number, // Key-value pair where key is the size, and value is the quantity
+        of: Number, 
         required: true,
     },
 
@@ -69,4 +68,4 @@ const productSchema = new Schema({
 
 
 const Product  = mongoose.model("Product",productSchema);
-module.exports = Product;
+export default Product;

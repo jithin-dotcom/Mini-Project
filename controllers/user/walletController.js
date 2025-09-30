@@ -1,6 +1,6 @@
-const { model } = require("mongoose");
-const User = require("../../models/userSchema");
-const Wallet = require("../../models/walletSchema");
+import { model } from "mongoose";
+import User from "../../models/userSchema.js";
+import Wallet from "../../models/walletSchema.js";
 
 
 const addMoney = async (req, res) => {
@@ -55,9 +55,9 @@ const getWalletHistory = async (req, res) => {
 
 
 
-
-
-  module.exports = {
+const walletController ={
     addMoney,
     getWalletHistory,
-  }
+};
+
+export default walletController;

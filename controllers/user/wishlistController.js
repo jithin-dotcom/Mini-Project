@@ -1,13 +1,10 @@
-const User = require("../../models/userSchema");
-const Product = require("../../models/productSchema");
-const Wishlist = require("../../models/wishlistSchema");
-const Cart = require("../../models/cartSchema");
-const { addToList } = require("../../helpers/listController");
-const Brand = require("../../models/brandSchema");
 
-
-
-
+import User from "../../models/userSchema.js";
+import Product from "../../models/productSchema.js";
+import Wishlist from "../../models/wishlistSchema.js";
+import Cart from "../../models/cartSchema.js";
+import { addToList } from "../../helpers/listController.js";
+import Brand from "../../models/brandSchema.js";
 
 
 
@@ -63,6 +60,54 @@ const loadWishlist = async (req, res) => {
 };
 
 
+
+
+
+const getWishlistData = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const blockedBrands = await Brand.find({ isBlocked: true }).select('brandName');
+        const blockedBrandNames = blockedBrands.map(brand => brand.brandName);
+        const wishlist = await Wishlist.findOne({ userId }).populate({
+            path: 'items.productId',
+            select: 'productName salePrice description productImage size isBlocked category brand',
+            populate: { path: 'category', select: 'isListed' }
+        }).exec();
+
+        if (!wishlist) {
+            return res.json({ status: true, wishlist: [] });
+        }
+
+        const updatedItems = wishlist.items.filter(item => {
+            const product = item.productId;
+            if (!product || !product.category) return false;
+
+            const availableStock = product.size.get(item.size);
+            const isCategoryListed = product.category.isListed;
+            const isBrandBlocked = blockedBrandNames.includes(product.brand);
+            return !product.isBlocked && isCategoryListed && !isBrandBlocked && availableStock >= item.quantity;
+        });
+
+        if (updatedItems.length !== wishlist.items.length) {
+            wishlist.items = updatedItems;
+            await wishlist.save();
+        }
+
+        for (const item of wishlist.items) {
+            const product = await Product.findOne({ _id: item.productId });
+            if (!product) continue;
+            item.maxStock = product.size.get(item.size);
+        }
+
+        res.json({
+            status: true,
+            wishlist: wishlist.items
+        });
+    } catch (error) {
+        console.error('Error fetching wishlist data for AJAX:', error);
+        res.status(500).json({ status: false, message: 'Error fetching wishlist data' });
+    }
+};
 
 
 
@@ -223,249 +268,12 @@ const addToCart = async (req, res) => {
 
 
 
-module.exports = {
+const wishlistController ={
     loadWishlist,
     addToWishlist,
     removeProduct,
     addToCart,
-}
+    getWishlistData,
+};
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//add to wishlist before helper
-
-// const addToWishlist = async (req, res) => {
-//     try {
-//         const userId = req.session.user;
-//         const { productId, quantity, price, size } = req.body;
-
-//         const quantityNum = Number(quantity);
-
-//         // Check if the quantity is greater than 0
-//         if (quantityNum <= 0) {
-//             return res.status(400).json({
-//                 status: false,
-//                 message: "Quantity must be greater than 0."
-//             });
-//         }
-
-//         const product = await Product.findById(productId);
-//         if (!product) {
-//             return res.status(404).json({ status: false, message: "Product not found." });
-//         }
-
-//         const availableQuantity = product.size.get(size);
-//         if (availableQuantity === undefined) {
-//             return res.status(400).json({
-//                 status: false,
-//                 message: "Selected size not available."
-//             });
-//         }
-
-//         let wishlist = await Wishlist.findOne({ userId });
-
-//         if (!wishlist) {
-//             wishlist = new Wishlist({
-//                 userId,
-//                 items: []
-//             });
-//         }
-
-//         const existingProductIndex = wishlist.items.findIndex(item => item.productId.toString() === productId && item.size === size);
-//         let newQuantity;
-
-//         if (existingProductIndex !== -1) {
-//             newQuantity = wishlist.items[existingProductIndex].quantity + quantityNum;
-
-//             if (newQuantity > Math.min(10, availableQuantity)) {
-//                 return res.status(400).json({
-//                     status: false,
-//                     message: `You can add a maximum of ${Math.min(10, availableQuantity)} items for the selected size. You already have ${wishlist.items[existingProductIndex].quantity} in your wishlist.`
-//                 });
-//             }
-
-//             wishlist.items[existingProductIndex].quantity = newQuantity;
-//         } else {
-//             if (quantityNum > Math.min(10, availableQuantity)) {
-//                 return res.status(400).json({
-//                     status: false,
-//                     message: `You can add a maximum of ${Math.min(10, availableQuantity)} items for the selected size.`
-//                 });
-//             }
-
-//             wishlist.items.push({
-//                 productId,
-//                 name: product.productName,
-//                 quantity: quantityNum,
-//                 price,
-//                 size,
-//                 maxStock: availableQuantity
-//             });
-//         }
-
-//         await wishlist.save();
-
-//         const user = await User.findById(userId);
-//         if (!user.wishlist.includes(wishlist._id)) {
-//             user.wishlist.push(wishlist._id);
-//             await user.save();
-//         }
-
-//         return res.status(200).json({ status: true, message: "Product added to wishlist" });
-//     } catch (error) {
-//         console.error('Error adding product to wishlist', error);
-//         return res.status(500).json({
-//             status: false,
-//             message: 'An error occurred while adding the product to the wishlist.'
-//         });
-//     }
-// };
-
-
+export default wishlistController;

@@ -98,6 +98,48 @@
             });
             isValid = false;
         }
+       if(name.trim().length <= 1 || name.trim().length > 20){
+            Swal.fire({
+                title: 'Error',
+                text: 'Name length should be greater than 1 and less than 20',
+                icon: 'error'
+            });
+            isValid = false;
+       }
+        if(city.trim().length > 30){
+            Swal.fire({
+                title: 'Error',
+                text: 'city length should be less than 20',
+                icon: 'error'
+            });
+            isValid = false;
+       }
+        if(addressType.trim().length <= 1 || addressType.trim().length > 20){
+            Swal.fire({
+                title: 'Error',
+                text: 'AddressType length should be greater than 1 and less than 20',
+                icon: 'error'
+            });
+            isValid = false;
+       }
+
+        if(state.trim().length < 1 || state.trim().length > 20){
+            Swal.fire({
+                title: 'Error',
+                text: 'State length should be greater than 1 and less than 20',
+                icon: 'error'
+            });
+            isValid = false;
+       }
+
+        if(landMark.trim().length < 1 || landMark.trim().length > 30){
+            Swal.fire({
+                title: 'Error',
+                text: 'Landmark length should be greater than 1 and less than 30',
+                icon: 'error'
+            });
+            isValid = false;
+       }
 
        if (!namePattern.test(name)) {
            Swal.fire({

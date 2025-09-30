@@ -1,12 +1,12 @@
-const express = require('express');
-const router = express.Router();
-const mongoose = require('mongoose');
-const moment = require('moment');
-const  PDFDocument = require('pdfkit');
-const ExcelJS = require('exceljs');
-const Order = require('../../models/orderSchema');
-const User = require('../../models/userSchema');
-const Product = require('../../models/productSchema');
+
+import express from 'express';
+import mongoose from 'mongoose';
+import moment from 'moment';
+import PDFDocument from 'pdfkit';
+import ExcelJS from 'exceljs';
+import Order from '../../models/orderSchema.js';
+import User from '../../models/userSchema.js';
+import Product from '../../models/productSchema.js';
 
 
 
@@ -533,16 +533,11 @@ const generateExcelReportMain = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-module.exports = {
+const dashboardController ={
     loadDashboardMain,
     generateExcelReportMain,
     generatePdfReportMain,
     dashboardMain,
-}
+};
+
+export default dashboardController;

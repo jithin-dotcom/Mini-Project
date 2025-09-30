@@ -1,5 +1,5 @@
-const mongoose = require ("mongoose");
-const {Schema} = mongoose;
+
+import mongoose, { Schema } from "mongoose";
 
 const paymentSchema = new Schema({
    orderId : {
@@ -38,4 +38,4 @@ const paymentSchema = new Schema({
 
 
 const Payment = mongoose.model("Payment",paymentSchema);
-module.exports = Payment;
+export default Payment;

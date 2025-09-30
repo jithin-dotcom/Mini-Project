@@ -1,22 +1,30 @@
-const express = require("express");
+
+import express from "express";
+import path from "path";
+import dotenv from "dotenv";
+dotenv.config(); 
+import session from "express-session";
+import MongoStore from "connect-mongo";
+import mongoose from "mongoose";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+
+import passport from "./config/passport.js";
+import db from "./config/db.js";
+import userRouter from "./routes/userRouter.js";
+import adminRouter from "./routes/adminRouter.js";
+import User from "./models/userSchema.js";
+import setItemCounts from "./middlewares/setItemCounts.js";
+
 const app = express();
-const path = require("path");
-const env = require("dotenv").config();
-const session = require("express-session");
-const passport = require("./config/passport");
-const MongoStore = require("connect-mongo");
-const mongoose = require("mongoose");
-const PORT = process.env.PORT;
-const db = require("./config/db");
-const userRouter = require("./routes/userRouter");
-const adminRouter = require("./routes/adminRouter");
-const User = require("./models/userSchema");
-
-
-const setItemCounts = require("./middlewares/setItemCounts");
 
 
 db();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -74,15 +82,6 @@ app.listen(PORT, () => {
     console.log(`server is running at port : ${PORT}...`);
 });
 
-module.exports = app;
 
 
-
-
-
-
-
-
-
-
-
+export default app;

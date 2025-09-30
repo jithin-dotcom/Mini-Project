@@ -1,6 +1,8 @@
-const User = require("../../models/userSchema");
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+import User from "../../models/userSchema.js";
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+
+
 
 const pageerror = async(req,res)=>{
     res.render("admin-error");
@@ -24,7 +26,7 @@ const login = async(req,res)=>{
           return res.render("admin-login",{message:"Invalid Credentials"});
        }
        if(admin){
-        const passwordMatch = bcrypt.compare(password,admin.password);
+        const passwordMatch = await bcrypt.compare(password,admin.password);
         if(passwordMatch){
             req.session.admin = true;
             return res.redirect("/admin");
@@ -51,13 +53,5 @@ const logout = async (req, res) => {
 
 
 
-
-
-
-module.exports = {
-    loadLogin,
-    login,
-    pageerror,
-    logout,
-    
-}
+const adminController ={ loadLogin, login, pageerror, logout };
+export default adminController;

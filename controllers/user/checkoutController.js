@@ -1,12 +1,11 @@
-const User = require("../../models/userSchema");
-const Product = require("../../models/productSchema");
-const Category = require("../../models/categorySchema");
-const Cart = require("../../models/cartSchema");
-const Address = require("../../models/addressSchema");
-const Wallet = require("../../models/walletSchema");
-const Coupon = require("../../models/couponSchema");
 
-
+import User from "../../models/userSchema.js";
+import Product from "../../models/productSchema.js";
+import Category from "../../models/categorySchema.js";
+import Cart from "../../models/cartSchema.js";
+import Address from "../../models/addressSchema.js";
+import Wallet from "../../models/walletSchema.js";
+import Coupon from "../../models/couponSchema.js";
 
 
 
@@ -68,7 +67,6 @@ const getCheckout = async (req, res) => {
 
 
 
-
 const postAddAddress = async(req,res)=>{
     try {
         
@@ -104,8 +102,10 @@ const postAddAddress = async(req,res)=>{
 
 
 
-
-module.exports = {
+const checkoutController = {
     getCheckout,
-    postAddAddress
-}
+    postAddAddress,
+};
+
+
+export default checkoutController;

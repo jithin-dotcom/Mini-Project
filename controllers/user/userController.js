@@ -1,16 +1,18 @@
-const User = require("../../models/userSchema");
-const Category = require("../../models/categorySchema");
-const Product = require("../../models/productSchema");
-const Brand  = require("../../models/brandSchema");
-const Banner = require("../../models/bannerSchema");
-const OTP = require("../../models/otpSchema");
-const Cart = require("../../models/cartSchema");
-const Wishlist = require("../../models/wishlistSchema");
 
-const nodemailer = require("nodemailer");
-const env = require("dotenv").config();
-const bcrypt = require("bcrypt");
-const { productDetails } = require("./productController");
+import User from "../../models/userSchema.js";
+import Category from "../../models/categorySchema.js";
+import Product from "../../models/productSchema.js";
+import Brand from "../../models/brandSchema.js";
+
+import OTP from "../../models/otpSchema.js";
+import Cart from "../../models/cartSchema.js";
+import Wishlist from "../../models/wishlistSchema.js";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+import bcrypt from "bcrypt";
+
+
+dotenv.config();
 
 
 
@@ -465,6 +467,87 @@ const searchProducts = async (req, res) => {
 
 
 
+
+const filterProducts = async (req, res) => {
+    try {
+        const user = req.session.user;
+        const categories = await Category.find({ isListed: true });
+        const categoryIds = categories.map(category => category._id.toString());
+        const brands = await Brand.find({ isBlocked: false });
+        const unblockedBrandNames = brands.map(brand => brand.brandName);
+
+        const page = parseInt(req.query.page) || 1;
+        const limit = 8;
+        const skip = (page - 1) * limit;
+
+        let searchQuery = req.query.query || '';
+        let filter = {
+            isBlocked: false,
+            category: { $in: categoryIds }
+        };
+
+        if (req.query.category) {
+            filter.category = req.query.category;
+        }
+        if (req.query.brand) {
+            filter.brand = req.query.brand;
+        }
+        if (req.query.minPrice || req.query.maxPrice) {
+            filter.salePrice = {};
+            if (req.query.minPrice) {
+                filter.salePrice.$gte = parseFloat(req.query.minPrice);
+            }
+            if (req.query.maxPrice) {
+                filter.salePrice.$lte = parseFloat(req.query.maxPrice);
+            }
+        }
+        if (searchQuery) {
+            filter.productName = { $regex: ".*" + searchQuery + ".*", $options: "i" };
+        }
+
+        let sortOption = { createdAt: -1 };
+        if (req.query.sort) {
+            if (req.query.sort === 'lowToHigh') {
+                sortOption = { salePrice: 1 };
+            } else if (req.query.sort === 'highToLow') {
+                sortOption = { salePrice: -1 };
+            } else if (req.query.sort === 'atoz') {
+                sortOption = { productName: 1 };
+            } else if (req.query.sort === 'ztoa') {
+                sortOption = { productName: -1 };
+            }
+        }
+
+        const products = await Product.find(filter)
+            .collation({ locale: "en", strength: 2 })
+            .sort(sortOption)
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        const filteredProducts = products.filter(product => {
+            const totalStock = Object.values(product.size).reduce((acc, qty) => acc + qty, 0);
+            return totalStock > 0 && unblockedBrandNames.includes(product.brand);
+        });
+
+        const totalProducts = await Product.countDocuments(filter);
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        res.json({
+            success: true,
+            products: filteredProducts,
+            currentPage: page,
+            totalPages,
+            sort: req.query.sort || ''
+        });
+    } catch (error) {
+        console.error('Error filtering products:', error);
+        res.status(500).json({ success: false, message: 'Error fetching products' });
+    }
+};
+
+
+
 const getLogout = async(req,res)=>{
     try {
         return res.redirect("/");
@@ -476,7 +559,7 @@ const getLogout = async(req,res)=>{
 
 
 
-module.exports = {
+const userController ={
     loadHomepage,
     pageNotFound,
     loadSignup,
@@ -489,5 +572,7 @@ module.exports = {
     loadShoppingPage,
     searchProducts,
     getLogout,
-    
+    filterProducts,
 };
+
+export default userController;

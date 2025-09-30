@@ -1,6 +1,5 @@
-// utils/helper.js
 
-const Product = require("../models/productSchema");
+import Product from "../models/productSchema.js";
 
 const addToList = async (list, productId, quantity, price, size, userId) => {
     const quantityNum = Number(quantity);
@@ -55,6 +54,7 @@ const addToList = async (list, productId, quantity, price, size, userId) => {
     return list;
 };
 
-module.exports = {
-     addToList
+
+export {
+    addToList,
 };

@@ -1,221 +1,13 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= pageTitle %></title>
-  <style>
-  
-    body {
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(to right, #74ebd5, #9face6);
-      color: #333;
-    }
-    .container { width: 90%; margin: 20px auto; max-width: 1200px; }
-    .header { background-color: #ff6f61; color: #fff; padding: 15px 20px; border-radius: 10px; text-align: center; font-size: 24px; font-weight: bold; }
-    .filters { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
-    .filters select, .filters input { padding: 10px; border: none; border-radius: 5px; outline: none; width: 200px; max-width: 100%; }
-    .filters button { background-color: #ff6f61; color: #fff; border: none; border-radius: 5px; padding: 10px 20px; cursor: pointer; transition: background-color 0.3s ease; }
-    .filters button:hover { background-color: #ff856d; }
-    .table-container { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; background-color: #fff; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
-    table th, table td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
-    table th { background-color: #ff6f61; color: #fff; position: sticky; top: 0; }
-    table tr:hover { background-color: #f9f9f9; }
-    table td .actions { display: flex; gap: 10px; }
-    table td .actions button { padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; }
-    .view-btn { background-color: #6ab04c; color: #fff; }
-    .edit-btn { background-color: #f7b731; color: #fff; }
-    .cancel-btn { background-color: #eb4d4b; color: #fff; }
-    .delete-btn { background-color: green; color: #fff; }
-    @media (max-width: 768px) { .filters { flex-direction: column; } .filters select, .filters input { width: 100%; } table th, table td { font-size: 14px; } }
-  
-    
-
- 
-
-
-
-  .pagination-container {
-  margin-top: 20px;
-  padding: 15px;
-}
-
-.pagination a {
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.pagination .btn {
-  border-radius: 25px;
-  padding: 8px 16px;
-  font-size: 14px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.pagination .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.pagination .btn-primary {
-  background-color: red;
-  border-color: red;
-  color: #fff;
-}
-
-.pagination .btn-outline-primary {
-  background-color: #fff;
-  border-color: red;
-  color: red;
-}
-
-.pagination .btn-outline-primary:hover {
-  background-color: red;
-  color: #fff;
-}
-
-@media (max-width: 768px) {
-  .pagination .btn {
-    font-size: 12px;
-    padding: 6px 12px;
-  }
-}
-
-@media (max-width: 576px) {
-  .pagination .btn {
-    font-size: 11px;
-    padding: 5px 10px;
-  }
-
-  .pagination-container {
-    padding: 10px;
-  }
-}
-
-
-  
-  
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header"><%= pageTitle %></div>
-    <div class="filters">
-      <form action="/admin/orders" method="GET">
-       
-      </form>
-    </div>
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Customer Name</th>
-            <th>Date</th>
-            <th>Total</th>
-            <th>Status</th>
-         
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% orders.forEach(order => { %>
-          <tr>
-            <td><%= order.id %></td>
-            <td><%= order.customer %></td>
-            <td><%= order.date %></td>
-            <td>₹<%= order.total %></td>
-            <td>
-              <form action="/admin/orders/<%= order.id %>/status" method="POST">
-                <select name="status" onchange="this.form.submit()" <%= ['Returned', 'Cancelled'].includes(order.status) ? 'disabled' : '' %>>
-                
-                  <option value="<%= order.status %>" selected><%= order.status %></option>
-                  
-                  
-                  <% if (order.status === 'Pending') { %>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Cancelled">Cancelled</option>
-                  <% } else if (order.status === 'Shipped') { %>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
-                  <% } else if (order.status === 'Delivered') { %>
-                    <option value="Returned">Returned</option>
-                  <% } %>
-                </select>
-              </form>
-            </td>
-            
-         
-
-            <td>
-              <a href="/admin/seeOrder/<%= order.id %>" class=""> <button type="submit" class="view-btn">View</button></a>
-            </td>
-                         
-
-          </tr>
-          <% }) %>
-        </tbody>
-      </table>
-
-      
-
-      <div class="pagination-container text-center mt-4">
-        <div class="pagination d-flex flex-wrap justify-content-center align-items-center gap-2">
-          <% if (currentPage > 1) { %>
-            <a href="/admin/orderList?page=<%= currentPage - 1 %>" class="btn btn-outline-primary btn-sm px-3">&laquo; Previous</a>
-          <% } %>
-      
-          <% for (let i = 1; i <= totalPages; i++) { %>
-            <a href="/admin/orderList?page=<%= i %>" 
-               class="btn btn-sm <%= currentPage === i ? 'btn-primary' : 'btn-outline-primary' %>">
-              <%= i %>
-            </a>
-          <% } %>
-      
-          <% if (currentPage < totalPages) { %>
-            <a href="/admin/orderList?page=<%= currentPage + 1 %>" class="btn btn-outline-primary btn-sm px-3">Next &raquo;</a>
-          <% } %>
-        </div>
-      </div>
-      
-      
-
-
-      
-      
-    </div>
-    
-    <button class="cancel-btn" style="height: 30px;border-radius: 20px;margin-top: 50px;">
-      <a href="/admin" style="text-decoration: inherit;"> Admin Page</a>
-    </button>
-  </div>
-
-  
-
-</body>
-</html> -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <%- include("../../views/partials/admin/header") %>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+  .form-select-loading {
+    pointer-events: none;
+    opacity: 0.7;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="%23007bff" stroke-width="2"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/></circle></svg>') no-repeat right 0.75rem center/16px 16px;
+  }
+</style>
 <div class="container mt-5">
   <div class="row">
     <div class="col-12">
@@ -226,7 +18,6 @@
   <div class="row mb-4">
     <div class="col-12">
       <form action="/admin/orders" method="GET" class="d-flex flex-wrap gap-2">
-        <!-- Add filters here if needed, matching editCategory styling -->
       </form>
     </div>
   </div>
@@ -244,7 +35,7 @@
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="orderTableBody">
           <% orders.forEach(order => { %>
           <tr>
             <td><%= order.id %></td>
@@ -252,20 +43,18 @@
             <td><%= order.date %></td>
             <td>₹<%= order.total %></td>
             <td>
-              <form action="/admin/orders/<%= order.id %>/status" method="POST">
-                <select name="status" class="form-select" onchange="this.form.submit()" <%= ['Returned', 'Cancelled'].includes(order.status) ? 'disabled' : '' %>>
-                  <option value="<%= order.status %>" selected><%= order.status %></option>
-                  <% if (order.status === 'Pending') { %>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Cancelled">Cancelled</option>
-                  <% } else if (order.status === 'Shipped') { %>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
-                  <% } else if (order.status === 'Delivered') { %>
-                    <option value="Returned">Returned</option>
-                  <% } %>
-                </select>
-              </form>
+              <select name="status" class="form-select order-status-select" data-order-id="<%= order.id %>" <%= ['Returned', 'Cancelled'].includes(order.status) ? 'disabled' : '' %> onchange="updateOrderStatus(this)">
+                <option value="<%= order.status %>" selected><%= order.status %></option>
+                <% if (order.status === 'Pending') { %>
+                  <option value="Shipped">Shipped</option>
+                  <option value="Cancelled">Cancelled</option>
+                <% } else if (order.status === 'Shipped') { %>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                <% } else if (order.status === 'Delivered') { %>
+                  <option value="Returned">Returned</option>
+                <% } %>
+              </select>
             </td>
             <td>
               <a href="/admin/seeOrder/<%= order.id %>">
@@ -281,27 +70,164 @@
 
   <div class="row mt-4">
     <div class="col-12 text-center">
-      <div class="pagination d-flex flex-wrap justify-content-center align-items-center gap-2">
+      <div class="pagination d-flex flex-wrap justify-content-center align-items-center gap-2" id="pagination">
         <% if (currentPage > 1) { %>
-          <a href="/admin/orderList?page=<%= currentPage - 1 %>" class="btn btn-outline-primary btn-sm px-3">&laquo; Previous</a>
+          <a href="#" data-page="<%= currentPage - 1 %>" class="btn btn-outline-primary btn-sm px-3">&laquo; Previous</a>
+        <% } else { %>
+          <a href="#" class="btn btn-outline-primary btn-sm px-3 disabled">&laquo; Previous</a>
         <% } %>
         <% for (let i = 1; i <= totalPages; i++) { %>
-          <a href="/admin/orderList?page=<%= i %>" 
-             class="btn btn-sm <%= currentPage === i ? 'btn-primary' : 'btn-outline-primary' %>">
+          <a href="#" data-page="<%= i %>" class="btn btn-sm <%= currentPage === i ? 'btn-primary' : 'btn-outline-primary' %>">
             <%= i %>
           </a>
         <% } %>
         <% if (currentPage < totalPages) { %>
-          <a href="/admin/orderList?page=<%= currentPage + 1 %>" class="btn btn-outline-primary btn-sm px-3">Next &raquo;</a>
+          <a href="#" data-page="<%= currentPage + 1 %>" class="btn btn-outline-primary btn-sm px-3">Next &raquo;</a>
+        <% } else { %>
+          <a href="#" class="btn btn-outline-primary btn-sm px-3 disabled">Next &raquo;</a>
         <% } %>
       </div>
     </div>
   </div>
 
-  <div class="row mt-4">
-    <div class="col-12 text-center">
-      <a href="/admin" class="btn btn-danger btn-sm" style="border-radius: 20px;">Back to Admin Page</a>
-    </div>
-  </div>
+
 </div>
+
+<script>
+async function updateOrderStatus(selectElement) {
+  const orderId = selectElement.dataset.orderId;
+  const newStatus = selectElement.value;
+ 
+  selectElement.classList.add('form-select-loading');
+  selectElement.disabled = true;
+
+  try {
+    const response = await fetch(`/admin/orders/${orderId}/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    const data = await response.json();
+   
+    if (data.status) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Status Updated',
+        text: data.message,
+      }).then(() => {
+        loadOrders(getCurrentPage());
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: data.message || 'Failed to update order status.',
+      });
+      selectElement.value = data.currentStatus || selectElement.querySelector('option[selected]').value;
+    }
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: `Failed to update order status: ${error.message}`,
+    });
+    selectElement.value = selectElement.querySelector('option[selected]').value;
+  } finally {
+    selectElement.classList.remove('form-select-loading');
+    selectElement.disabled = ['Returned', 'Cancelled'].includes(newStatus);
+  }
+}
+
+async function loadOrders(page = 1) {
+  console.log('loadOrders called with page:', page); // Debug
+  try {
+    const response = await fetch(`/admin/orders/data?page=${page}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await response.json();
+    console.log('loadOrders response:', data); // Debug
+    if (data.status) {
+      const tbody = document.getElementById('orderTableBody');
+      tbody.innerHTML = data.orders.map(order => `
+        <tr>
+          <td>${order.id}</td>
+          <td>${order.customer}</td>
+          <td>${order.date}</td>
+          <td>₹${order.total}</td>
+          <td>
+            <select name="status" class="form-select order-status-select" data-order-id="${order.id}" ${['Returned', 'Cancelled'].includes(order.status) ? 'disabled' : ''} onchange="updateOrderStatus(this)">
+              <option value="${order.status}" selected>${order.status}</option>
+              ${order.status === 'Pending' ? `
+                <option value="Shipped">Shipped</option>
+                <option value="Cancelled">Cancelled</option>
+              ` : order.status === 'Shipped' ? `
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              ` : order.status === 'Delivered' ? `
+                <option value="Returned">Returned</option>
+              ` : ''}
+            </select>
+          </td>
+          <td>
+            <a href="/admin/seeOrder/${order.id}">
+              <button class="btn btn-success btn-sm">View</button>
+            </a>
+          </td>
+        </tr>
+      `).join('');
+
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
+      if (data.currentPage > 1) {
+        pagination.innerHTML += `<a href="#" data-page="${data.currentPage - 1}" class="btn btn-outline-primary btn-sm px-3">&laquo; Previous</a>`;
+      } else {
+        pagination.innerHTML += `<a href="#" class="btn btn-outline-primary btn-sm px-3 disabled">&laquo; Previous</a>`;
+      }
+      for (let i = 1; i <= data.totalPages; i++) {
+        pagination.innerHTML += `
+          <a href="#" data-page="${i}" class="btn btn-sm ${i === data.currentPage ? 'btn-primary' : 'btn-outline-primary'}">${i}</a>`;
+      }
+      if (data.currentPage < data.totalPages) {
+        pagination.innerHTML += `<a href="#" data-page="${data.currentPage + 1}" class="btn btn-outline-primary btn-sm px-3">Next &raquo;</a>`;
+      } else {
+        pagination.innerHTML += `<a href="#" class="btn btn-outline-primary btn-sm px-3 disabled">Next &raquo;</a>`;
+      }
+
+      attachPaginationListeners();
+    } else {
+      Swal.fire('Error', data.message || 'Error loading orders', 'error');
+    }
+  } catch (error) {
+    console.error('Error loading orders:', error);
+    Swal.fire('Error', `Error loading orders: ${error.message}`, 'error');
+  }
+}
+
+function getCurrentPage() {
+  const activePage = document.querySelector('.pagination a.btn-primary');
+  return activePage ? parseInt(activePage.dataset.page) : 1;
+}
+
+function attachPaginationListeners() {
+  document.querySelectorAll('.pagination a').forEach(link => {
+    link.removeEventListener('click', handlePaginationClick);
+    link.addEventListener('click', handlePaginationClick);
+  });
+}
+
+function handlePaginationClick(e) {
+  e.preventDefault();
+  if (!e.target.classList.contains('disabled')) {
+    const page = parseInt(e.target.dataset.page);
+    loadOrders(page);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  attachPaginationListeners();
+});
+</script>
 <%- include("../../views/partials/admin/footer") %>
+

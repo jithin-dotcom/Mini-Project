@@ -1,22 +1,81 @@
+
+
 <%- include("../../views/partials/admin/header") %>
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6 mt-60">
-            <form method="post" action="/admin/editCategory/<%=category._id%>">
-                <div class="d-grid text-end mt-30 col-md-5">
-                    <button class="btn btn-primary" type="submit">Update category</button>
-                </div>
+            <form novalidate method="post" action="/admin/editCategory/<%=category._id%>" id="editCategoryForm">
+                
                 <div class="mb-4 mt-30">
-                    <label for="product_name" class="form-label">Name</label>
-                    <input type="text" name="categoryName" value="<%=category.name%>" class="form-control border" />
+                    <label for="categoryName" class="form-label">Name</label>
+                    <input 
+                        type="text" 
+                        id="categoryName"
+                        name="categoryName" 
+                        value="<%=category.name%>" 
+                        class="form-control border"
+                        pattern="^[A-Za-z\s]+$"
+                        required
+                    />
+                    <div class="form-text text-danger" id="nameError"></div>
                 </div>
                 
                 <div class="mb-4">
-                    <label class="form-label">Description</label>
-                    <textarea name="description" class="form-control border"><%=category.description%></textarea>
+                    <label for="description" class="form-label">Description</label>
+                    <textarea 
+                        id="description"
+                        name="description" 
+                        class="form-control border"
+                        pattern="^[A-Za-z\s]+$"
+                        required
+                    ><%=category.description%></textarea>
+                    <div class="form-text text-danger" id="descError"></div>
+                </div>
+
+                <div class="d-grid text-end mt-30 col-md-5">
+                    <button class="btn btn-primary" type="submit">Update category</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 <%- include("../../views/partials/admin/footer") %>
+
+<script>
+document.getElementById("editCategoryForm").addEventListener("submit", function (e) {
+    let isValid = true;
+
+    const nameInput = document.getElementById("categoryName");
+    const descInput = document.getElementById("description");
+    const nameError = document.getElementById("nameError");
+    const descError = document.getElementById("descError");
+
+    nameError.textContent = "";
+    descError.textContent = "";
+
+    const alphaRegex = /^[A-Za-z\s]+$/;
+
+    if (!alphaRegex.test(nameInput.value)) {
+        nameError.textContent = "Name should contain only alphabets.";
+        isValid = false;
+    }
+    if (nameInput.value.length < 3 || nameInput.value.length > 20) {
+        nameError.textContent = "Name must be 3–20 characters long.";
+        isValid = false;
+    }
+
+    if (!alphaRegex.test(descInput.value)) {
+        descError.textContent = "Description should contain only alphabets.";
+        isValid = false;
+    }
+    if (descInput.value.length < 3 || descInput.value.length > 70) {
+        descError.textContent = "Description must be 3–70 characters long.";
+        isValid = false;
+    }
+
+    if (!isValid) {
+        e.preventDefault(); 
+    }
+});
+</script>
+
