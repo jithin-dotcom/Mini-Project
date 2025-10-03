@@ -99,6 +99,46 @@
             });
             isValid = false;
         }
+        if (addressType.length.trim().length < 2 || addressType.length.trim().length >30) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Address type should be between 3-30 letters',
+                icon: 'error'
+            });
+            isValid = false;
+        }
+        if (name.length.trim().length < 2 || name.length.trim().length >30) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Name should be between 3-30 letters',
+                icon: 'error'
+            });
+            isValid = false;
+        }
+        if (city.length.trim().length < 2 || city.length.trim().length >30) {
+            Swal.fire({
+                title: 'Error',
+                text: 'City should be between 3-30 letters',
+                icon: 'error'
+            });
+            isValid = false;
+        }
+        if (landMark.length.trim().length < 2 || landMark.length.trim().length >30) {
+            Swal.fire({
+                title: 'Error',
+                text: 'City should be between 3-30 letters',
+                icon: 'error'
+            });
+            isValid = false;
+        }
+        if (state.length.trim().length < 2 || state.length.trim().length >30) {
+            Swal.fire({
+                title: 'Error',
+                text: 'City should be between 3-30 letters',
+                icon: 'error'
+            });
+            isValid = false;
+        }
         if (!namePattern.test(name)) {
             Swal.fire({
                 title: 'Error',
@@ -163,7 +203,7 @@
             });
             isValid = false;
         }
-        // Check if phone is a sequence of the same number (like 0000000000, 1111111111, etc.)
+       
         if (/^(\d)\1{9}$/.test(phone) || (altPhone && /^(\d)\1{9}$/.test(altPhone))) {
            swal.fire('Error', 'Phone numbers cannot be repetitive like 0000000000 or 1111111111.', 'error');
            event.preventDefault();
@@ -179,31 +219,6 @@
 
 
 
-<!-- <script>
-   document.getElementById('submitButton').addEventListener('click', function (event) {
-       if (!validateForm()) {
-           event.preventDefault();
-       }
-   });
-
-   function validateForm() {
-       let isValid = true;
-       const requiredFields = ["addressType", "name", "city", "landMark", "state", "pincode", "phone", "altPhone"];
-       requiredFields.forEach(function (field) {
-           const input = document.getElementById(field);
-           if (input.value.trim() === "") {
-               Swal.fire({
-                   title: 'Error',
-                   text: `Please fill all the field.`,
-                   icon: 'error'
-               });
-               isValid = false;
-           }
-       });
-
-       return isValid;
-   }
-</script> -->
 <%- include("../../views/partials/user/footer") %>
 
 

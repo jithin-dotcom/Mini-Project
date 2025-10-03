@@ -290,12 +290,12 @@ function validateForm() {
         });
         isValid = false;
     }
-    if (name.trim().length <= 1 || name.trim().length > 20) {
+    if (name.trim().length <= 1 || name.trim().length > 30) {
        
         Swal.fire({
         icon: 'error',
         title: 'Invalid Product Name',
-        text: 'Name Length should be greater than 1 and less than 20',
+        text: 'Name Length should be greater than 1 and less than 30',
         });
         isValid = false;
     }
@@ -356,28 +356,42 @@ function validateForm() {
     }
 
    
-
-
-
+    
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    const imageInputs = [images, images1, images2];
+    const imageInputs = [images, images1, images2]; 
+    let existingImages = document.querySelectorAll('#imageDatas').length;
+    let newImageCount = 0;
 
-
+  
     for (const imgInput of imageInputs) {
-        if (!imageDatas && (!imgInput.files || imgInput.files.length === 0)) {
-            Swal.fire({ icon: 'error', title: 'Image Error', text: 'Minimum 3 images are required.' });
-            isValid = false;
-            break;
-        }
-        if (imgInput.files.length > 0) {
+        if (imgInput.files && imgInput.files.length > 0) {
+            newImageCount += imgInput.files.length;
             const file = imgInput.files[0];
             if (!allowedTypes.includes(file.type)) {
-                Swal.fire({ icon: 'error', title: 'Invalid Image', text: 'Images must be in JPG, PNG, or WEBP format.' });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Image',
+                    text: 'Images must be in JPG, PNG, or WEBP format.',
+                });
                 isValid = false;
                 break;
             }
         }
     }
+
+  
+    const totalImages = existingImages + newImageCount;
+    console.log(`Existing images: ${existingImages}, New images: ${newImageCount}, Total: ${totalImages}`);
+    if (totalImages < 3) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Image Error',
+            text: `Minimum 3 images are required. Currently, you have ${totalImages} image(s).`,
+        });
+        isValid = false;
+    }
+
+
 
     
     

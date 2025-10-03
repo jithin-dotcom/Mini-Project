@@ -308,6 +308,7 @@ const editProduct = async(req,res)=>{
         }
 
         const images = [];
+       
 
         if(req.files && req.files.length>0){
             for(let i = 0; i < req.files.length; i++){
