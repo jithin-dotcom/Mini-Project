@@ -6,6 +6,8 @@ import Cart from "../../models/cartSchema.js";
 import Address from "../../models/addressSchema.js";
 import Wallet from "../../models/walletSchema.js";
 import Coupon from "../../models/couponSchema.js";
+import { STATUS_CODES } from "../../constants/statusCodes.js";
+import { MESSAGES } from "../../constants/messages.js";
 
 
 
@@ -58,7 +60,7 @@ const getCheckout = async (req, res) => {
 
     } catch (err) {
         console.error('Error fetching data for checkout:', err);
-        res.status(500).send('Server error');
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send(MESSAGES.INTERNAL_SERVER_ERROR);
     }
 };
 

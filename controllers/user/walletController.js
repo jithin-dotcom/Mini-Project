@@ -1,6 +1,8 @@
 import { model } from "mongoose";
 import User from "../../models/userSchema.js";
 import Wallet from "../../models/walletSchema.js";
+import { STATUS_CODES } from "../../constants/statusCodes.js";
+import { MESSAGES } from "../../constants/messages.js";
 
 
 const addMoney = async (req, res) => {
@@ -20,13 +22,12 @@ const addMoney = async (req, res) => {
   
       await wallet.save();
   
-      res.status(200).json({ success: true, message: 'Money added successfully' });
+      res.status(STATUS_CODES.OK).json({ success: true, message: 'Money added successfully' });
     } catch (error) {
       console.error('Error adding money to wallet:', error);
-      res.status(500).json({ success: false, message: 'An error occurred. Please try again later.' });
+      res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
   };
-
 
 
 
@@ -36,7 +37,7 @@ const getWalletHistory = async (req, res) => {
     const userId = req.session.user._id;
     const wallet = await Wallet.findOne({ userId });
     if (!wallet) {
-      return res.status(404).json({ success: false, message: 'Wallet not found' });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: 'Wallet not found' });
     }
     const sortedHistory = wallet.transactionHistory.sort((a, b) => {
       const dateA = new Date(a.transactionDate);
@@ -45,10 +46,10 @@ const getWalletHistory = async (req, res) => {
       
       return dateB - dateA;
     });
-    res.status(200).json({ success: true, history: sortedHistory });
+    res.status(STATUS_CODES.OK).json({ success: true, history: sortedHistory });
   } catch (error) {
     console.error('Error fetching wallet history:', error);
-    res.status(500).json({ success: false, message: 'An error occurred. Please try again later.' });
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
   }
 };
 

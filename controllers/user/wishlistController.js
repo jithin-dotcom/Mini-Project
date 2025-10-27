@@ -5,6 +5,8 @@ import Wishlist from "../../models/wishlistSchema.js";
 import Cart from "../../models/cartSchema.js";
 import { addToList } from "../../helpers/listController.js";
 import Brand from "../../models/brandSchema.js";
+import { STATUS_CODES } from "../../constants/statusCodes.js";
+import { MESSAGES } from "../../constants/messages.js";
 
 
 
@@ -13,7 +15,6 @@ import Brand from "../../models/brandSchema.js";
 const loadWishlist = async (req, res) => {
     try {
         const userId = req.session.user;
-        // console.log(userId);
         const blockedBrands = await Brand.find({ isBlocked: true }).select('brandName');
         const blockedBrandNames = blockedBrands.map(brand => brand.brandName); 
         const wishlist = await Wishlist.findOne({ userId }).populate({
@@ -22,8 +23,7 @@ const loadWishlist = async (req, res) => {
             populate: { path: 'category', select: 'isListed' } 
         }).exec(); 
 
-        // console.log(JSON.stringify(wishlist, null, 2));
-
+        
         if (!wishlist) {
             return res.render("wishlist", {
                 user: null,
@@ -105,7 +105,7 @@ const getWishlistData = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching wishlist data for AJAX:', error);
-        res.status(500).json({ status: false, message: 'Error fetching wishlist data' });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: 'Error fetching wishlist data' });
     }
 };
 
@@ -133,10 +133,10 @@ const addToWishlist = async (req, res) => {
             await user.save();
         }
 
-        return res.status(200).json({ status: true, message: "Product added to wishlist" });
+        return res.status(STATUS_CODES.OK).json({ status: true, message: "Product added to wishlist" });
     } catch (error) {
         console.error("Error adding product to wishlist", error);
-        return res.status(500).json({
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: false,
             message:  error.message || "Failed to add product to wishlist.",
         });
@@ -153,18 +153,16 @@ const removeProduct = async (req, res) => {
         const size = req.body.size;  
         let wishlist = await Wishlist.findOne({ userId });
         if (!wishlist) {
-            return res.status(404).json({ status: false, message: 'Wishlist not found' });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ status: false, message: 'Wishlist not found' });
         }
         wishlist.items = wishlist.items.filter(item => !(item.productId.toString() === productId  && item.size === size));
         await wishlist.save();
-        res.status(200).json({ status: true, message: 'Product removed from wishlist' })
+        res.status(STATUS_CODES.OK).json({ status: true, message: 'Product removed from wishlist' })
     } catch (error) {
         console.error('Error removing product from wishlist', error);
-        res.status(500).json({ status: false, message: 'An error occurred. Please try again later.' });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
 };
-
-
 
 
 
@@ -175,7 +173,7 @@ const addToCart = async (req, res) => {
         const { productId, quantity, price, size } = req.body;
         const quantityNum = Number(quantity);
         if (quantityNum <= 0) {
-            return res.status(400).json({
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
                 status: false,
                 message: "Quantity must be greater than 0."
             });
@@ -183,12 +181,12 @@ const addToCart = async (req, res) => {
 
         const product = await Product.findById(productId);
         if (!product) {
-            return res.status(404).json({ status: false, message: "Product not found." });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ status: false, message: "Product not found." });
         }
 
         const availableQuantity = product.size.get(size);
         if (availableQuantity === undefined) {
-            return res.status(400).json({
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
                 status: false,
                 message: "Selected size not available."
             });
@@ -210,7 +208,7 @@ const addToCart = async (req, res) => {
             newQuantity = cart.items[existingProductIndex].quantity + quantityNum;
 
             if (newQuantity > Math.min(10, availableQuantity)) {
-                return res.status(400).json({
+                return res.status(STATUS_CODES.BAD_REQUEST).json({
                     status: false,
                     message: `You can add a maximum of ${Math.min(10, availableQuantity)} items for the selected size. You already have ${cart.items[existingProductIndex].quantity} in your cart.`
                 });
@@ -219,7 +217,7 @@ const addToCart = async (req, res) => {
             cart.items[existingProductIndex].quantity = newQuantity;
         } else {
             if (quantityNum > Math.min(10, availableQuantity)) {
-                return res.status(400).json({
+                return res.status(STATUS_CODES.BAD_REQUEST).json({
                     status: false,
                     message: `You can add a maximum of ${Math.min(10, availableQuantity)} items for the selected size.`
                 });
@@ -254,12 +252,12 @@ const addToCart = async (req, res) => {
             }
         );
 
-        return res.status(200).json({ status: true, message: "Product added to cart" });
+        return res.status(STATUS_CODES.OK).json({ status: true, message: "Product added to cart" });
     } catch (error) {
         console.error('Error adding product to cart', error);
-        return res.status(500).json({
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: false,
-            message: 'An error occurred while adding the product to the cart.'
+            message: MESSAGES.INTERNAL_SERVER_ERROR
         });
     }
 };

@@ -2,6 +2,8 @@ import Coupon from "../../models/couponSchema.js";
 import User from "../../models/userSchema.js";
 import Cart from "../../models/cartSchema.js";
 import Order from "../../models/orderSchema.js";
+import { STATUS_CODES } from "../../constants/statusCodes.js";
+import { MESSAGES } from "../../constants/messages.js";
 
 
 
@@ -50,7 +52,7 @@ const applyCoupon = async (req, res) => {
         return res.json({ success: true, newTotal, couponDiscount: coupon.offerPrice });
     } catch (error) {
         console.error('Error applying coupon:', error);
-        res.status(500).json({ success: false, message: 'Server error.' });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: message.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -101,7 +103,7 @@ const deleteCoupon = async (req, res) => {
         res.json({ success: true, newTotal,couponDiscount: coupon.offerPrice});    
     } catch (error) {
         console.error('Error deleting coupon:', error);
-        res.status(500).json({ success: false, message: 'Server error.' });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
 };
 

@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import User from "../../models/userSchema.js";
 import Coupon from "../../models/couponSchema.js";
-
+import { MESSAGES } from "../../constants/messages.js";
+import { STATUS_CODES } from "../../constants/statusCodes.js";
 
 
 
@@ -50,7 +51,7 @@ const createCoupon = async (req, res) => {
     });
 
     if (existingCoupon) {
-      return res.status(400).json({ status: false, message: "Coupon name already exists." });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ status: false, message: "Coupon name already exists." });
     }
     const newCoupon = new Coupon({
       name: couponName,
@@ -63,7 +64,7 @@ const createCoupon = async (req, res) => {
     return res.json({ status: true, message: "Coupon created successfully" });
   } catch (error) {
     console.error("Error creating coupon:", error);
-    res.status(500).json({ status: false, message: "Internal server error" });
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
   }
 };
  
@@ -94,7 +95,7 @@ const createCoupon = async (req, res) => {
      });
    } catch (error) {
      console.error("Error fetching coupons for AJAX:", error);
-     res.status(500).json({ status: false, message: "Error fetching coupons" });
+     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
    }
  };
 
@@ -145,7 +146,7 @@ const updateCoupon = async (req,res) => {
           if(updatedCoupon!==null){
             res.send("Coupon updated successfully");
           }else{
-            res.status(500).send("Coupon update failed");
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send("Coupon update failed");
           }
        }
 
@@ -166,11 +167,11 @@ const deleteCoupon = async (req, res) => {
     if (result.deletedCount > 0) {
       res.json({ status: true, message: "Coupon deleted successfully" });
     } else {
-      res.status(404).json({ status: false, message: "Coupon not found" });
+      res.status(STATUS_CODES.NOT_FOUND).json({ status: false, message: "Coupon not found" });
     }
   } catch (error) {
     console.error("Error deleting coupon:", error);
-    res.status(500).json({ status: false, message: "Failed to delete coupon" });
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: "Failed to delete coupon" });
   }
 };
 

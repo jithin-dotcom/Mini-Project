@@ -1,5 +1,6 @@
 import User from "../../models/userSchema.js";
-
+import { MESSAGES } from "../../constants/messages.js";
+import { STATUS_CODES } from "../../constants/statusCodes.js";
 
 const customerInfo = async(req,res)=>{
     try{
@@ -40,7 +41,7 @@ const customerInfo = async(req,res)=>{
 
     }catch(error){
         console.error("Error fetching customer info:", error);
-        res.status(500).send("Internal Server Error");
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send(MESSAGES.INTERNAL_SERVER_ERROR);
     }
 }
 
@@ -88,7 +89,7 @@ const customerInfoAjax = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching customer info for AJAX:", error);
-        res.status(500).json({ success: false, message: "Error fetching customers" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error fetching customers" });
     }
 };
 
@@ -98,10 +99,10 @@ const customerBlocked = async (req, res) => {
     try {
         const { id } = req.body;  
         await User.updateOne({ _id: id }, { $set: { isBlocked: true } });
-        res.status(200).json({ success: true });
+        res.status(STATUS_CODES.OK).json({ success: true });
     } catch (error) {
         console.error("Error blocking customer:", error);
-        res.status(500).json({ success: false, message: "Error blocking customer" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
 }
 
@@ -109,10 +110,10 @@ const customerunBlocked = async (req, res) => {
     try {
         const { id } = req.body;  
         await User.updateOne({ _id: id }, { $set: { isBlocked: false } });
-        res.status(200).json({ success: true });
+        res.status(STATUS_CODES.OK).json({ success: true });
     } catch (error) {
         console.error("Error unblocking customer:", error);
-        res.status(500).json({ success: false, message: "Error unblocking customer" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error unblocking customer" });
     }
 }
 

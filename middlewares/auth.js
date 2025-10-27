@@ -1,3 +1,5 @@
+import { MESSAGES } from "../constants/messages.js";
+import { STATUS_CODES } from "../constants/statusCodes.js";
 import User from "../models/userSchema.js";
 
 const userAuth = async (req, res, next) => {
@@ -22,7 +24,7 @@ const userAuth = async (req, res, next) => {
         }
     } catch (error) {
         console.error("Error in user auth middleware:", error);
-        res.status(500).send("Internal server error");
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send(MESSAGES.INTERNAL_SERVER_ERROR);
     }
 };
 
@@ -40,7 +42,7 @@ const adminAuth = (req,res,next)=>{
     })
     .catch(error=>{
         console.log("Error in adminauth middleware",error);
-        res.status(500).send("Internal server error");
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send(MESSAGES.INTERNAL_SERVER_ERROR);
     })
 }
 

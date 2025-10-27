@@ -5,6 +5,8 @@ import Category from "../../models/categorySchema.js";
 import Cart from "../../models/cartSchema.js";
 import { addToList } from "../../helpers/listController.js";
 import Brand from "../../models/brandSchema.js";
+import { STATUS_CODES } from "../../constants/statusCodes.js";
+import { MESSAGES } from "../../constants/messages.js";
 
 
 
@@ -149,7 +151,7 @@ const getCartData = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching cart data for AJAX:', error);
-        res.status(500).json({ status: false, message: 'Error fetching cart data' });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: 'Error fetching cart data' });
     }
 };
 
@@ -177,10 +179,10 @@ const addToCart = async (req, res) => {
             await user.save();
         }
 
-        return res.status(200).json({ status: true, message: "Product added to cart" });
+        return res.status(STATUS_CODES.OK).json({ status: true, message: "Product added to cart" });
     } catch (error) {
         console.error("Error adding product to cart", error);
-        return res.status(500).json({
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: false,
             message:  error.message || "Failed to add product to cart.",
         });
@@ -200,7 +202,7 @@ const removeProduct = async (req, res) => {
         let cart = await Cart.findOne({ userId });
 
         if (!cart) {
-            return res.status(404).json({ status: false, message: 'Cart not found' });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ status: false, message: 'Cart not found' });
         }
 
         cart.items = cart.items.filter(item => !(item.productId.toString() === productId  && item.size === size));
@@ -209,10 +211,10 @@ const removeProduct = async (req, res) => {
 
         await cart.save();
 
-        res.status(200).json({ status: true, message: 'Product removed from cart' });
+        res.status(STATUS_CODES.OK).json({ status: true, message: 'Product removed from cart' });
     } catch (error) {
         console.error('Error removing product from cart', error);
-        res.status(500).json({ status: false, message: 'An error occurred. Please try again later.' });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -230,27 +232,27 @@ const updateProductQuantity = async (req, res) => {
         const { size, quantity } = req.body; 
 
         if (quantity > 10) {
-            return res.status(400).json({ status: false, message: 'Quantity cannot exceed 10' });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ status: false, message: 'Quantity cannot exceed 10' });
         }
 
         const product = await Product.findById(productId);
         if (!product) {
-            return res.status(404).json({ status: false, message: 'Product not found' });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ status: false, message: 'Product not found' });
         }
 
         if (!product.size || !product.size.has(size)) {
-            return res.status(404).json({ status: false, message: `Size ${size} not available for this product` });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ status: false, message: `Size ${size} not available for this product` });
         }
 
         const availableQuantity = product.size.get(size);
         if (quantity > availableQuantity) {
-            return res.status(400).json({ status: false, message: `Only ${availableQuantity} items available for size ${size}` });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ status: false, message: `Only ${availableQuantity} items available for size ${size}` });
         }
 
         let cart = await Cart.findOne({ userId });
 
         if (!cart) {
-            return res.status(404).json({ status: false, message: 'Cart not found' });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ status: false, message: 'Cart not found' });
         }
 
         let productInCart = cart.items.find(item => item.productId.toString() === productId && item.size === size);
@@ -275,10 +277,10 @@ const updateProductQuantity = async (req, res) => {
 
         await cart.save();
 
-        res.status(200).json({ status: true, message: 'Quantity updated and total price recalculated' });
+        res.status(STATUS_CODES.OK).json({ status: true, message: 'Quantity updated and total price recalculated' });
     } catch (error) {
         console.error('Error updating quantity:', error);
-        res.status(500).json({ status: false, message: 'An error occurred. Please try again later.' });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
 };
 

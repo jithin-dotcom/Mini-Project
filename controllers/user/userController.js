@@ -10,6 +10,8 @@ import Wishlist from "../../models/wishlistSchema.js";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
+import { STATUS_CODES } from "../../constants/statusCodes.js";
+import { MESSAGES } from "../../constants/messages.js";
 
 
 dotenv.config();
@@ -22,7 +24,7 @@ const loadSignup = async(req,res) => {
         return res.render("signup");
     }catch(error){
         console.log("home page not loading:",error);
-        res.status(500).send("server Error");
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send(MESSAGES.INTERNAL_SERVER_ERROR);
     }
 } 
 
@@ -85,7 +87,7 @@ const loadHomepage = async (req, res) => {
         }
     } catch (error) {
         console.error("Homepage error:", error);
-        res.status(500).send("Server error");
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send(MESSAGES.INTERNAL_SERVER_ERROR);
     }
 };
 
@@ -124,9 +126,6 @@ async function sendVerificationEmail(email,otp){
        return false;
     } 
 }
-
-
-
 
 
 
@@ -183,7 +182,6 @@ const securePassword = async(password)=>{
 
 
 
-
 const verifyOtp = async (req, res) => {
     try {
         const { otp } = req.body;
@@ -191,7 +189,7 @@ const verifyOtp = async (req, res) => {
        
 
         if (!userData) {
-            return res.status(400).json({ success: false, message: "Session expired. Please sign up again." });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Session expired. Please sign up again." });
         }
 
         const otpRecord = await OTP.findOne({ email: userData.email, otp });
@@ -209,11 +207,11 @@ const verifyOtp = async (req, res) => {
             await OTP.deleteOne({ email: userData.email });
             res.json({ success: true, redirectUrl: "/" });
         } else {
-            res.status(400).json({ success: false, message: "Invalid OTP. Please try again." });
+            res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Invalid OTP. Please try again." });
         }
     } catch (error) {
         console.error("Error verifying OTP", error);
-        res.status(500).json({ success: false, message: "An error occurred" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "An error occurred" });
     }
 };
 
@@ -231,7 +229,7 @@ const resendOtp = async (req, res) => {
         req.session.userOtp = otp; 
         const emailSend = await sendVerificationEmail(email, otp);
         if (!emailSend) {
-            return res.status(500).json({ success: false, message: "Failed to send verification email. Please try again." });
+            return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to send verification email. Please try again." });
         }
         const existingOtp = await OTP.findOneAndUpdate(
             { email },
@@ -244,7 +242,7 @@ const resendOtp = async (req, res) => {
 
     } catch (error) {
         console.error("Error resending OTP", error);
-        res.status(500).json({ success: false, message: "An error occurred while resending OTP" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "An error occurred while resending OTP" });
     }
 };
 
@@ -265,10 +263,6 @@ const loadLogin = async(req,res)=>{
         res.redirect("pageNotFound");
     }
 }
-
-
-
-
 
 
 
@@ -318,9 +312,6 @@ const logout = async (req, res) => {
         res.redirect("/pageNotFound");
     }
 };
-
-
-
 
 
 
@@ -411,8 +402,6 @@ const loadShoppingPage = async (req, res) => {
         res.redirect("/pageNotFound");
     }
 };
-
-
 
 
 
@@ -542,7 +531,7 @@ const filterProducts = async (req, res) => {
         });
     } catch (error) {
         console.error('Error filtering products:', error);
-        res.status(500).json({ success: false, message: 'Error fetching products' });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Error fetching products' });
     }
 };
 

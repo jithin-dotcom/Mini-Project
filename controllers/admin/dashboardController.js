@@ -7,6 +7,7 @@ import ExcelJS from 'exceljs';
 import Order from '../../models/orderSchema.js';
 import User from '../../models/userSchema.js';
 import Product from '../../models/productSchema.js';
+import { STATUS_CODES } from '../../constants/statusCodes.js';
 
 
 
@@ -150,7 +151,7 @@ const dashboardMain = async (req, res) => {
          if (!startDate || !endDate) {
             if (!quickFilter || quickFilter === "none") {
                 
-                return res.status(400).json({
+                return res.status(STATUS_CODES.BAD_REQUEST).json({
                     message: "Please provide both startDate and endDate or select a valid quickFilter.",
                 });
             }
@@ -233,7 +234,7 @@ const dashboardMain = async (req, res) => {
         res.json({ totalOrders, totalUsers, totalProducts, totalSales, orders,totalPages, currentPage: page,orders1 });
     } catch (error) {
         console.log("The error is", error);
-        res.status(500).json({ message: "An error occurred while fetching dashboard data" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: "An error occurred while fetching dashboard data" });
     }
 };
 
@@ -258,7 +259,7 @@ const generatePdfReportMain = async (req, res) => {
             };
         } else if (!startDate || !endDate) {
             if (quickFilter === "none") {
-                return res.status(400).json({
+                return res.status(STATUS_CODES.BAD_REQUEST).json({
                     message: "Please provide both startDate and endDate or select a valid quickFilter.",
                 });
             } else {
@@ -297,7 +298,7 @@ const generatePdfReportMain = async (req, res) => {
         const orders = await Order.find(matchCondition).sort({ createdOn: -1 });
 
         if (!orders || orders.length === 0) {
-            return res.status(404).json({
+            return res.status(STATUS_CODES.NOT_FOUND).json({
                 message: "No orders found for the specified filters.",
             });
         }
@@ -435,7 +436,7 @@ const generatePdfReportMain = async (req, res) => {
         doc.end();
     } catch (error) {
         console.log("Error generating PDF:", error);
-        res.status(500).json({ message: "Error generating PDF", error });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: "Error generating PDF", error });
     }
 };
 
@@ -524,7 +525,7 @@ const generateExcelReportMain = async (req, res) => {
         res.end();
     } catch (error) {
         console.error("Error generating Excel report:", error);
-        res.status(500).send("Error generating report.");
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send("Error generating report.");
        
     }
 };

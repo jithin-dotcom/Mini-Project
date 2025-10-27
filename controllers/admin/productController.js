@@ -7,6 +7,8 @@ import Size from "../../models/sizeSchema.js";
 import fs from "fs";
 import path from "path";
 import sharp from "sharp";
+import { STATUS_CODES } from "../../constants/statusCodes.js";
+import { MESSAGES } from "../../constants/messages.js";
 
 
 const getProductAddPage = async(req,res)=>{
@@ -38,7 +40,7 @@ const addProducts = async(req,res)=>{
       if(!productExists){
         const images = [];
         if(req.files.length < 3){
-            return res.status(400).json("Minimum three image required");
+            return res.status(STATUS_CODES.BAD_REQUEST).json("Minimum three image required");
         }
         if(req.files && req.files.length > 0){
             for(let i = 0; i < req.files.length; i++){
@@ -51,7 +53,7 @@ const addProducts = async(req,res)=>{
         
         const categoryId = await Category.findOne({name:products.category});
         if(!categoryId){
-            return res.status(400).json("Invalid category name");   
+            return res.status(STATUS_CODES.BAD_REQUEST).json("Invalid category name");   
         }
         
         const sizeMap = new Map();
@@ -77,7 +79,7 @@ const addProducts = async(req,res)=>{
         return res.redirect("/admin/addProducts");
 
       }else{
-        return res.status(400).json("Product already exist, please try with another name");
+        return res.status(STATUS_CODES.BAD_REQUEST).json("Product already exist, please try with another name");
       }
 
     } catch (error) {
@@ -174,7 +176,7 @@ const getProductsData = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching products for AJAX:", error);
-        res.status(500).json({ status: false, message: "Error fetching products" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: "Error fetching products" });
     }
 };
 
@@ -187,11 +189,11 @@ const addProductOffer = async (req, res) => {
         const { productId, percentage } = req.body;
         const findProduct = await Product.findOne({ _id: productId });
         if (!findProduct) {
-            return res.status(404).json({ status: false, message: "Product not found." });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ status: false, message: "Product not found." });
         }
         const findCategory = await Category.findOne({ _id: findProduct.category });
         if (!findCategory) {
-            return res.status(404).json({ status: false, message: "Category not found for the given product." });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ status: false, message: "Category not found for the given product." });
         }
         if (findCategory.categoryOffer >= percentage) {
             return res.json({ status: false, message: "This product's category already has a higher or equal offer" });
@@ -206,16 +208,18 @@ const addProductOffer = async (req, res) => {
         res.json({ status: true, message: "Product offer successfully added" });
     } catch (error) {
         console.error("Error adding product offer:", error);
-        res.status(500).json({ status: false, message: "Internal server error" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
 };
+
+
 
 const removeProductOffer = async (req, res) => {
     try {
         const { productId } = req.body;
         const findProduct = await Product.findOne({ _id: productId });
         if (!findProduct) {
-            return res.status(404).json({ status: false, message: "Product not found." });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ status: false, message: "Product not found." });
         }
         const percentage = findProduct.productOffer;
         findProduct.salePrice = findProduct.salePrice + Math.floor(findProduct.regularPrice * (percentage / 100));
@@ -224,7 +228,7 @@ const removeProductOffer = async (req, res) => {
         res.json({ status: true, message: "Product offer removed successfully" });
     } catch (error) {
         console.error("Error removing product offer:", error);
-        res.status(500).json({ status: false, message: "Internal server error" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: "Internal server error" });
     }
 };
 
@@ -237,14 +241,16 @@ const blockProduct = async (req, res) => {
             { new: true }
         );
         if (!product) {
-            return res.status(404).json({ status: false, message: "Product not found" });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ status: false, message: "Product not found" });
         }
         res.json({ status: true, message: "Product blocked successfully" });
     } catch (error) {
         console.error("Error blocking product:", error);
-        res.status(500).json({ status: false, message: "Error blocking product" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: "Error blocking product" });
     }
 };
+
+
 
 const unblockProduct = async (req, res) => {
     try {
@@ -255,12 +261,12 @@ const unblockProduct = async (req, res) => {
             { new: true }
         );
         if (!product) {
-            return res.status(404).json({ status: false, message: "Product not found" });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ status: false, message: "Product not found" });
         }
         res.json({ status: true, message: "Product unblocked successfully" });
     } catch (error) {
         console.error("Error unblocking product:", error);
-        res.status(500).json({ status: false, message: "Error unblocking product" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: "Error unblocking product" });
     }
 };
 
@@ -303,7 +309,7 @@ const editProduct = async(req,res)=>{
         })
 
         if(existingProduct){
-            return res.status(400).json({error:"Product with this name already exists. please try with another name"});
+            return res.status(STATUS_CODES.BAD_REQUEST).json({error:"Product with this name already exists. please try with another name"});
 
         }
 

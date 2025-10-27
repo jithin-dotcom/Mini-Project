@@ -7,6 +7,8 @@ import session from "express-session";
 import Order from "../../models/orderSchema.js";
 import Product from "../../models/productSchema.js";
 import Wallet from "../../models/walletSchema.js";
+import { STATUS_CODES } from "../../constants/statusCodes.js";
+import { MESSAGES } from "../../constants/messages.js";
 
 dotenv.config();
 
@@ -120,7 +122,7 @@ const verifyForgotPassOtp = async(req,res)=>{
       }
 
     } catch (error) {
-        res.status(500).json({success:false,message:"An error occured. Please try again "});
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success:false,message: MESSAGES.INTERNAL_SERVER_ERROR});
     }
 }
 
@@ -147,11 +149,11 @@ const resendOtp = async(req,res)=>{
         const  emailSend = await sendVerificationEmail(email,otp);
         if(emailSend){
             console.log("Resend OTP:",otp);
-            res.status(200).json({success:true,message:"Resend OTP Successful"});
+            res.status(STATUS_CODES.OK).json({success:true,message:"Resend OTP Successful"});
         }
     } catch (error) {
         console.error("Error in resend oto",error);
-        res.status(500).json({success:false,message:"Internal server error"});
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success:false,message: STATUS_CODES.INTERNAL_SERVER_ERROR});
     }
 }
 
@@ -256,6 +258,8 @@ const changeEmail = async(req,res)=>{
     }
 }
 
+
+
 const changeEmailValid = async(req,res)=>{
     try {
         
@@ -288,6 +292,8 @@ const changeEmailValid = async(req,res)=>{
         res.redirect("/pageNotFound");
     }
 }
+
+
 
 const verifyEmailOtp = async(req,res)=>{
     try {
@@ -328,6 +334,8 @@ const updateEmail = async(req,res)=>{
     }
 }
 
+
+
 const changePassword = async(req,res)=>{
     try {
         res.render("change-password");
@@ -350,7 +358,6 @@ const changePasswordValid = async(req,res)=>{
                 req.session.userData = req.body;
                 req.session.email = email;
                 res.render("change-password-otp");
-                // console.log("this is changePasswordValid");
                 console.log("OTP: ",otp);
             }else{
                 res.json({
@@ -370,6 +377,7 @@ const changePasswordValid = async(req,res)=>{
     }
 }
 
+
 const verifyChangePassOtp = async(req,res)=>{
     try {
         
@@ -382,7 +390,7 @@ const verifyChangePassOtp = async(req,res)=>{
         }
 
     } catch (error) {
-        res.status(500).json({success:false,message:"An error occured during changing password"});
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success:false,message:"An error occured during changing password"});
     }
 }
 
@@ -497,35 +505,6 @@ const postEditAddress = async(req,res)=>{
 }
 
 
-// const deleteAddress = async(req,res)=>{
-//     try {
-        
-//         const addressId = req.query.id;
-//         // console.log("Query Address ID:", addressId);
-//         const findAddress = await Address.findOne({"address._id":addressId});
-//         if(!findAddress){
-//             return res.status(404).send("Address not found");
-//         }
-//         await Address.updateOne({
-//             "address._id":addressId
-//         },
-//         {
-//             $pull : {
-//                 address : {
-//                     _id:addressId,
-//                 }
-//             }
-//         }
-//     )
-//     res.redirect("/userProfile");
-
-//     } catch (error) {
-//         console.error("Error in deleting address",error);
-//         res.redirect("/pageNotFound");
-//     }
-// }
-
-
 
 const deleteAddress = async (req, res) => {
     try {
@@ -538,10 +517,10 @@ const deleteAddress = async (req, res) => {
             { "address._id": addressId },
             { $pull: { address: { _id: addressId } } }
         );
-        return res.status(200).json({ success: true, message: "Address deleted successfully" });
+        return res.status(STATUS_CODES.OK).json({ success: true, message: "Address deleted successfully" });
     } catch (error) {
         console.error("Error in deleting address:", error);
-        return res.status(500).json({ success: false, message: "Error deleting the address" });
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error deleting the address" });
     }
 };
 
@@ -554,20 +533,20 @@ const viewOrders = async(req,res)=>{
         const userId = req.session.user._id;
         const order = await Order.findById(orderId);
         if (!order) {
-            return res.status(404).render('error', { message: 'Order not found' });
+            return res.status(STATUS_CODES.NOT_FOUND).render('error', { message: 'Order not found' });
         }
 
         const addressDoc = await Address.findOne({ userId }).exec();
         const address = addressDoc.address.find(addr => addr._id.equals(order.address));
         
         if (!address) {
-            return res.status(404).send("Order address not found");
+            return res.status(STATUS_CODES.NOT_FOUND).send("Order address not found");
         }
 
         res.render('viewOrder', { order,address });
     } catch (error) {
         console.error(error);
-        res.status(500).render('error', { message: 'Internal Server Error' });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).render('error', { message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
 
 
@@ -575,103 +554,152 @@ const viewOrders = async(req,res)=>{
 
 
 
+
+
 const cancelOrder = async (req, res) => {
-  const orderId = req.params.id;
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
-    const order = await Order.findById(orderId);
+    const orderId = req.params.id;
+    const order = await Order.findById(orderId).session(session);
     if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found." });
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: "Order not found." });
     }
+
     if (order.status !== "Pending" && order.status !== "Shipped") {
-      return res.status(400).json({ success: false, message: "Order cannot be cancelled." });
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Order cannot be cancelled." });
     }
+
+    
     order.status = "Cancelled";
-    await order.save();
+    await order.save({ session });
+
+  
     for (const item of order.orderedItems) {
-      const product = await Product.findById(item.product);
+      const product = await Product.findById(item.product).session(session);
       if (product) {
-        const currentStock = product.size.get(item.size);
-        if (currentStock !== undefined) {
-          product.size.set(item.size, currentStock + item.quantity);
-          await product.save();
-        }
+        const currentStock = product.size.get(item.size) || 0;
+        product.size.set(item.size, currentStock + item.quantity);
+        await product.save({ session });
       }
     }
+
+   
     if (order.paymentMethod !== "cashOnDelivery" && order.paymentStatus !== "notCompleted") {
-      const wallet = await Wallet.findOne({ userId: order.userId });
+      let wallet = await Wallet.findOne({ userId: order.userId }).session(session);
+
       if (wallet) {
         wallet.balance += order.finalAmount;
         wallet.transactionHistory.push({
-          transactionType: 'credit',
+          transactionType: "credit",
           transactionAmount: order.finalAmount,
-          description: `Refund for cancelled order ${order.orderId}`
+          description: `Refund for cancelled order ${order.orderId}`,
         });
-        await wallet.save();
+        await wallet.save({ session });
       } else {
-        const newWallet = new Wallet({
+        wallet = new Wallet({
           userId: order.userId,
           balance: order.finalAmount,
           transactionHistory: [{
-            transactionType: 'credit',
+            transactionType: "credit",
             transactionAmount: order.finalAmount,
-            description: `Refund for cancelled order ${order.orderId}`
-          }]
+            description: `Refund for cancelled order ${order.orderId}`,
+          }],
         });
-        await newWallet.save();
+        await wallet.save({ session });
       }
     }
+
+    
     if (order.paymentStatus === "notCompleted") {
       order.paymentStatus = "completed";
+      await order.save({ session });
     }
-    await order.save();
+
+    await session.commitTransaction();
+    session.endSession();
+
     return res.json({ success: true, message: "Order cancelled successfully." });
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     console.error("Error cancelling order:", err);
-    return res.status(500).json({ success: false, message: "Error cancelling order." });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
   }
 };
 
 
 
+
 const returnOrder = async (req, res) => {
-  const orderId = req.params.id;
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
-    const order = await Order.findById(orderId);
+    const orderId = req.params.id;
+    const order = await Order.findById(orderId).session(session);
     if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found." });
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: "Order not found." });
     }
+
     if (order.status !== "Delivered") {
-      return res.status(400).json({ success: false, message: "Order cannot be returned." });
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Order cannot be returned." });
     }
+
+ 
     order.status = "Returned";
-    await order.save();
-    if (order.paymentMethod === "cashOnDelivery" || order.paymentMethod !== "cashOnDelivery") {
-      const wallet = await Wallet.findOne({ userId: order.userId });
-      if (wallet) {
-        wallet.balance += order.finalAmount;
-        wallet.transactionHistory.push({
-          transactionType: 'credit',
+    await order.save({ session });
+
+   
+    let wallet = await Wallet.findOne({ userId: order.userId }).session(session);
+
+    if (wallet) {
+      wallet.balance += order.finalAmount;
+      wallet.transactionHistory.push({
+        transactionType: "credit",
+        transactionAmount: order.finalAmount,
+        description: `Refund for returned order ${order.orderId}`,
+      });
+      await wallet.save({ session });
+    } else {
+      wallet = new Wallet({
+        userId: order.userId,
+        balance: order.finalAmount,
+        transactionHistory: [{
+          transactionType: "credit",
           transactionAmount: order.finalAmount,
-          description: `Refund for returned order ${order.orderId}`
-        });
-        await wallet.save();
-      } else {
-        const newWallet = new Wallet({
-          userId: order.userId,
-          balance: order.finalAmount,
-          transactionHistory: [{
-            transactionType: 'credit',
-            transactionAmount: order.finalAmount,
-            description: `Refund for returned order ${order.orderId}`
-          }]
-        });
-        await newWallet.save();
+          description: `Refund for returned order ${order.orderId}`,
+        }],
+      });
+      await wallet.save({ session });
+    }
+
+  
+    for (const item of order.orderedItems) {
+      const product = await Product.findById(item.product).session(session);
+      if (product) {
+        const currentStock = product.size.get(item.size) || 0;
+        product.size.set(item.size, currentStock + item.quantity);
+        await product.save({ session });
       }
     }
+
+    await session.commitTransaction();
+    session.endSession();
+
     return res.json({ success: true, message: "Order returned successfully." });
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     console.error("Error returning order:", err);
-    return res.status(500).json({ success: false, message: "Error returning order." });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error returning order." });
   }
 };
 
@@ -701,7 +729,7 @@ const getOrders = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching orders:", error);
-    return res.status(500).json({ success: false, message: "Error fetching orders." });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error fetching orders." });
   }
 };
 
@@ -739,7 +767,7 @@ const getWalletHistory = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching wallet history:", error);
-    return res.status(500).json({ success: false, message: "Error fetching wallet history." });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error fetching wallet history." });
   }
 };
 

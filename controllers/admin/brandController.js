@@ -1,7 +1,8 @@
 
 import Brand from "../../models/brandSchema.js";
 import Product from "../../models/productSchema.js";
-
+import { MESSAGES } from "../../constants/messages.js";
+import { STATUS_CODES } from "../../constants/statusCodes.js";
 
 
 
@@ -22,7 +23,7 @@ const addBrand = async (req, res) => {
         });
 
         if (existingBrand) {
-            return res.status(400).json({ success: false, message: "Brand already exists." });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Brand already exists." });
         }
         if (req.file && req.file.filename) {
             const newBrand = new Brand({
@@ -31,17 +32,17 @@ const addBrand = async (req, res) => {
             });
 
             await newBrand.save();
-            return res.status(200).json({ 
+            return res.status(STATUS_CODES.OK).json({ 
                 status: true, 
                 message: "Brand added successfully.",
                 brand: newBrand
             });
         } else {
-            return res.status(400).json({ status: false, message: "Brand image is required." });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ status: false, message: "Brand image is required." });
         }
     } catch (error) {
         console.error("Error adding brand:", error);
-        return res.status(500).json({ status: false, message: "An error occurred while adding the brand." });
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -103,7 +104,7 @@ const getBrandPageAjax = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching brand info for AJAX:", error);
-        res.status(500).json({ status: false, message: "Error fetching brands" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -115,7 +116,7 @@ const blockBrand = async (req, res) => {
     try {
         const { id } = req.body;
         if (!id) {
-            return res.status(400).json({ success: false, message: "Brand ID is required" });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Brand ID is required" });
         }
         const brand = await Brand.findByIdAndUpdate(
             id,
@@ -123,12 +124,12 @@ const blockBrand = async (req, res) => {
             { new: true }
         );
         if (!brand) {
-            return res.status(404).json({ success: false, message: "Brand not found" });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: MESSAGES.NOT_FOUND });
         }
         res.json({ status: true });
     } catch (error) {
         console.error("Error blocking brand:", error);
-        res.status(500).json({ status: false, message: "Error blocking brand" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -136,7 +137,7 @@ const unBlockBrand = async (req, res) => {
     try {
         const { id } = req.body;
         if (!id) {
-            return res.status(400).json({ success: false, message: "Brand ID is required" });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Brand ID is required" });
         }
         const brand = await Brand.findByIdAndUpdate(
             id,
@@ -144,12 +145,12 @@ const unBlockBrand = async (req, res) => {
             { new: true }
         );
         if (!brand) {
-            return res.status(404).json({ success: false, message: "Brand not found" });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: "Brand not found" });
         }
         res.json({ status: true });
     } catch (error) {
         console.error("Error unblocking brand:", error);
-        res.status(500).json({ status: false, message: "Error unblocking brand" });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
 };
 
@@ -160,18 +161,18 @@ const deleteBrand = async (req, res) => {
     try {
         const { id } = req.body;
         if (!id) {
-            return res.status(400).json({ success: false, message: "Brand ID is required." });
+            return res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Brand ID is required." });
         }
 
         const result = await Brand.deleteOne({ _id: id });
         if (result.deletedCount === 0) {
-            return res.status(404).json({ success: false, message: "Brand not found." });
+            return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: MESSAGES.NOT_FOUND });
         }
 
         return res.json({ status: true, message: "Brand deleted successfully." });
     } catch (error) {
         console.error("Error deleting brand:", error);
-        return res.status(500).json({ status: false, message: "An error occurred while deleting the brand." });
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ status: false, message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
 };
 
