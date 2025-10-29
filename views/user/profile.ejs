@@ -352,7 +352,7 @@
                          <form>
                            <div class="form-group">
                              <label for="walletAmount" class="h4">Amount</label>
-                             <div class="h3">₹<%= wallet.balance%></div>
+                             <div id="walletBalance" class="h3">₹<%= wallet.balance%></div>
                            </div>
                            <button type="button" class="btn btn-success">Add Money</button>
                          </form>
@@ -628,6 +628,7 @@ function cancelOrder(orderId) {
         text: 'The order has been cancelled successfully.'
       }).then(() => {
         fetchOrders('<%= currentOrderPage %>', '<%= orderLimit %>');
+        fetchWalletHistory('<%= currentWalletPage %>', '<%= walletLimit %>'); // Add this
       });
     } else {
       Swal.fire({
@@ -661,6 +662,7 @@ function returnOrder(orderId) {
         text: 'The order has been returned successfully.'
       }).then(() => {
         fetchOrders('<%= currentOrderPage %>', '<%= orderLimit %>');
+        fetchWalletHistory('<%= currentWalletPage %>', '<%= walletLimit %>'); // Add this
       });
     } else {
       Swal.fire({
@@ -772,6 +774,10 @@ function updateOrdersTable(orders, currentOrderPage, totalOrderPages, orderLimit
   `;
 }
 
+
+
+
+
 function fetchWalletHistory(page, limit = 5) {
   console.log(`Fetching wallet history for page ${page}, limit ${limit}`);
   const url = new URL(window.location.href);
@@ -788,7 +794,7 @@ function fetchWalletHistory(page, limit = 5) {
   .then(data => {
     console.log(`Fetch wallet history response:`, data);
     if (data.success) {
-      updateWalletHistoryTable(data.transactions, data.currentWalletPage, data.totalWalletPages, data.walletLimit);
+      updateWalletHistoryTable(data.transactions, data.currentWalletPage, data.totalWalletPages, data.walletLimit, data.balance); // Pass balance
     } else {
       Swal.fire({
         icon: 'error',
@@ -807,37 +813,44 @@ function fetchWalletHistory(page, limit = 5) {
   });
 }
 
-function updateWalletHistoryTable(transactions, currentWalletPage, totalWalletPages, walletLimit) {
+
+
+function updateWalletHistoryTable(transactions, currentWalletPage, totalWalletPages, walletLimit, balance) {
   const walletHistory = document.getElementById('walletHistory');
   const walletPagination = document.getElementById('walletPagination');
 
   if (transactions.length === 0) {
     walletHistory.innerHTML = '<tr><td colspan="4" class="text-center">No wallet history found</td></tr>';
     walletPagination.innerHTML = '';
-    return;
+  } else {
+    walletHistory.innerHTML = transactions.map(transaction => `
+      <tr>
+        <td>${new Date(transaction.transactionDate).toLocaleString()}</td>
+        <td>${transaction.transactionType}</td>
+        <td>₹${transaction.transactionAmount}</td>
+        <td>${transaction.description}</td>
+      </tr>
+    `).join('');
+
+    walletPagination.innerHTML = `
+      <li class="page-item ${currentWalletPage === 1 ? 'disabled' : ''}">
+        <a class="page-link" href="javascript:void(0)" onclick="fetchWalletHistory(${currentWalletPage - 1}, ${walletLimit})">Previous</a>
+      </li>
+      ${Array.from({ length: totalWalletPages }, (_, i) => i + 1).map(i => `
+        <li class="page-item ${currentWalletPage === i ? 'active' : ''}">
+          <a class="page-link" href="javascript:void(0)" onclick="fetchWalletHistory(${i}, ${walletLimit})">${i}</a>
+        </li>
+      `).join('')}
+      <li class="page-item ${currentWalletPage === totalWalletPages ? 'disabled' : ''}">
+        <a class="page-link" href="javascript:void(0)" onclick="fetchWalletHistory(${currentWalletPage + 1}, ${walletLimit})">Next</a>
+      </li>
+    `;
   }
 
-  walletHistory.innerHTML = transactions.map(transaction => `
-    <tr>
-      <td>${new Date(transaction.transactionDate).toLocaleString()}</td>
-      <td>${transaction.transactionType}</td>
-      <td>₹${transaction.transactionAmount}</td>
-      <td>${transaction.description}</td>
-    </tr>
-  `).join('');
-
-  walletPagination.innerHTML = `
-    <li class="page-item ${currentWalletPage === 1 ? 'disabled' : ''}">
-      <a class="page-link" href="javascript:void(0)" onclick="fetchWalletHistory(${currentWalletPage - 1}, ${walletLimit})">Previous</a>
-    </li>
-    ${Array.from({ length: totalWalletPages }, (_, i) => i + 1).map(i => `
-      <li class="page-item ${currentWalletPage === i ? 'active' : ''}">
-        <a class="page-link" href="javascript:void(0)" onclick="fetchWalletHistory(${i}, ${walletLimit})">${i}</a>
-      </li>
-    `).join('')}
-    <li class="page-item ${currentWalletPage === totalWalletPages ? 'disabled' : ''}">
-      <a class="page-link" href="javascript:void(0)" onclick="fetchWalletHistory(${currentWalletPage + 1}, ${walletLimit})">Next</a>
-    </li>
-  `;
+  
+  const balanceElement = document.getElementById('walletBalance');
+  if (balanceElement) {
+    balanceElement.textContent = `₹${balance}`;
+  }
 }
 </script>

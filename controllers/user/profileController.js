@@ -497,33 +497,6 @@ const postEditAddress = async(req,res)=>{
 }
 
 
-// const deleteAddress = async(req,res)=>{
-//     try {
-        
-//         const addressId = req.query.id;
-//         // console.log("Query Address ID:", addressId);
-//         const findAddress = await Address.findOne({"address._id":addressId});
-//         if(!findAddress){
-//             return res.status(404).send("Address not found");
-//         }
-//         await Address.updateOne({
-//             "address._id":addressId
-//         },
-//         {
-//             $pull : {
-//                 address : {
-//                     _id:addressId,
-//                 }
-//             }
-//         }
-//     )
-//     res.redirect("/userProfile");
-
-//     } catch (error) {
-//         console.error("Error in deleting address",error);
-//         res.redirect("/pageNotFound");
-//     }
-// }
 
 
 
@@ -707,6 +680,7 @@ const getOrders = async (req, res) => {
 
 
 
+
 const getWalletHistory = async (req, res) => {
   try {
     const userId = req.session.user._id;
@@ -714,13 +688,15 @@ const getWalletHistory = async (req, res) => {
     const limit = 5; 
     const skip = (page - 1) * limit;
     const wallet = await Wallet.findOne({ userId }).lean();
+    const balance = wallet ? wallet.balance : 0; // Default to 0 if no wallet
     if (!wallet) {
       return res.json({
         success: true,
         transactions: [],
         currentWalletPage: page,
         totalWalletPages: 0,
-        walletLimit: limit
+        walletLimit: limit,
+        balance 
       });
     }
     const totalWalletTransactions = wallet.transactionHistory.length;
@@ -735,7 +711,8 @@ const getWalletHistory = async (req, res) => {
       transactions,
       currentWalletPage: page,
       totalWalletPages,
-      walletLimit: limit
+      walletLimit: limit,
+      balance 
     });
   } catch (error) {
     console.error("Error fetching wallet history:", error);
